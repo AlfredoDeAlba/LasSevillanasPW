@@ -1,4 +1,4 @@
-package Proyectini.backend;
+package Proyectini.java;
 
 public class productod {
 }
