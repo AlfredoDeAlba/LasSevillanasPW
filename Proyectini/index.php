@@ -75,7 +75,7 @@ $products = readProducts();
                 <button class="primary" type="button" data-scroll="#catalogo">Conoce nuestros productos</button>
             </div>
             <figure class="hero-figure">
-                <img src="https://images.unsplash.com/photo-1589308078050-1989c0ac6805?auto=format&fit=crop&w=900&q=80" alt="Dulces de leche artesanales" loading="lazy">
+                <img src="data/photo/logo.png" alt="Dulces de leche artesanales" loading="lazy">
             </figure>
         </section>
 

@@ -241,13 +241,12 @@ button.primary:focus-visible {
 
 .hero-figure {
     position: relative;
+    margin: auto;
 }
 
 .hero-figure::after {
     content: "";
-    position: absolute;
     inset: 12px;
-    border: 1px solid var(--color-secondary);
     border-radius: calc(var(--radius-base) * 1.5);
     pointer-events: none;
 }
