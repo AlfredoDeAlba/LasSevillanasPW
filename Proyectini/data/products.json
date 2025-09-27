@@ -1,0 +1,23 @@
+﻿[
+  {
+    "id": "cajeta-tradicional",
+    "name": "Cajeta tradicional",
+    "price": 120,
+    "description": "Caramelo de leche con textura cremosa y notas de vainilla.",
+    "image": "https://images.unsplash.com/photo-1587394474964-791c2f707d81?auto=format&fit=crop&w=600&q=80"
+  },
+  {
+    "id": "obleas-cajeta",
+    "name": "Obleas con cajeta",
+    "price": 95,
+    "description": "Crujientes obleas artesanales rellenas con cajeta suave.",
+    "image": "https://images.unsplash.com/photo-1531332260340-0f79d039069a?auto=format&fit=crop&w=600&q=80"
+  },
+  {
+    "id": "glorias-leche",
+    "name": "Glorias de leche",
+    "price": 110,
+    "description": "Bombones caramelizados con nuez y cajeta, envueltos individualmente.",
+    "image": "https://images.unsplash.com/photo-1515003197210-e0cd71810b5f?auto=format&fit=crop&w=600&q=80"
+  }
+]
