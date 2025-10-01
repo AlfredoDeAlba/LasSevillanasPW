@@ -358,6 +358,11 @@ button.primary:focus-visible {
     border-radius: var(--radius-base);
     background: var(--color-elevated);
     text-align: left;
+     transition: transform 0.3s ease; 
+}
+
+.value-card:hover {
+    transform: translateY(-10px);
 }
 
 .value-card h3 {
