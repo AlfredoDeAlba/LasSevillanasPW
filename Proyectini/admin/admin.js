@@ -7,6 +7,8 @@ const idField = document.querySelector('#product-id');
 const nameField = document.querySelector('#product-name');
 const priceField = document.querySelector('#product-price');
 const descriptionField = document.querySelector('#product-description');
+const stockField = document.querySelector('#product-stock');
+const dateField = document.querySelector('#product-date');
 const imageField = document.querySelector('#product-image');
 
 function formatCurrency(value) {
@@ -41,6 +43,8 @@ function renderRows() {
                 <td>${formatCurrency(product.price)}</td>
                 <td>${imageCell}</td>
                 <td>${product.description}</td>
+                <td>${product.stock}</td>
+                <td>${product.date}</td>
                 <td>
                     <div class="table-actions">
                         <button type="button" data-action="edit">Editar</button>
@@ -62,6 +66,8 @@ function fillForm(product) {
     nameField.value = product.name;
     priceField.value = product.price;
     descriptionField.value = product.description;
+    stockField.value = product.stock;
+    dateField.value = product.date;
     imageField.value = '';
     window.scrollTo({ top: 0, behavior: 'smooth' });
 }

@@ -68,6 +68,14 @@ $products = readProducts();
                     <textarea id="product-description" name="description" rows="4" placeholder="Describe el sabor, ingredientes o presentaciÃ³n" required></textarea>
                 </div>
                 <div class="form-field">
+                    <label for="product-stock">Stock</label>
+                    <input id="product-stock" name="stock" type="number" placeholder="Stock del producto" required>
+                </div>
+                <div class="form-field">
+                    <label for="product-date">Fecha de Agregado</label>
+                    <input id="product-date" name="date" type="text" placeholder="Fecha de agregado del producto" required>
+                </div>
+                <div class="form-field">
                     <label for="product-image">Imagen</label>
                     <input id="product-image" name="productImage" type="file" accept="image/jpeg,image/png,image/webp">
                     <p class="hint">Formatos permitidos: JPG, PNG, WEBP (mÃ¡x. 4MB). Si editas un producto y no seleccionas una imagen nueva, se conservarÃ¡ la actual.</p>
@@ -92,6 +100,8 @@ $products = readProducts();
                             <th>Precio</th>
                             <th>Imagen</th>
                             <th>DescripciÃ³n</th>
+                            <th>Stock</th>
+                            <th>Fecha</th>
                             <th>Acciones</th>
                         </tr>
                     </thead>
@@ -113,6 +123,10 @@ $products = readProducts();
                                         <?php endif; ?>
                                     </td>
                                     <td><?php echo htmlspecialchars($product['description'], ENT_QUOTES, 'UTF-8'); ?></td>
+                                    <td>
+                                    <td><?php echo htmlspecialchars($product['stock'], ENT_QUOTES, 'UTF-8'); ?></td>
+                                    <td>
+                                    <td><?php echo htmlspecialchars($product['date'], ENT_QUOTES, 'UTF-8'); ?></td>
                                     <td>
                                         <div class="table-actions">
                                             <button type="button" class="edit" data-action="edit">Editar</button>
