@@ -15,7 +15,7 @@ if (!$product) {
     <div class="purchase-container">
         <section class="payment-form-section">
             <form id="payment-form" novalidate>
-                <input type="hidden" id="id_producto" value="<?= htmlspecialchars($product['id'] ?? '') ?>">
+                <input type="hidden" id="id_producto" name="id_producto" value="<?= htmlspecialchars($product['id'] ?? '') ?>">
 
                 <div class="form-section">
                     <div class="form-section-header">
@@ -26,7 +26,7 @@ if (!$product) {
                         <label for="email">Correo Electrónico</label>
                         <div class="input-with-icon">
                             <svg aria-hidden="true" fill="currentColor" viewBox="0 0 20 20"><path d="M2.003 5.884L10 9.882l7.997-3.998A2 2 0 0016 4H4a2 2 0 00-1.997 1.884z"></path><path d="M18 8.118l-8 4-8-4V14a2 2 0 002 2h12a2 2 0 002-2V8.118z"></path></svg>
-                            <input type="email" id="email" placeholder="Para enviarte el recibo de tu compra" required>
+                            <input type="email" id="email" name="email" placeholder="Para enviarte el recibo de tu compra" required>
                         </div>
                     </div>
                 </div>
@@ -85,7 +85,7 @@ if (!$product) {
                         <div class="quantity-container">
                             <div class="quantity-selector">
                                 <label for="quantity">Cantidad:</label>
-                                <input type="number" id="quantity" value="1" min="1" max="<?= htmlspecialchars($product['stock'] ?? 10) ?>" aria-label="Cantidad de producto">
+                                <input type="number" id="quantity" name="cantidad" value="1" min="1" max="<?= htmlspecialchars($product['stock'] ?? 10) ?>" aria-label="Cantidad de producto">
                             </div>
                             <span id="stock-error-message" class="error-message"></span>
                         </div>
@@ -97,7 +97,7 @@ if (!$product) {
                 <div class="form-field coupon-field">
                     <label for="coupon-code">Cupón de Descuento</label>
                     <div class="coupon-input-group">
-                        <input type="text" id="coupon-code" placeholder="Ej: BIENVENIDA10">
+                        <input type="text" id="coupon-code" name="coupon_code" placeholder="Ej: BIENVENIDA10">
                         <button type="button" id="apply-coupon-btn">Aplicar</button>
                     </div>
                 </div>
@@ -155,6 +155,6 @@ if (!$product) {
 </main>
 
 <script src="https://js.stripe.com/v3/"></script>
-<script src="compra.js"></script>
+<script src="compra.js" defer></script>
 
 <?php require_once __DIR__ . '/templates/footer.php'; ?>

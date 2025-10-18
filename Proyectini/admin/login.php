@@ -1,23 +1,47 @@
 <?php
+// EN: admin/login.php
 
 declare(strict_types=1);
 
 require_once __DIR__ . '/../lib/auth.php';
 
-use function App\Lib\attemptLogin;
-use function App\Lib\isLoggedIn;
+// Apunta al namespace de Admin que definimos
+use function App\Lib\Admin\attemptLogin;
+use function App\Lib\Admin\isLoggedIn;
 
 $error = null;
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $user = trim($_POST['username'] ?? '');
+    $email = trim($_POST['email'] ?? '');
     $password = trim($_POST['password'] ?? '');
 
-    if (attemptLogin($user, $password)) {
+    // 1. Obtenemos el resultado (que es un string)
+    $loginResult = attemptLogin($email, $password);
+
+    // 2. Si es éxito, redirigimos
+    if ($loginResult === 'SUCCESS') {
         header('Location: index.php');
         exit;
+    } 
+    
+    // 3. Si no, asignamos un mensaje de error detallado
+    switch ($loginResult) {
+        case 'NOT_FOUND':
+            $error = 'El email no está registrado.';
+            break;
+        case 'WRONG_PASS':
+            $error = 'La contraseña es incorrecta.';
+            break;
+        case 'NO_PERMISSIONS':
+            $error = 'Este usuario existe, pero no tiene permisos de administrador.';
+            break;
+        case 'DB_ERROR':
+            $error = 'Error de base de datos. Contacte al soporte.';
+            break;
+        default:
+            $error = 'Error desconocido.';
     }
-    $error = 'Credenciales incorrectas.';
+
 } elseif (isLoggedIn()) {
     header('Location: index.php');
     exit;
@@ -46,11 +70,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         <?php endif; ?>
         <form method="post" autocomplete="off">
             <div class="form-field">
-                <label for="username">Usuario</label>
-                <input id="username" name="username" type="text" required>
+                <label for="email">Email:</label>
+                <input id="email" name="email" type="email" required>
             </div>
             <div class="form-field">
-                <label for="password">Contraseña</label>
+                <label for="password">Contraseña:</label>
                 <input id="password" name="password" type="password" required>
             </div>
             <button class="primary" type="submit">Entrar</button>

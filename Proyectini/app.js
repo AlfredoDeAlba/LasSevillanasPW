@@ -4,7 +4,9 @@ document.addEventListener('DOMContentLoaded', () => {
     const THEME_STORAGE_KEY = 'dulces-theme-preference';
 
     function updateThemeToggle(theme) {
-        if (!themeToggle) return;
+        if (!themeToggle) {
+            return;
+        }
         const sunIcon = themeToggle.querySelector('.icon-sun');
         const moonIcon = themeToggle.querySelector('.icon-moon');
         const label = themeToggle.querySelector('.label');
@@ -18,7 +20,7 @@ document.addEventListener('DOMContentLoaded', () => {
             label.textContent = isDark ? 'Modo oscuro' : 'Modo claro';
         }
 
-        themeToggle.setAttribute('aria-pressed', String(isDark));   
+        themeToggle.setAttribute('aria-pressed', String(isDark));
     }
 
     function applyTheme(theme) {
@@ -41,38 +43,27 @@ document.addEventListener('DOMContentLoaded', () => {
                 return stored;
             }
         } catch (error) {
-            // Se ignora la preferencia almacenada si falla el acceso.
+            // Ignoramos errores de acceso a almacenamiento.
         }
         const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
         return prefersDark ? 'dark' : 'light';
     }
 
     function setupSmoothScroll() {
-        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
-            anchor.addEventListener('click', function (e){
-                e.preventDefault();
-                const targetId = this.getAttribute('href');
+        document.querySelectorAll('a[href^="#"]').forEach((anchor) => {
+            anchor.addEventListener('click', (event) => {
+                const targetId = anchor.getAttribute('href');
+                if (!targetId || targetId === '#') {
+                    return;
+                }
                 const targetElement = document.querySelector(targetId);
                 if (targetElement) {
-                    targetElement.scrollIntoVIew({ behavior: 'smooth' });
+                    event.preventDefault();
+                    targetElement.scrollIntoView({ behavior: 'smooth' });
                 }
             });
         });
     }
-    /*
-    function setupSmoothScroll() {
-        const scrollTriggers = document.querySelectorAll('[data-scroll]');
-        scrollTriggers.forEach((trigger) => {
-        trigger.addEventListener('click', (event) => {
-            const targetSelector = trigger.getAttribute('data-scroll');
-            const target = document.querySelector(targetSelector);
-            if (!target) return;
-            event.preventDefault();
-            target.scrollIntoView({ behavior: 'smooth' });
-            });
-        });
-    }
-    */
 
     const initialTheme = loadThemePreference();
     applyTheme(initialTheme);
@@ -83,4 +74,38 @@ document.addEventListener('DOMContentLoaded', () => {
         applyTheme(nextTheme);
         persistTheme(nextTheme);
     });
-})
+
+    const addToCartButton = document.getElementById('add-to-cart-btn');
+    const cartStatus = document.getElementById('cart-feedback');
+    const currentProduct = window.__CURRENT_PRODUCT__;
+
+    if (addToCartButton && currentProduct) {
+        addToCartButton.addEventListener('click', () => {
+            const cartRef = window.Cart;
+            if (!cartRef || typeof cartRef.addItem !== 'function') {
+                if (cartStatus) {
+                    cartStatus.hidden = false;
+                    cartStatus.textContent = 'No se pudo acceder al carrito.';
+                    cartStatus.dataset.state = 'error';
+                }
+                return;
+            }
+
+            try {
+                cartRef.addItem(currentProduct, 1);
+                if (cartStatus) {
+                    cartStatus.hidden = false;
+                    cartStatus.textContent = 'Producto agregado al carrito.';
+                    cartStatus.dataset.state = 'success';
+                }
+            } catch (error) {
+                console.error(error);
+                if (cartStatus) {
+                    cartStatus.hidden = false;
+                    cartStatus.textContent = 'No se pudo agregar el producto.';
+                    cartStatus.dataset.state = 'error';
+                }
+            }
+        });
+    }
+});

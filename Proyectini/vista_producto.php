@@ -50,9 +50,14 @@ if (!$product) {
                 Disponible
             </p>
     
-            <a href="compra.php?id_producto=<?= htmlspecialchars($product['id']) ?>" class="primary button full-width">
+            <a href="compra.php?id_producto=<?= htmlspecialchars($product['id']) ?>" class="primary button full-width" id="buy-now-btn">
                 Comprar Ahora
             </a>
+
+            <button type="button" class="secondary button full-width" id="add-to-cart-btn" data-product-id="<?= htmlspecialchars($product['id']) ?>">
+                Agregar al carrito
+            </button>
+            <p id="cart-feedback" class="hint" hidden></p>
 
         <?php else: ?>
             <p class="stock-status unavailable">Agotado</p>
@@ -62,6 +67,9 @@ if (!$product) {
 
 </main>
 
-<script src="compra.js"></script>
+<script>
+    window.__CURRENT_PRODUCT__ = <?php echo json_encode($product, JSON_UNESCAPED_UNICODE); ?>;
+</script>
+<script src="compra.js" defer></script>
 
 <?php require_once __DIR__ . '/templates/footer.php'; ?>

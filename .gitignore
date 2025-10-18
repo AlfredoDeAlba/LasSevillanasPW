@@ -1,0 +1,6 @@
+# Ignorar la carpeta de dependencias de Composer
+/vendor/
+# Ignorar el archivo de log de correos simulados
+_sent_emails.log
+# Ignorar el script temporal para generar hashes
+#generate_hash.php
