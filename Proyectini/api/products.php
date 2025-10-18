@@ -62,7 +62,6 @@ function normalizeInput(array $input): array
     $name = trim((string) ($input['name'] ?? ''));
     $price = (float) ($input['price'] ?? 0);
     $description = trim((string) ($input['description'] ?? ''));
-    $date = (int) ($input['date'] ?? 0);
     $stock = trim((string) ($input['stock'] ?? ''));
     $id = $input['id'] ?? null;
 
@@ -79,8 +78,7 @@ function normalizeInput(array $input): array
         'name' => $name,
         'price' => $price,
         'description' => $description,
-        'stock' => $stock,
-        'date' => $date,
+        'stock' => $stock
     ];
 }
 

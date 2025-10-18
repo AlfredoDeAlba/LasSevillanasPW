@@ -91,70 +91,76 @@
         testimonialContainer.appendChild(fragment);
     }
 
-    function buildHeroCarousel() {
-        if (!heroCarousel || !carouselTrack) {
-            return;
-        }
+function buildHeroCarousel() {
+    if (!heroCarousel || !carouselTrack) {
+        return;
+    }
 
-        const featured = products
-            .filter((product) => product && product.name)
-            .map((product) => {
-                const rawImage = typeof product.image === 'string' ? product.image.trim() : '';
-                const image = rawImage !== '' ? rawImage : null;
-                return {
-                    id: product.id ?? '',
-                    name: product.name,
-                    price: product.price ?? 0,
-                    image,
-                };
-            })
-            .filter((product) => product.name)
-            .slice(0, 8);
+    const featured = products
+        .filter((product) => product && product.name)
+        .map((product) => {
+            const rawImage = typeof product.image === 'string' ? product.image.trim() : '';
+            // Construir la ruta completa de la imagen
+            let image = null;
+            if (rawImage !== '') {
+                image = rawImage.startsWith('http')
+                    ? rawImage
+                    : `uploads/${rawImage}`;
+            }
+            return {
+                id: product.id ?? '',
+                name: product.name,
+                price: product.price ?? 0,
+                image,
+            };
+        })
+        .filter((product) => product.name)
+        .slice(0, 8);
 
-        const slides = featured.length > 0 ? featured : fallbackSlides;
+    const slides = featured.length > 0 ? featured : fallbackSlides;
 
-        slides.forEach((product) => {
-            const slide = document.createElement('li');
-            slide.className = 'carousel-slide';
-            slide.dataset.id = product.id ?? '';
+    slides.forEach((product) => {
+        const slide = document.createElement('li');
+        slide.className = 'carousel-slide';
+        slide.dataset.id = product.id ?? '';
 
-            const image = document.createElement('img');
-            const imageSrc = product.image && product.image !== ''
-                ? product.image
-                : fallbackSlides[Math.floor(Math.random() * fallbackSlides.length)].image;
-            image.src = imageSrc;
-            image.alt = product.name;
-            image.loading = 'lazy';
+        const image = document.createElement('img');
+        const imageSrc = product.image && product.image !== ''
+            ? product.image
+            : fallbackSlides[Math.floor(Math.random() * fallbackSlides.length)].image;
+        image.src = imageSrc;
+        image.alt = product.name;
+        image.loading = 'lazy';
 
-            const caption = document.createElement('div');
-            caption.className = 'carousel-caption';
+        const caption = document.createElement('div');
+        caption.className = 'carousel-caption';
 
-            const title = document.createElement('h3');
-            title.textContent = product.name;
+        const title = document.createElement('h3');
+        title.textContent = product.name;
 
-            const price = document.createElement('span');
-            price.className = 'carousel-price';
-            price.textContent = formatCurrency(product.price);
+        const price = document.createElement('span');
+        price.className = 'carousel-price';
+        price.textContent = formatCurrency(product.price);
 
-            const button = document.createElement('button');
-            button.type = 'button';
-            button.className = 'secondary';
-            button.textContent = featured.length > 0 ? 'Ver detalle' : 'Ir al catalogo';
-            button.addEventListener('click', () => {
-                const targetUrl = product.id
-                    ? `vista_producto.php?id_producto=${encodeURIComponent(product.id)}`
-                    : 'catalogo.php';
-                window.location.href = targetUrl;
-            });
-
-            caption.append(title, price, button);
-            slide.append(image, caption);
-            carouselTrack.appendChild(slide);
+        const button = document.createElement('button');
+        button.type = 'button';
+        button.className = 'secondary';
+        button.textContent = featured.length > 0 ? 'Ver detalle' : 'Ir al catalogo';
+        button.addEventListener('click', () => {
+            const targetUrl = product.id
+                ? `vista_producto.php?id_producto=${encodeURIComponent(product.id)}`
+                : 'catalogo.php';
+            window.location.href = targetUrl;
         });
 
-        updateCarouselUI();
-        startCarouselTimer();
-    }
+        caption.append(title, price, button);
+        slide.append(image, caption);
+        carouselTrack.appendChild(slide);
+    });
+
+    updateCarouselUI();
+    startCarouselTimer();
+}
 
     function updateCarouselUI() {
         if (!carouselTrack) {

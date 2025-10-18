@@ -34,12 +34,15 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if (product.image) {
             const figure = document.createElement('figure');
-            const image = document.createElement('img');
-            image.src = product.image;
-            image.alt = product.name;
-            image.loading = 'lazy';
-            figure.appendChild(image);
-            card.appendChild(figure);
+                const image = document.createElement('img');
+                const imagePath = product.image.startsWith('http')
+                    ? product.image
+                    : `/LasSevillanas/Proyectini/uploads/${product.image}`;
+                image.src = imagePath;
+                image.alt = product.name;
+                image.loading = 'lazy';
+                figure.appendChild(image);
+                card.appendChild(figure);;
         }
 
         const header = document.createElement('header');
