@@ -6,11 +6,26 @@
                 <p class="eyebrow">Sabor artesanal</p>
                 <h1>El sabor de la tradici&oacute;n mexicana</h1>
                 <p class="lead">Dulces de leche elaborados con recetas familiares y los mejores ingredientes de nuestra tierra.</p>
-                <button class="primary" type="button" onclick="location.href='catalogo.php'">Conoce nuestros productos</button>
+                <div class="hero-actions">
+                    <button class="primary" type="button" onclick="location.href='catalogo.php'">Conoce nuestros productos</button>
+                    <span class="hero-subheadline">Descubre nuestros dulces artesanales.</span>
+                </div>
             </div>
-            <figure class="hero-figure">
-                <img src="data/photo/logo.png" alt="Dulces de leche artesanales" loading="lazy">
-            </figure>
+            <div class="hero-showcase">
+                <div class="hero-carousel" aria-label="Productos destacados">
+                    <button class="carousel-control prev" type="button" aria-label="Producto anterior">
+                        <span aria-hidden="true">&#10094;</span>
+                    </button>
+                    <div class="carousel-window">
+                        <ul class="carousel-track"></ul>
+                    </div>
+                    <button class="carousel-control next" type="button" aria-label="Producto siguiente">
+                        <span aria-hidden="true">&#10095;</span>
+                    </button>
+                </div>
+                <div class="carousel-indicator" aria-hidden="true"></div>
+                <p class="carousel-status" data-carousel-status role="status" aria-live="polite"></p>
+            </div>
         </section>
 
         <section id="valores" class="section values">
@@ -98,6 +113,7 @@
             </div>
         </section>
 
+        <script src="./users/user.js"></script>
         <script src="script.js"></script>
     </main>
 

@@ -6,7 +6,7 @@ require_once __DIR__ . '/../lib/storage.php';
 use function App\Lib\requireAuth;
 use function App\Lib\readProducts;
 
-requireAuth();
+//requireAuth();
 $products = readProducts();
 ?><!DOCTYPE html>
 <html lang="es">

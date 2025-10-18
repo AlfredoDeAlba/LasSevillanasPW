@@ -1,97 +1,91 @@
 <?php
-
 namespace App\Lib;
+use PDO;
+require_once __DIR__ . '/db.php';
 
-const DATA_DIR = __DIR__ . '/../data';
-const PRODUCTS_FILE = DATA_DIR . '/products.json';
-
-function ensureDataDir(): void
-{
-    if (!is_dir(DATA_DIR)) {
-        mkdir(DATA_DIR, 0775, true);
-    }
+// Mapea una fila de la tabla `producto` al formato usado en el frontend/API
+function mapProductRow(array $row) : array {
+    return [
+        'id' => isset($row['id_producto']) ? (string) $row['id_producto'] : null,
+        'name' => (string) ($row['nombre'] ?? ''),
+        'price' => isset($row['precio']) ? (float) $row['precio'] : 0.0,
+        'description' => (string) ($row['descripcion'] ?? ''),
+        'image' => $row['foto'] ?? null,
+        'stock' => isset($row['stock']) ? (int) $row['stock'] : 0,
+        'date' => isset($row['fecha_agregado']) && $row['fecha_agregado'] !== null
+            ? strtotime((string) $row['fecha_agregado'])
+            : null,
+    ];
 }
 
-function readProducts(): array
-{
-    ensureDataDir();
-    if (!file_exists(PRODUCTS_FILE)) {
-        file_put_contents(PRODUCTS_FILE, '[]');
-        return [];
-    }
-
-    $raw = file_get_contents(PRODUCTS_FILE);
-    if ($raw === false || $raw === '') {
-        return [];
-    }
-
-    $data = json_decode($raw, true);
-    return is_array($data) ? $data : [];
+function readProducts() : array {
+    $sql = 'SELECT id_producto, nombre, descripcion, stock, precio, foto, fecha_agregado FROM producto ORDER BY id_producto DESC';
+    $stmt = getPDO()->query($sql);
+    $rows = $stmt->fetchAll(PDO::FETCH_ASSOC) ?: [];
+    return array_map(static fn($r) => mapProductRow($r), $rows);
 }
 
-function writeProducts(array $products): void
-{
-    ensureDataDir();
-    $payload = json_encode($products, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE);
-    if ($payload === false) {
-        throw new \RuntimeException('No se pudo codificar el JSON de productos.');
-    }
-
-    $result = file_put_contents(PRODUCTS_FILE, $payload, LOCK_EX);
-    if ($result === false) {
-        throw new \RuntimeException('No se pudo guardar el archivo de productos.');
-    }
+function findProduct(string $id) : ?array {
+    $sql = 'SELECT id_producto, nombre, descripcion, stock, precio, foto, fecha_agregado FROM producto WHERE id_producto = :id LIMIT 1';
+    $stmt = getPDO()->prepare($sql);
+    $stmt->execute([':id' => $id]);
+    $row = $stmt->fetch(PDO::FETCH_ASSOC);
+    return $row ? mapProductRow($row) : null;
 }
 
-function findProduct(string $id): ?array
-{
-    foreach (readProducts() as $product) {
-        if (($product['id'] ?? '') === $id) {
-            return $product;
-        }
-    }
-
-    return null;
-}
-
-function generateId(string $name): string
-{
-    $slug = strtolower(trim($name));
-    $slug = preg_replace('/[^a-z0-9-]+/i', '-', $slug) ?? '';
-    $slug = trim($slug, '-');
-    return $slug !== '' ? $slug : 'producto-' . uniqid();
-}
-
-function upsertProduct(array $payload): array
-{
-    $products = readProducts();
+function upsertProduct(array $payload) : array {
     $id = $payload['id'] ?? null;
+    $name = (string) ($payload['name'] ?? '');
+    $price = (float) ($payload['price'] ?? 0);
+    $description = (string) ($payload['description'] ?? '');
+    $stock = (int) ($payload['stock'] ?? 0);
+    $image = $payload['image'] ?? null;
 
-    if ($id === null || $id === '') {
-        $payload['id'] = generateId($payload['name'] ?? '');
-        $products[] = $payload;
-    } else {
-        $updated = false;
-        foreach ($products as &$product) {
-            if (($product['id'] ?? '') === $id) {
-                $product = array_merge($product, $payload);
-                $updated = true;
-                break;
-            }
-        }
-
-        if (!$updated) {
-            $products[] = $payload;
-        }
+    if ($id === null || $id === '' ) {
+        $sql = 'INSERT INTO producto (nombre, descripcion, stock, precio, foto) VALUES (:n, :d, :s, :p, :f)';
+        $stmt = getPDO()->prepare($sql);
+        $stmt->execute([
+            ':n' => $name,
+            ':d' => $description,
+            ':s' => $stock,
+            ':p' => $price,
+            ':f' => $image,
+        ]);
+        $newId = (string) getPDO()->lastInsertId();
+        return findProduct($newId) ?? [
+            'id' => (int) $newId,
+            'name' => $name,
+            'price' => $price,
+            'description' => $description,
+            'image' => $image,
+            'stock' => $stock,
+            'date' => null,
+        ];
     }
 
-    writeProducts($products);
-    return $payload;
+    $sql = 'UPDATE producto SET nombre = :n, descripcion = :d, stock = :s, precio = :p, foto = :f WHERE id_producto = :id';
+    $stmt = getPDO()->prepare($sql);
+    $stmt->execute([
+        ':n' => $name,
+        ':d' => $description,
+        ':s' => $stock,
+        ':p' => $price,
+        ':f' => $image,
+        ':id' => $id,
+    ]);
+    return findProduct((string) $id) ?? [
+        'id' => (int) $id,
+        'name' => $name,
+        'price' => $price,
+        'description' => $description,
+        'image' => $image,
+        'stock' => $stock,
+        'date' => null,
+    ];
 }
 
 function deleteProduct(string $id): void
 {
-    $products = readProducts();
-    $filtered = array_values(array_filter($products, static fn ($product) => ($product['id'] ?? '') !== $id));
-    writeProducts($filtered);
+    $stmt = getPDO()->prepare('DELETE FROM producto WHERE id_producto = :id');
+    $stmt->execute([':id' => $id]);
 }

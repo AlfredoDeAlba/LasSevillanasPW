@@ -1,8 +1,14 @@
 <?php
+namespace App\Lib;
 // Usamos una ruta absoluta para asegurar que siempre encuentre el archivo
 require_once __DIR__ . '/../lib/storage.php';
+require_once __DIR__ . '/../lib/auth_usr.php';
 
 use function App\Lib\readProducts;
+use function App\Lib\startSecureSession;
+use function App\Lib\isLoggedIn;
+
+startSecureSession();
 
 // Leemos los productos para que estén disponibles en cualquier página que incluya este header
 $products = readProducts();
@@ -17,7 +23,7 @@ $products = readProducts();
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="styles.css" />
-</head>
+    <script src="auth_modal.js" defer></script> </head>
 <body data-theme="light">
     <header class="top-bar">
         <div class="brand">
@@ -40,14 +46,44 @@ $products = readProducts();
         </button>
         <nav class="main-nav" aria-label="Principal">
             <ul>
-                <li><a href="index.php#inicio">Inicio</a></li>
-                <li><a href="catalogo.php">Cat&aacute;logo</a></li>
-                <li><a href="historia.php">Historia</a></li>
-                <li><a href="index.php#valores">Valores</a></li>
-                <li><a href="index.php#contacto">Contacto</a></li>
-                <li><a href="terminos.php">T&eacute;rminos y Condiciones</a></li>
+                <li><a href="/LasSevillanas/Proyectini/index.php">Inicio</a></li>
+                <li><a href="/LasSevillanas/Proyectini/catalogo.php">Cat&aacute;logo</a></li>
+                <li><a href="/LasSevillanas/Proyectini/historia.php">Historia</a></li>
+                <li><a href="/LasSevillanas/Proyectini/index.php#valores">Valores</a></li>
+                <li><a href="/LasSevillanas/Proyectini/index.php#contacto">Contacto</a></li>
+                <li><a href="/LasSevillanas/Proyectini/terminos.php">T&eacute;rminos y Condiciones</a></li>
             </ul>
         </nav>
+        
+        <div class="header-actions">
+            
+            <div class="user-session">
+                <?php if (isLoggedIn()): ?>
+                    <a href="/LasSevillanas/Proyectini/users/account.php" class="user-account-link" aria-label="Mi cuenta">
+                        <svg fill="currentColor" viewBox="0 0 24 24" width="28" height="28" aria-hidden="true">
+                            <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
+                        </svg>
+                    </a>
+                <?php else: ?>
+                    <button type="button" id="login-user-btn">Iniciar Sesión</button>
+                    <button type="button" id="register-user-btn" class="primary">Registrarse</button>
+                <?php endif; ?>
+            </div>
+
+            <div class="cart-wrapper">
+                <button class="cart-toggle" type="button" aria-controls="cart-dropdown" aria-expanded="false">
+                    <svg viewBox="0 0 24 24" aria-hidden="true">
+                        <path d="M19 7h-3V6a4 4 0 10-8 0v1H5a1 1 0 00-1 1v11a3 3 0 003 3h10a3 3 0 003-3V8a1 1 0 00-1-1Zm-9-1a2 2 0 114 0v1H10V6ZM6 9h12v9a1 1 0 01-1 1H7a1 1 0 01-1-1V9Z" />
+                    </svg>
+                    <span>Carrito</span>
+                    <span class="cart-count">0</span>
+                </button>
+                <div class="cart-dropdown" id="cart-dropdown" hidden>
+                    </div>
+            </div>
+
+        </div>
+
         <div class="social-links" aria-label="Redes sociales">
             <a href="https://www.facebook.com" aria-label="Facebook">
                 <svg viewBox="0 0 24 24" role="img" aria-hidden="true">
