@@ -225,6 +225,60 @@ function buildHeroCarousel() {
 
     renderTestimonials();
     buildHeroCarousel();
+
+    const contactForm = document.getElementById('contact-form');
+    const contactSubmitBtn = document.getElementById('contact-submit-btn');
+    const contactFeedback = document.getElementById('contact-feedback');
+
+    if (contactForm && contactSubmitBtn && contactFeedback) {
+        
+        contactForm.addEventListener('submit', async (e) => {
+            e.preventDefault(); // Prevenir el envío normal del formulario
+
+            // 1. Mostrar estado de "cargando"
+            contactSubmitBtn.disabled = true;
+            contactSubmitBtn.textContent = 'Enviando...';
+            contactFeedback.textContent = '';
+            
+            // 2. Recolectar los datos del formulario
+            const formData = new FormData(contactForm);
+            const data = Object.fromEntries(formData.entries());
+
+            try {
+                // 3. Enviar los datos a la API
+                const response = await fetch('api/contact.php', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json'
+                    },
+                    body: JSON.stringify(data)
+                });
+
+                const result = await response.json();
+
+                if (!response.ok) {
+                    // Si el servidor devolvió un error (4xx, 5xx)
+                    throw new Error(result.error || 'Ocurrió un error.');
+                }
+
+                // 4. Mostrar mensaje de éxito
+                contactFeedback.textContent = result.message || '¡Mensaje enviado!';
+                contactFeedback.style.color = 'green'; // O usa 'var(--color-primary)'
+                contactForm.reset(); // Limpiar el formulario
+
+            } catch (error) {
+                // 5. Mostrar mensaje de error
+                contactFeedback.textContent = error.message;
+                contactFeedback.style.color = 'var(--color-error)';
+            
+            } finally {
+                // 6. Restaurar el botón
+                contactSubmitBtn.disabled = false;
+                contactSubmitBtn.textContent = 'Enviar mensaje';
+            }
+        });
+    }
 });
 
 

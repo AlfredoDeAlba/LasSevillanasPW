@@ -5,3 +5,4 @@
 _sent_emails.log
 # Ignorar el script temporal para generar hashes
 #generate_hash.php
+composer.lock

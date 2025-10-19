@@ -95,7 +95,8 @@
                     <h3>Correo</h3>
                     <p><a href="mailto:LaSevillanas@gmail.com">LaSevillanas@gmail.com</a></p>
                 </div>
-                <form class="contact-form" aria-label="Formulario de contacto">
+
+                <form class="contact-form" id="contact-form" aria-label="Formulario de contacto" method="post">
                     <div class="form-field">
                         <label for="nombre">Nombre</label>
                         <input id="nombre" name="nombre" type="text" placeholder="Tu nombre" required />
@@ -108,7 +109,10 @@
                         <label for="mensaje">Mensaje</label>
                         <textarea id="mensaje" name="mensaje" rows="4" placeholder="&iquest;C&oacute;mo podemos ayudarte?" required></textarea>
                     </div>
-                    <button class="primary" type="submit">Enviar mensaje</button>
+            
+                    <button class="primary" type="submit" id="contact-submit-btn">Enviar mensaje</button>
+
+                    <div id="contact-feedback" style="margin-top: 15px; text-align: center; font-weight: 500;"></div>
                 </form>
             </div>
         </section>

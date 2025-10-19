@@ -1,4 +1,5 @@
 // Este código debería estar en un archivo JS cargado en las páginas principales
+// Este código debería estar en un archivo JS cargado en las páginas principales
 document.addEventListener('DOMContentLoaded', function() {
     const loginBtn = document.getElementById('login-user-btn');
     const registerBtn = document.getElementById('register-user-btn');
