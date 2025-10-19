@@ -1,6 +1,7 @@
 <?php
 namespace App\Lib;
 // Usamos una ruta absoluta para asegurar que siempre encuentre el archivo
+require_once __DIR__ . '/../lib/config.php';
 require_once __DIR__ . '/../lib/storage.php';
 require_once __DIR__ . '/../lib/auth_usr.php';
 
@@ -24,8 +25,16 @@ $products = readProducts();
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="styles.css" />
 
+    <script src="https://www.google.com/recaptcha/api.js?render=<?php echo htmlspecialchars($_ENV['RECAPTCHA_SITE_KEY']); ?>"></script>
     <script src="https://js.stripe.com/v3/"></script>
     <script src="cart.js" defer></script>
+
+    <?php
+        // Inyectamos los productos que ya cargamos en PHP al 'window' de JavaScript
+        echo "<script>";
+        echo "window.__INITIAL_PRODUCTS__ = " . json_encode($products) . ";";
+        echo "</script>";
+    ?>
     
 </head>
 <body data-theme="light">

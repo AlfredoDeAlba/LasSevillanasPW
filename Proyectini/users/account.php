@@ -1,13 +1,15 @@
 <?php
 declare(strict_types=1);
+require_once __DIR__ . '/../lib/config.php'; // Cargar config primero
 require_once __DIR__ . '/../lib/auth_usr.php';
-// ... más includes y lógica para obtener y actualizar datos del usuario
 
 use function App\Lib\isLoggedIn;
 use function App\Lib\startSecureSession;
 use function App\Lib\getUserById;
 use function App\Lib\updateUserDetails;
 use function App\Lib\changeUserPassword;
+use function App\Lib\deleteUserAccount;
+use function App\Lib\logout;
 
 startSecureSession();
 
@@ -19,10 +21,12 @@ if (!isLoggedIn()) {
 
 $detailMessage = null;
 $passwordMessage = null;
+$deleteMessage = null;
 $detailsError = false;
 $passwordError = false;
+$deleteError = false;
 
-$user = getUserById($_SESSION['user_id']);
+$user = getUserById($_SESSION['user_id']); //carga la versión simple
 if(!$user) {
     header('Location: logout.php');
     exit;
@@ -30,20 +34,27 @@ if(!$user) {
 
 if($_SERVER['REQUEST_METHOD'] === 'POST') {
     $action = $_POST['action'] ?? '';
+
+    // --- MANEJO DE RECTIFICACIÓN ---
     if($action === 'update_details') {
         $nombre = trim($_POST['nombre'] ?? '');
         $apellido = trim($_POST['apellido'] ?? '');
+        
         if(empty($nombre) || empty($apellido)) {
             $detailMessage = 'El nombre y apellido no pueden estar vacios.';
-            $detailError = true;
+            $detailsError = true;
+            
+        // --- LLAMADA A FUNCIÓN REVERTIDA (con 3 argumentos) ---
         } elseif(updateUserDetails($user['id_usuario'], $nombre, $apellido)) {
             $detailMessage = 'Datos actualizados con exito';
-            $user['nombre'] = $nombre;
-            $user['apellido'] = $apellido;
+            // Recargar los datos para que se vean reflejados
+            $user = getUserById($_SESSION['user_id']);
         } else{
-            $detailMessage = 'Error al actualizar los datpos.';
-            $detailError = true;
+            $detailMessage = 'Error al actualizar los datos.';
+            $detailsError = true;
         }
+    
+    // --- MANEJO DE CAMBIO DE CONTRASEÑA ---
     } elseif($action === 'change_password') {
         $old_passwd = $_POST['old_password'] ?? '';
         $new_passwd = $_POST['new_password'] ?? '';
@@ -64,6 +75,22 @@ if($_SERVER['REQUEST_METHOD'] === 'POST') {
             $passwordMessage = 'Error: La contraseña antigua es incorrecta o hubo un problema al actualizar.';
             $passwordError = true;
         }
+
+    // --- MANEJO DE CANCELACIÓN ---
+    } elseif ($action === 'delete_account') {
+        $password = $_POST['confirm_delete_password'] ?? '';
+
+        if(empty($password)) {
+            $deleteMessage = 'Debes ingresar tu contraseña para confirmar.';
+            $deleteError = true;
+        } elseif (deleteUserAccount($user['id_usuario'], $password)) {
+            logout();
+            header('Location: ../index.php?status=account_deleted');
+            exit;
+        } else {
+            $deleteMessage = 'Contraseña incorrecta. No se pudo eliminar la cuenta.';
+            $deleteError = true;
+        }
     }
 }
 
@@ -73,9 +100,21 @@ if($_SERVER['REQUEST_METHOD'] === 'POST') {
 <head>
     <title>Mi Cuenta</title>
     <link rel="stylesheet" href="../styles.css">
+    <style>
+        button.danger, .danger {
+            background-color: var(--color-error);
+            border-color: var(--color-error);
+            color: #fff;
+            font-weight: 600;
+        }
+        button.danger:hover {
+            background-color: #b02a2a;
+            border-color: #b02a2a;
+        }
+    </style>
 </head>
 <body data-theme="light">
-    <?php include __DIR__ . '/../templates/header.php'; // Incluir el header normal ?>
+    <?php include __DIR__ . '/../templates/header.php'; ?>
     <main class="section" style="max-width: 720px; margin-left: auto; margin-right: auto;">
         <div class="section-header">
             <h2>Mi Cuenta</h2>
@@ -106,7 +145,8 @@ if($_SERVER['REQUEST_METHOD'] === 'POST') {
                 <label for="email">Email (no se puede cambiar)</label>
                 <input id="email" name="email" type="email" value="<?php echo htmlspecialchars($user['email']); ?>" readonly disabled>
             </div>
-            <button typeT="submit" class="primary" style="justify-self: start;">Actualizar Datos</button>
+            
+            <button type="submit" class="primary" style="justify-self: start;">Actualizar Datos</button>
         </form>
 
         <hr class="divider">
@@ -138,8 +178,31 @@ if($_SERVER['REQUEST_METHOD'] === 'POST') {
             <button type="submit" class="primary" style="justify-self: start;">Cambiar Contraseña</button>
         </form>
 
+        <hr class="divider">
+
+        <h3>Zona de Peligro (Derecho de Cancelación)</h3>
+        <form method="POST" class="contact-form" style="max-width: none; background: var(--color-elevated); border: 1px solid var(--color-error); border-radius: var(--radius-base); padding: var(--space-md);">
+            <input type="hidden" name="action" value="delete_account">
+            
+            <?php if ($deleteMessage): ?>
+                <p class="cart-feedback" style="margin-top:0;" data-state="<?php echo $deleteError ? 'error' : 'success'; ?>">
+                    <?php echo htmlspecialchars($deleteMessage); ?>
+                </p>
+            <?php endif; ?>
+            
+            <p><strong>Eliminar mi cuenta permanentemente</strong></p>
+            <p style="color: var(--color-text-muted); margin-top: -10px;">Esta acción es irreversible. Se eliminarán todos tus datos personales. Para confirmar, ingresa tu contraseña.</p>
+            
+            <div class="form-field">
+                <label for="confirm_delete_password">Contraseña Actual</label>
+                <input id="confirm_delete_password" name="confirm_delete_password" type="password" required>
+            </div>
+            
+            <button type="submit" class="danger" style="justify-self: start;">Eliminar Mi Cuenta</button>
+        </form>
+
         <a href="logout.php" style="color: var(--color-error); margin-top: 40px; display: inline-block;">Cerrar Sesión</a>
     </main>
-    <?php include __DIR__ . '/../templates/footer.php'; // Incluir el footer normal ?>
+    <?php include __DIR__ . '/../templates/footer.php'; ?>
 </body>
 </html>

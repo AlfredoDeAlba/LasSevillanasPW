@@ -138,6 +138,6 @@ require_once __DIR__ . '/lib/config.php';
 <script>
     window.STRIPE_PUBLIC_KEY = "<?php echo htmlspecialchars($_ENV['STRIPE_PUBLIC_KEY']); ?>";
 </script>
-<script src="compra.js" defer></script>
+<script src="./js/compra.js" defer></script>
 
 <?php require_once __DIR__ . '/templates/footer.php'; ?>

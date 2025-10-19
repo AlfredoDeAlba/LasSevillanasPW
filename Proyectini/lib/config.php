@@ -14,7 +14,9 @@ $dotenv->load();
     define('DB_USER', $_ENV['DB_USER']);
     define('DB_PASS', $_ENV['DB_PASS']);
 
-    
+    define('RECAPTCHA_SITE_KEY', $_ENV['RECAPTCHA_SITE_KEY']);
+    define('RECAPTCHA_SECRET_KEY', $_ENV['RECAPTCHA_SECRET_KEY']);
+
     define('STRIPE_SECRET_KEY', $_ENV['STRIPE_SECRET_KEY']);
     define('STRIPE_PUBLIC_KEY', $_ENV['STRIPE_PUBLIC_KEY']);
     define('MAIL_HOST', $_ENV['MAIL_HOST']);

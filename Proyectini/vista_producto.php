@@ -81,6 +81,6 @@ if (!$product) {
     ], JSON_UNESCAPED_UNICODE); ?>;
 </script>
 
-<script src="vista_producto.js" defer></script>
+<script src="./js/vista_producto.js" defer></script>
 
 <?php require_once __DIR__ . '/templates/footer.php'; ?>

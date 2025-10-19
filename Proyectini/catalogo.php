@@ -19,7 +19,7 @@
             </div>
             <div class="product-list" data-view="grid" aria-live="polite"></div>
         </section>
-        <script src="catalogo.js" defer></script>
+        <script src="./js/catalogo.js" defer></script>
     </main>
 
 <?php require_once __DIR__ . '/templates/footer.php'; ?>

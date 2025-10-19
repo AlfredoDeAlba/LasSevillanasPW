@@ -118,7 +118,10 @@
         </section>
 
         <script src="./users/user.js"></script>
-        <script src="script.js"></script>
+        <script>
+            window.RECAPTCHA_SITE_KEY = "<?php echo htmlspecialchars($_ENV['RECAPTCHA_SITE_KEY']); ?>";
+        </script>
+        <script src="./js/script.js"></script>
     </main>
 
 <?php require_once __DIR__ . '/templates/footer.php'; ?>

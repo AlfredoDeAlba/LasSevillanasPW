@@ -172,7 +172,7 @@ function getUserById(int $userId): ?array
 }
 
 /**
- * Actualiza los detalles (nombre, apellido) de un usuario.
+ * Actualiza los detalles (nombre, apellido) y preferencias de un usuario.
  */
 function updateUserDetails(int $userId, string $nombre, string $apellido): bool
 {
@@ -208,6 +208,36 @@ function changeUserPassword(int $userId, string $oldPassword, string $newPasswor
         $newPasswordHash = password_hash($newPassword, PASSWORD_ARGON2ID);
         $stmt = $pdo->prepare("UPDATE usuario SET password = ? WHERE id_usuario = ?");
         return $stmt->execute([$newPasswordHash, $userId]);
+
+    } catch (\PDOException $e) {
+        error_log($e->getMessage());
+        return false;
+    }
+}
+    /**
+    *  Elimina la cuenta de un usuario tras verificar su contraseña.
+    * (Cumple con el derecho de Cancelación)
+    */
+    function deleteUserAccount(int $userId, string $password): bool
+{
+    try {
+        $pdo = getPDO();
+        
+        // 1. Obtener el hash actual para verificar la contraseña
+        $stmt = $pdo->prepare("SELECT password FROM usuario WHERE id_usuario = ?");
+        $stmt->execute([$userId]);
+        $user = $stmt->fetch();
+
+        if (!$user || !password_verify($password, $user['password'])) {
+            // La contraseña no coincide
+            return false;
+        }
+
+        // 2. Si coincide, proceder a eliminar el usuario
+        // La BDD está configurada con 'ON DELETE SET NULL' para los pedidos,
+        // así que los registros de pedidos se conservarán como anónimos.
+        $stmt = $pdo->prepare("DELETE FROM usuario WHERE id_usuario = ?");
+        return $stmt->execute([$userId]);
 
     } catch (\PDOException $e) {
         error_log($e->getMessage());

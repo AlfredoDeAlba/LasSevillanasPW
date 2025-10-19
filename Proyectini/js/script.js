@@ -232,53 +232,68 @@ function buildHeroCarousel() {
 
     if (contactForm && contactSubmitBtn && contactFeedback) {
         
-        contactForm.addEventListener('submit', async (e) => {
-            e.preventDefault(); // Prevenir el envío normal del formulario
+        contactForm.addEventListener('submit', (e) => {
+            e.preventDefault(); // Prevenir el envío normal
 
             // 1. Mostrar estado de "cargando"
             contactSubmitBtn.disabled = true;
             contactSubmitBtn.textContent = 'Enviando...';
             contactFeedback.textContent = '';
-            
-            // 2. Recolectar los datos del formulario
-            const formData = new FormData(contactForm);
-            const data = Object.fromEntries(formData.entries());
 
-            try {
-                // 3. Enviar los datos a la API
-                const response = await fetch('api/contact.php', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Accept': 'application/json'
-                    },
-                    body: JSON.stringify(data)
-                });
-
-                const result = await response.json();
-
-                if (!response.ok) {
-                    // Si el servidor devolvió un error (4xx, 5xx)
-                    throw new Error(result.error || 'Ocurrió un error.');
-                }
-
-                // 4. Mostrar mensaje de éxito
-                contactFeedback.textContent = result.message || '¡Mensaje enviado!';
-                contactFeedback.style.color = 'green'; // O usa 'var(--color-primary)'
-                contactForm.reset(); // Limpiar el formulario
-
-            } catch (error) {
-                // 5. Mostrar mensaje de error
-                contactFeedback.textContent = error.message;
+            // 2. Verificar que reCAPTCHA esté cargado
+            if (typeof grecaptcha === 'undefined' || !window.RECAPTCHA_SITE_KEY) {
+                contactFeedback.textContent = 'Error: reCAPTCHA no se cargó.';
                 contactFeedback.style.color = 'var(--color-error)';
-            
-            } finally {
-                // 6. Restaurar el botón
                 contactSubmitBtn.disabled = false;
                 contactSubmitBtn.textContent = 'Enviar mensaje';
+                return;
             }
+            
+            // 3. ejecutar reCaptcha
+            grecaptcha.ready(function() {
+                grecaptcha.execute(window.RECAPTCHA_SITE_KEY, {action: 'contact'}).then(async function(token) {
+                    
+                    // 4. Recolectar datos del formulario
+                    const formData = new FormData(contactForm);
+                    const data = Object.fromEntries(formData.entries());
+                    
+                    // 5. Añadir el token de reCAPTCHA
+                    data.recaptcha_token = token;
+                    
+                    try {
+                        // 6. Enviar los datos a la API (el fetch va A DENTRO)
+                        const response = await fetch('api/contact.php', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'Accept': 'application/json'
+                            },
+                            body: JSON.stringify(data)
+                        });
+                        
+                        const result = await response.json();
+
+                        if (!response.ok) {
+                            throw new Error(result.error || 'Ocurrió un error.');
+                        }
+                        
+                        // 7. Éxito
+                        contactFeedback.textContent = result.message || '¡Mensaje enviado!';
+                        contactFeedback.style.color = 'green';
+                        contactForm.reset();
+
+                    } catch (error) {
+                        // 8. Error
+                        contactFeedback.textContent = error.message;
+                        contactFeedback.style.color = 'var(--color-error)';
+                    
+                    } finally {
+                        // 9. Restaurar botón
+                        contactSubmitBtn.disabled = false;
+                        contactSubmitBtn.textContent = 'Enviar mensaje';
+                    }
+                });
+            });
         });
     }
 });
-
-
