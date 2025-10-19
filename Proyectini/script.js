@@ -105,7 +105,7 @@ function buildHeroCarousel() {
             if (rawImage !== '') {
                 image = rawImage.startsWith('http')
                     ? rawImage
-                    : `uploads/${rawImage}`;
+                    : `${rawImage}`;
             }
             return {
                 id: product.id ?? '',

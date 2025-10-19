@@ -15,7 +15,7 @@ if (!$product) {
 <main class="product-page-container section">
 
     <div class="product-gallery">
-        <img src="uploads/<?= htmlspecialchars($product['image'] ?? 'placeholder.jpg') ?>" alt="Vista principal de <?= htmlspecialchars($product['name']) ?>">
+        <img src="<?= htmlspecialchars($product['image'] ?? 'placeholder.jpg') ?>" alt="Vista principal de <?= htmlspecialchars($product['name']) ?>">
     </div>
 
     <div class="product-content">
