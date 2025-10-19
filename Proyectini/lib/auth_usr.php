@@ -14,27 +14,27 @@ require_once __DIR__ . '/../../vendor/autoload.php';
 
 
 //Funcion para el envio de correo
-function sendEmail(string $to, string $subject, string $body, ?string $attachmentData = null, ?string $attachmentName = null) : bool {    $mail = new PHPMailer(true);
+function sendEmail(string $to, string $subject, string $body, ?string $attachmentData = null, ?string $attachmentName = null) : bool {
+    $mail = new PHPMailer(true);
     try {
-        $mail->SMTPDebug = SMTP::DEBUG_OFF;
+        // $mail->SMTPDebug = SMTP::DEBUG_SERVER; // Apagado
+        $mail->SMTPDebug = SMTP::DEBUG_OFF; // <-- APAGADO
         $mail->isSMTP();
         $mail->Host = $_ENV['MAIL_HOST'] ?? 'smtp.gmail.com';
         $mail->SMTPAuth = true;
-        $mail->Username = $_ENV['MAIL_USERNAME'];
-        $mail->Password = $_ENV['MAIL_PASSWORD'];
+        $mail->Username = $_ENV['MAIL_USERNAME']; // Lee de .env
+        $mail->Password = $_ENV['MAIL_PASSWORD']; // Lee de .env
         $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS; 
         $mail->Port = (int)($_ENV['MAIL_PORT'] ?? 587);
 
-        $mail->setFrom($_ENV['MAIL_USERNAME'], $_ENV['MAIL_FROM_NAME'] ?? 'Las SevillanasNO');        
+        $mail->setFrom($_ENV['MAIL_USERNAME'], $_ENV['MAIL_FROM_NAME'] ?? 'Las Sevillanas');
         $mail->addAddress($to);
-        //$mail->addReplyTo('info@SevillanasNoOficial.mx', 'Informacion');
 
         $mail->isHTML(true);
         $mail->CharSet = 'UTF-8';
         $mail->Subject = $subject;
         $mail->Body = $body;
 
-        //se anade el PDF con un attachment
         if ($attachmentData && $attachmentName) {
             $mail->addStringAttachment($attachmentData, $attachmentName, 'base64', 'application/pdf');
         }
@@ -42,10 +42,14 @@ function sendEmail(string $to, string $subject, string $body, ?string $attachmen
         $mail->send();
         return true;
     } catch(Exception $e) {
-        //error_log("Error al enviar correo: {$mail->ErrorInfo}");
-        throw new \Exception("No se pudo enviar el correo de verificación. Error: {$mail->ErrorInfo}");
+        error_log("Error al enviar correo: {$mail->ErrorInfo}");
+        return false;
     }
 }
+
+// ===================================
+// FUNCIONES DE SESIÓN Y REGISTRO
+// ===================================
 
 function startSecureSession(): void {
     if (session_status() === PHP_SESSION_NONE) {
@@ -66,7 +70,6 @@ function startSecureSession(): void {
 }
 
 function registerUser(string $nombre, string $apellido, string $email, string $password) {
-    //$pdo = getPDO();
     $pdo = getPDO();
 
     $stmt = $pdo->prepare("SELECT id_usuario FROM usuario WHERE email = ?");
@@ -194,25 +197,16 @@ function changeUserPassword(int $userId, string $oldPassword, string $newPasswor
     try {
         $pdo = getPDO();
         
-        // 1. Obtener el hash actual
-        $stmt = $pdo->prepare("
-            SELECT password FROM usuario 
-            WHERE id_usuario = ?
-            ");
+        $stmt = $pdo->prepare("SELECT password FROM usuario WHERE id_usuario = ?");
         $stmt->execute([$userId]);
         $user = $stmt->fetch();
 
         if (!$user || !password_verify($oldPassword, $user['password'])) {
-            // La contraseña antigua no coincide
             return false;
         }
 
-        // 2. Si coincide, actualizar con el nuevo hash
         $newPasswordHash = password_hash($newPassword, PASSWORD_ARGON2ID);
-        $stmt = $pdo->prepare("
-            UPDATE usuario SET password = ? 
-            WHERE id_usuario = ?
-            ");
+        $stmt = $pdo->prepare("UPDATE usuario SET password = ? WHERE id_usuario = ?");
         return $stmt->execute([$newPasswordHash, $userId]);
 
     } catch (\PDOException $e) {
@@ -220,3 +214,92 @@ function changeUserPassword(int $userId, string $oldPassword, string $newPasswor
         return false;
     }
 }
+
+    /**
+    * Inicia el proceso de restablecimiento de contraseña.
+    * Genera un token y envía el correo al usuario.
+    */
+    function initiatePasswordReset(string $email) : bool {
+        try {
+            $pdo = getPDO();
+            $stmt = $pdo->prepare("SELECT id_usuario FROM usuario WHERE email = ? AND is_verified = TRUE");
+            $stmt->execute([$email]);
+            $user = $stmt->fetch();
+
+            if ($user) {
+                $token = bin2hex(random_bytes(32));
+                // El token expira en 1 hora
+                $expires = (new \DateTime())
+                    ->add(new \DateInterval('PT1H'))
+                    ->format('Y-m-d H:i:s');
+            
+                $stmt = $pdo->prepare("
+                    UPDATE usuario 
+                    SET reset_token = ?, reset_token_expires_at = ? 
+                    WHERE id_usuario = ?
+                ");
+                $stmt->execute([$token, $expires, $user['id_usuario']]);
+
+                // Construir el enlace
+                $resetLink = "http://{$_SERVER['HTTP_HOST']}/LasSevillanas/Proyectini/users/reset_password.php?token={$token}";
+                $emailBody = "<h1>Restablecer Contraseña</h1>";
+                $emailBody .= "<p>Hemos recibido una solicitud para restablecer tu contraseña. Si no fuiste tú, ignora este correo.</p>";
+                $emailBody .= "<p>Haz clic en el siguiente enlace para crear una nueva contraseña (expira en 1 hora):</p>";
+                $emailBody .= "<a href='{$resetLink}' style='padding: 10px 15px; background-color: #C60969; color: white; text-decoration: none; border-radius: 5px;'>Restablecer mi contraseña</a>";
+                $emailBody .= "<p>O copia y pega esta URL en tu navegador:<br>{$resetLink}</p>";
+
+                // Usar tu función de correo existente
+                return sendEmail($email, 'Restablece tu contraseña en Las Sevillanas', $emailBody);
+            }
+        
+            return true; 
+        
+        } catch (\Exception $e) {
+            error_log($e->getMessage());
+            return false;
+        }
+    }
+
+    /**
+    * Verifica si un token de restablecimiento es válido y no ha expirado.
+    */
+    function verifyResetToken(string $token) : ?int {
+        try {
+            $pdo = getPDO();
+            // Busca un token que coincida Y que no haya expirado
+            $stmt = $pdo->prepare("
+                SELECT id_usuario FROM usuario 
+                WHERE reset_token = ? AND reset_token_expires_at > NOW()
+            ");
+            $stmt->execute([$token]);
+            $user = $stmt->fetch();
+        
+            return $user ? (int)$user['id_usuario'] : null;
+
+        } catch (\PDOException $e) {
+            error_log($e->getMessage());
+            return null;
+        }
+    }
+
+    /**
+    * Establece la nueva contraseña para un usuario usando el ID y limpia el token.
+    */
+    function resetPasswordWithToken(int $userId, string $newPassword): bool {
+        try {
+            $pdo = getPDO();
+            $newPasswordHash = password_hash($newPassword, PASSWORD_ARGON2ID);
+        
+            // Actualiza la contraseña y anula el token para que no se reutilice
+            $stmt = $pdo->prepare("
+                UPDATE usuario 
+                SET password = ?, reset_token = NULL, reset_token_expires_at = NULL
+                WHERE id_usuario = ?
+            ");
+            return $stmt->execute([$newPasswordHash, $userId]);
+
+        } catch (\PDOException $e) {
+            error_log($e->getMessage());
+            return false;
+        }
+    }
