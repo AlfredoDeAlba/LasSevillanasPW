@@ -1233,6 +1233,60 @@ button.secondary svg {
     font-weight: 500;
 }
 
+/* ============================================ */
+/* Estilos para los filtros de categoria  */
+/* Contenedor para los filtros de categoría */
+
+/* Contenedor para los filtros de categoría */
+.category-filters {
+    display: flex;
+    align-items: center;
+    gap: var(--space-sm); /* Variable de espaciado */
+    flex-wrap: wrap; 
+    margin-bottom: var(--space-md); /* Variable de espaciado */
+    padding-bottom: var(--space-md); /* Variable de espaciado */
+    border-bottom: 1px solid var(--color-border); /* Variable de color */
+}
+
+/* Etiqueta "Categoría:" */
+.category-filters .control-label {
+    font-weight: 500;
+    font-size: 0.9rem;
+    color: var(--color-text-muted); /* Variable de color */
+}
+
+/* Contenedor para los botones */
+.toggle-group {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-xs); /* Variable de espaciado */
+}
+
+/* Botones de categoría individuales */
+.toggle-group button {
+    padding: 0.4rem 0.8rem;
+    border: 1px solid var(--color-border); /* Variable de color */
+    background-color: var(--color-elevated); /* Variable de color */
+    color: var(--color-text); /* Variable de color */
+    cursor: pointer;
+    border-radius: var(--radius-base); /* Variable de radio */
+    font-size: 0.9rem;
+    transition: var(--transition-base); /* Variable de transición */
+}
+
+.toggle-group button:hover {
+    background-color: var(--color-surface); /* Variable de color */
+    border-color: var(--color-text-muted); /* Variable de color */
+}
+
+/* Estilo para el botón activo (categoría seleccionada) */
+.toggle-group button.active {
+    background-color: var(--color-primary); /* Variable de color correcta */
+    color: #fff; /* El blanco está bien aquí */
+    border-color: var(--color-primary); /* Variable de color correcta */
+    font-weight: 600;
+}
+
 /* ajustes en movil           */
 @media (max-width: 900px) {
     .purchase-container {

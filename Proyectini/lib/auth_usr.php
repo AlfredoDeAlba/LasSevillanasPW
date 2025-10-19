@@ -14,19 +14,18 @@ require_once __DIR__ . '/../../vendor/autoload.php';
 
 
 //Funcion para el envio de correo
-function sendEmail(string $to, string $subject, string $body) : bool {
-    $mail = new PHPMailer(true);
+function sendEmail(string $to, string $subject, string $body, ?string $attachmentData = null, ?string $attachmentName = null) : bool {    $mail = new PHPMailer(true);
     try {
-        $mail->SMTPDebug = SMTP::DEBUG_SERVER;
+        $mail->SMTPDebug = SMTP::DEBUG_OFF;
         $mail->isSMTP();
-        $mail->Host = 'smtp.gmail.com';
+        $mail->Host = $_ENV['MAIL_HOST'] ?? 'smtp.gmail.com';
         $mail->SMTPAuth = true;
-        $mail->Username = 'aa5974076@gmail.com';
-        $mail->Password = 'nrjy inyg qkvs etrm';
+        $mail->Username = $_ENV['MAIL_USERNAME'];
+        $mail->Password = $_ENV['MAIL_PASSWORD'];
         $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS; 
-        $mail->Port = 587;
+        $mail->Port = (int)($_ENV['MAIL_PORT'] ?? 587);
 
-        $mail->setFrom('aa5974076@gmail.com.mx', 'Las Sevillanas No Oficial');
+        $mail->setFrom($_ENV['MAIL_USERNAME'], $_ENV['MAIL_FROM_NAME'] ?? 'Las SevillanasNO');        
         $mail->addAddress($to);
         //$mail->addReplyTo('info@SevillanasNoOficial.mx', 'Informacion');
 
@@ -34,6 +33,11 @@ function sendEmail(string $to, string $subject, string $body) : bool {
         $mail->CharSet = 'UTF-8';
         $mail->Subject = $subject;
         $mail->Body = $body;
+
+        //se anade el PDF con un attachment
+        if ($attachmentData && $attachmentName) {
+            $mail->addStringAttachment($attachmentData, $attachmentName, 'base64', 'application/pdf');
+        }
 
         $mail->send();
         return true;
