@@ -12,21 +12,21 @@ function mapProductRow(array $row) : array {
         'description' => (string) ($row['descripcion'] ?? ''),
         'image' => $row['foto'] ?? null,
         'stock' => isset($row['stock']) ? (int) $row['stock'] : 0,
-        'date' => isset($row['fecha_agregado']) && $row['fecha_agregado'] !== null
-            ? strtotime((string) $row['fecha_agregado'])
-            : null,
+        //'date' => isset($row['fecha_agregado']) && $row['fecha_agregado'] !== null
+        //    ? strtotime((string) $row['fecha_agregado'])
+        //    : null,
     ];
 }
 
 function readProducts() : array {
-    $sql = 'SELECT id_producto, nombre, descripcion, stock, precio, foto, fecha_agregado FROM producto ORDER BY id_producto DESC';
+    $sql = 'SELECT id_producto, nombre, descripcion, stock, precio, foto/*, fecha_agregado*/ FROM producto ORDER BY id_producto DESC';
     $stmt = getPDO()->query($sql);
     $rows = $stmt->fetchAll(PDO::FETCH_ASSOC) ?: [];
     return array_map(static fn($r) => mapProductRow($r), $rows);
 }
 
 function findProduct(string $id) : ?array {
-    $sql = 'SELECT id_producto, nombre, descripcion, stock, precio, foto, fecha_agregado FROM producto WHERE id_producto = :id LIMIT 1';
+    $sql = 'SELECT id_producto, nombre, descripcion, stock, precio, foto/*, fecha_agregado*/ FROM producto WHERE id_producto = :id LIMIT 1';
     $stmt = getPDO()->prepare($sql);
     $stmt->execute([':id' => $id]);
     $row = $stmt->fetch(PDO::FETCH_ASSOC);

@@ -9,7 +9,7 @@
                     <p>Hoy seguimos honrando esa tradici&oacute;n con ingredientes seleccionados y procesos responsables, creando momentos especiales en cada bocado.</p>
                 </div>
                 <figure>
-                    <img src="https://images.unsplash.com/photo-1514996937319-344454492b37?auto=format&fit=crop&w=900&q=80" alt="Maestro dulcero preparando dulces artesanales" loading="lazy">
+                    <img src="uploads/LasSevillanas.jpg" alt="Las Sevillanas">
                 </figure>
             </div>
         </section>
