@@ -35,7 +35,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (product.image) {
             const figure = document.createElement('figure');
             const image = document.createElement('img');
-            image.src = product.image;
+            image.src =  product.image;
             image.alt = product.name;
             image.loading = 'lazy';
             figure.appendChild(image);

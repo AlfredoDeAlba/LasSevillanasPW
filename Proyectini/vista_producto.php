@@ -24,7 +24,8 @@ if (!$product) {
         <p class="price-large">$<?= number_format($product['price'], 2) ?></p>
 
         <h3>Acerca de este artículo</h3>
-        <p><?= nl2br(htmlspecialchars($product['description'])) ?></p> <div class="product-specs">
+        <p><?= nl2br(htmlspecialchars($product['description'])) ?></p> 
+        <div class="product-specs">
             <h4>Especificaciones</h4>
             <ul>
                 <li><strong>Disponibilidad:</strong> <?= ($product['stock'] > 0) ? $product['stock'] . ' unidades en stock' : 'Agotado' ?></li>
@@ -40,21 +41,23 @@ if (!$product) {
         </div>
         
         <p class="delivery-info">
-            <svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clip-rule="evenodd"></path></svg>
             Envío a todo San Luis Potosí
         </p>
 
         <?php if ($product['stock'] > 0): ?>
             <p class="stock-status available">
-                <svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path></svg>
                 Disponible
             </p>
-    
-            <a href="compra.php?id_producto=<?= htmlspecialchars($product['id']) ?>" class="primary button full-width" id="buy-now-btn">
-                Comprar Ahora
-            </a>
+            
+            <div class="form-field quantity-container" style="margin-top: var(--space-md);">
+                <label for="quantity">Cantidad:</label>
+                <div class="quantity-selector">
+                    <input type="number" id="quantity" name="cantidad" value="1" min="1" max="<?= htmlspecialchars($product['stock'] ?? 10) ?>" aria-label="Cantidad de producto">
+                </div>
+                <span id="stock-error-message" class="error-message"></span>
+            </div>
 
-            <button type="button" class="secondary button full-width" id="add-to-cart-btn" data-product-id="<?= htmlspecialchars($product['id']) ?>">
+            <button type="button" class="primary button full-width" id="add-to-cart-btn" data-product-id="<?= htmlspecialchars($product['id']) ?>">
                 Agregar al carrito
             </button>
             <p id="cart-feedback" class="hint" hidden></p>
@@ -68,8 +71,16 @@ if (!$product) {
 </main>
 
 <script>
-    window.__CURRENT_PRODUCT__ = <?php echo json_encode($product, JSON_UNESCAPED_UNICODE); ?>;
+    // Pasa los datos del producto a JS
+    window.__CURRENT_PRODUCT__ = <?php echo json_encode([
+        'id' => $product['id'],
+        'name' => $product['name'],
+        'price' => $product['price'],
+        'image' => $product['image'] ?? 'placeholder.jpg',
+        'stock' => $product['stock']
+    ], JSON_UNESCAPED_UNICODE); ?>;
 </script>
-<script src="compra.js" defer></script>
+
+<script src="vista_producto.js" defer></script>
 
 <?php require_once __DIR__ . '/templates/footer.php'; ?>

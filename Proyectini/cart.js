@@ -1,4 +1,4 @@
-(function () {
+document.addEventListener('DOMContentLoaded', () => {
     const STORAGE_KEY = 'sevillanas_cart';
     const cartToggle = document.getElementById('cart-toggle');
     const cartDropdown = document.getElementById('cart-dropdown');
@@ -128,6 +128,7 @@
 
         const index = findItemIndex(id);
         if (index >= 0) {
+        // Si existe, SUMA la cantidad
             items[index].quantity = Math.min(items[index].quantity + parsedQuantity, 99);
         } else {
             items.push({
@@ -146,6 +147,17 @@
         const index = findItemIndex(id);
         if (index >= 0) {
             items.splice(index, 1);
+            persist();
+        }
+    }
+
+    
+    function updateItemQuantity(id, quantity) {
+        const parsedQuantity = Math.max(1, Number(quantity) || 1);
+        const index = findItemIndex(String(id));
+
+        if (index >= 0) {
+            items[index].quantity = Math.min(parsedQuantity, 99); // Simplemente la reemplaza
             persist();
         }
     }
@@ -207,9 +219,10 @@
         getTotalQuantity,
         addItem,
         removeItem,
+        updateItemQuantity,
         clear: clearCart,
     };
 
     render();
     notify();
-})();
+});
