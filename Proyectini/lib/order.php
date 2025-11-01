@@ -41,10 +41,26 @@ SQL;
     return $stmt->fetchAll(PDO::FETCH_ASSOC) ?: [];
 }
 
+/**
+ * Busca un cupon valido por su Id
+ */
+function getValidCouponById(int $id_cupon) : ?array {
+    $pdo = getPDO();
+    $sql = "SELECT valor_descuento
+            FROM cupones
+            WHERE id_cupon = ?
+                AND activo = TRUE
+                AND NOW() BETWEEN fecha_inicio AND fecha_final
+            LIMIT 1";
+    $stmt = $pdo->prepare($sql);
+    $stmt->execute([$id_cupon]);
+    $cupon = $stmt->fetch(PDO::FETCH_ASSOC);
+    return $cupon ?: null;
+}
 
 /**
  * Crea el registro de Pedido y Pedido_Item dentro de una transacción.
- * Esta función es el núcleo de tu nuevo endpoint de pago.
+ * Esta función es el núcleo del endpoint de pago.
  * NO maneja el commit/rollback, eso debe hacerlo quien la llama.
  *
  * @param \PDO $db La instancia de la base de datos (para la transacción)
@@ -57,20 +73,22 @@ SQL;
  * @return string El ID del nuevo pedido creado
  * @throws \Exception Si la validación de precios falla o la DB falla
  */
+/**
+ * Crea el registro de pedido y pedido_item
+ */
 function createOrderInTransaction(
     \PDO $db,
     array $formData,
     array $cartItems,
-    float $discount,
+    //float $discount,
     ?int $userId,
     ?int $cuponId
 ): string {
 
     // 1. Validación de Totales del Lado del Servidor
-    // ¡NUNCA CONFÍES EN LOS PRECIOS DEL CLIENTE!
     $subtotal = 0;
     $itemsParaInsertar = [];
-
+    
     foreach ($cartItems as $item) {
         $productId = $item['id'] ?? null;
         $quantity = intval($item['quantity'] ?? 0);
@@ -97,37 +115,43 @@ function createOrderInTransaction(
         $subtotal += $precioUnitario * $quantity;
     }
 
+    $discount = 0.00;
+    if($cuponId){
+        $cuponValido=getValidCouponById($cuponId);
+        if($cuponValido){
+            $discount = (float)$cuponValido['valor_descuento'];
+        }
+    }
     // 2. Cálculo Final
     $total = $subtotal - $discount;
     if ($total < 0) $total = 0;
 
     // 3. Insertar el Pedido (padre)
     $sqlPedido = <<<SQL
-INSERT INTO pedido (
-    id_usuario, id_cupon, precio_subtotal, precio_total, descuento_aplicado, 
-    direccion, cod_post, nom_cliente, email_cliente, num_cel, 
-    estado_envio
-) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'pendiente')
-SQL;
-    
+        INSERT INTO pedido (
+            id_usuario, id_cupon, precio_subtotal, precio_total, descuento_aplicado, 
+            direccion, cod_post, nom_cliente, email_cliente, num_cel, 
+            estado_envio
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'pendiente')
+        SQL;
     $stmtPedido = $db->prepare($sqlPedido);
-if (!$stmtPedido) {
-    $errorInfo = $db->errorInfo();
-    throw new \Exception("Error al preparar pedido: " . ($errorInfo[2] ?? 'Desconocido'));
-}
+    if (!$stmtPedido) {
+        $errorInfo = $db->errorInfo();
+        throw new \Exception("Error al preparar pedido: " . ($errorInfo[2] ?? 'Desconocido'));
+    }
 
-$params = [
-    $userId,
-    $cuponId,
-    $subtotal,
-    $total,
-    $discount,
-    $formData['direccion'] ?? '',
-    $formData['cod_post'] ?? '',
-    $formData['nom_cliente'] ?? '',
-    $formData['email'] ?? '',
-    $formData['num_cel'] ?? '',
-];
+    $params = [
+        $userId,
+        $cuponId,
+        $subtotal,
+        $total,
+        $discount,
+        $formData['direccion'] ?? '',
+        $formData['cod_post'] ?? '',
+        $formData['nom_cliente'] ?? '',
+        $formData['email'] ?? '',
+        $formData['num_cel'] ?? '',
+    ];
     
     if (!$stmtPedido->execute($params)) {
         $errorInfo = $stmtPedido->errorInfo();
@@ -139,10 +163,10 @@ $params = [
 
     // 4. Insertar los Items del Pedido (hijos)
     $sqlItem = <<<SQL
-INSERT INTO pedido_item 
-    (id_pedido, id_producto, cantidad, precio_unitario, precio_total) 
-VALUES (?, ?, ?, ?, ?)
-SQL;
+        INSERT INTO pedido_item(
+            id_pedido, id_producto, cantidad, precio_unitario, precio_total) 
+        VALUES (?, ?, ?, ?, ?)
+    SQL;
     
     $stmtItem = $db->prepare($sqlItem);
     if (!$stmtItem) {

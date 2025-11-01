@@ -80,7 +80,7 @@ try {
     
     // (Esta función la creamos en la respuesta anterior)
     $idPedido = createOrderInTransaction(
-        $db, $formData, $cartItems, $discount, $userId, $cuponId
+        $db, $formData, $cartItems, /*$discount,*/ $userId, $cuponId
     );
     
     // (Esta función la creamos en la respuesta anterior)

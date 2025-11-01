@@ -117,7 +117,7 @@
             </div>
         </section>
 
-        <script src="./users/user.js"></script>
+        <script src="./js/cart.js"
         <script>
             window.RECAPTCHA_SITE_KEY = "<?php echo htmlspecialchars($_ENV['RECAPTCHA_SITE_KEY']); ?>";
         </script>

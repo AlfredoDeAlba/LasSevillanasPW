@@ -27,7 +27,7 @@ $products = readProducts();
 
     <script src="https://www.google.com/recaptcha/api.js?render=<?php echo htmlspecialchars($_ENV['RECAPTCHA_SITE_KEY']); ?>"></script>
     <script src="https://js.stripe.com/v3/"></script>
-    <script src="cart.js" defer></script>
+    <script src="./js/cart.js" defer></script>
 
     <?php
         // Inyectamos los productos que ya cargamos en PHP al 'window' de JavaScript

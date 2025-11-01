@@ -16,8 +16,12 @@ document.addEventListener('DOMContentLoaded', function() {
     const totalAmountEl = document.getElementById('total-amount');
     const discountAmountEl = document.getElementById('discount-amount');
 
+    const couponInput = document.getElementById('coupon-code');
+    const couponBtn = document.getElementById('apply-coupon-btn');
+
     // Estado local para descuentos (simulado)
     let currentDiscount = 0;
+    let currentCouponId = null;
     let currentClientSecret = null;
 
 
@@ -30,12 +34,7 @@ document.addEventListener('DOMContentLoaded', function() {
      */
     function updateCheckoutTotals() {
         if (!window.Cart) return;
-
         const subtotal = window.Cart.getSubtotal();
-        
-        // **!!aqui debemos de implementar logica de cupones!! (esto es un placeholder)
-        // currentDiscount = ...
-        
         const total = subtotal - currentDiscount;
 
         subtotalAmountEl.textContent = formatCurrency(subtotal);
@@ -108,6 +107,67 @@ document.addEventListener('DOMContentLoaded', function() {
             renderCheckoutCart(); // Re-renderizar todo
         }
     }
+
+    async function handleApplyCoupon(){
+    const codigo = couponInput.value.trim();
+    if(!codigo) {
+        alert('Por favor ingresa un código de cupón');
+        return;
+    }
+    
+    console.log('Aplicando cupón:', codigo); // 🔍 Debug
+    
+    couponBtn.disabled = true;
+    couponBtn.textContent = 'Verificando...';
+
+    try{
+        const response = await fetch('./api/cupon.php', { // ✅ Agregué el ./
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({codigo: codigo})
+        });
+        
+        console.log('Response status:', response.status); // 🔍 Debug
+        
+        const result = await response.json();
+        console.log('Response data:', result); // 🔍 Debug
+        
+        if(!response.ok) { 
+            throw new Error(result.error || 'Error al validar cupón');
+        }
+        
+        // Cupón aplicado exitosamente
+        currentDiscount = parseFloat(result.descuento);
+        currentCouponId = parseInt(result.id_cupon);
+        
+        console.log('Descuento aplicado:', currentDiscount); // 🔍 Debug
+        
+        couponInput.style.color = 'green';
+        couponInput.value = `Cupón ${codigo} aplicado ✓`;
+        couponInput.disabled = true;
+        couponBtn.textContent = '✓';
+        couponBtn.style.backgroundColor = 'green';
+        couponBtn.disabled = true;
+        
+        updateCheckoutTotals(); // Actualizar totales
+    
+    } catch(error) {
+        console.error('Error completo:', error); // 🔍 Debug
+        
+        currentDiscount = 0;
+        currentCouponId = null;
+        
+        couponInput.style.color = 'var(--color-error)';
+        alert('Error: ' + error.message); // Alerta temporal para ver el error
+        
+        updateCheckoutTotals();
+        
+    } finally {
+        if(!couponBtn.disabled) {
+            couponBtn.textContent = 'Aplicar';
+        }
+    }
+}
 
     /**
      * Maneja el envío del formulario de pago.
@@ -309,7 +369,8 @@ document.addEventListener('DOMContentLoaded', function() {
                 body: JSON.stringify({
                     formData: data,
                     cartItems: cartItems,
-                    discount: currentDiscount,
+                    //discount: currentDiscount,
+                    cuponId: currentCouponId,
                     paymentIntentId: paymentIntent.id // Enviamos el ID del pago exitoso
                 })
             });
@@ -392,10 +453,22 @@ document.addEventListener('DOMContentLoaded', function() {
     // Listeners
     cartListEl?.addEventListener('change', handleCartListInteraction);
     cartListEl?.addEventListener('click', handleCartListInteraction);
-    form?.addEventListener('submit', handlePaymentSubmit);
+    couponBtn?.addEventListener('click', handleApplyCoupon);
+    submitCardBtn?.addEventListener('click', handlePaymentFlow);
+    //form?.addEventListener('submit', handlePaymentSubmit);
     
     // Escuchar eventos de 'cart.js' (si el dropdown sigue existiendo)
     document.addEventListener('cart:updated', () => {
         renderCheckoutCart();
     });
+
+    console.log('Coupon button:', couponBtn);
+    console.log('Coupon input:', couponInput);
+    
+    if(!couponBtn) {
+        console.error('❌ No se encontró el botón de cupón');
+    }
+    if(!couponInput) {
+        console.error('❌ No se encontró el input de cupón');
+    }
 });
