@@ -1,48 +1,53 @@
-<?php declare(strict_types=1);
-
-require_once __DIR__ . '/../lib/config.php';
-require_once __DIR__ . '/../lib/db.php';
+<?php
+// api/cupon.php
 
 use function App\Lib\getPDO;
+use function App\Lib\jsonResponse;
+
 header('Content-Type: application/json');
 
-function sendError(string $message) : void {
-    http_response_code(400);
-    echo json_encode(['success' => false, 'error' => $message]);
+require_once '../lib/db.php';
+require_once '../lib/response.php';
+
+// Este endpoint solo acepta peticiones POST
+if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+    jsonResponse(['error' => 'Método no permitido. Use POST.'], 405);
     exit;
 }
-$input =json_decode(file_get_contents('php://input'),true);
-$codigo =trim($input['codigo'] ?? '');
 
-if(empty($codigo)){
-    sendError('No se proporciono codigo de cupon.');
+// Leemos el JSON enviado desde el frontend (ej. js/cart.js)
+$input = json_decode(file_get_contents('php://input'), true);
+$codigo_cupon = $input['codigo'] ?? null;
+
+if (empty($codigo_cupon)) {
+    jsonResponse(['error' => 'No se proporcionó un código de cupón.'], 400);
+    exit;
 }
 
-try{
-    $pdo=getPDO();
-    $sql=
-        "SELECT id_cupon, valor_descuento
-         FROM cupones
-         WHERE codigo = ?
-         AND activo = TRUE
-         AND NOW() BETWEEN fecha_inicio AND fecha_final
-         LIMIT 1";
-    $stmt=$pdo->prepare($sql);
-    $stmt->execute([$codigo]);
-    $cupon=$stmt->fetch();
-    if($cupon){
-        echo json_encode([
-            'success'=>true,
-            'id_cupon'=>(int)$cupon['id_cupon'],
-            'descuento'=>(float)$cupon['valor_descuento']
-        ]);
-    }else{
-        sendError('El cupon no es valido o ya expiro.');
+try {
+    $pdo = getPDO();
+    
+    // Buscamos el cupón en la base de datos
+    $stmt = $pdo->prepare("
+        SELECT id_cupon, codigo, valor_descuento, descripcion
+        FROM cupones
+        WHERE codigo = ? 
+          AND activo = TRUE 
+          AND NOW() BETWEEN fecha_inicio AND fecha_final
+    ");
+    
+    $stmt->execute([$codigo_cupon]);
+    $cupon = $stmt->fetch(PDO::FETCH_ASSOC);
+    
+    if ($cupon) {
+        // Éxito: Cupón encontrado y válido
+        jsonResponse(['success' => true, 'cupon' => $cupon]);
+    } else {
+        // Error: Cupón no válido o expirado
+        jsonResponse(['error' => 'El cupón no es válido o ha expirado.'], 404);
     }
-}catch(\PDOException $e){
-    error_log('Error en Api de cupones: ' . $e->getMessage());
-    http_response_code(500);
-    echo json_encode(['error'=>'Error al consultar el cupon.']);
-}
 
-?>
+} catch (PDOException $e) {
+    // Error interno del servidor
+    jsonResponse(['error' => 'Error al validar el cupón: ' . $e->getMessage()], 500);
+}

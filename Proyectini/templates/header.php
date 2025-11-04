@@ -49,6 +49,7 @@ $products = readProducts();
             <ul>
                 <li><a href="/LasSevillanas/Proyectini/index.php">Inicio</a></li>
                 <li><a href="/LasSevillanas/Proyectini/catalogo.php">Cat&aacute;logo</a></li>
+                <li><a href="/LasSevillanas/Proyectini/sucursales.php">Sucursales</a></li>
                 <li><a href="/LasSevillanas/Proyectini/historia.php">Historia</a></li>
                 <li><a href="/LasSevillanas/Proyectini/index.php#valores">Valores</a></li>
                 <li><a href="/LasSevillanas/Proyectini/index.php#contacto">Contacto</a></li>

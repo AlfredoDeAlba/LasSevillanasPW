@@ -296,4 +296,19 @@ function buildHeroCarousel() {
             });
         });
     }
+
+    (function trackVisit(){
+        if(!sessionStorage.getItem('visit_tracked')){
+            fetch('api/tracker_visita.php',{
+                method: 'POST'
+            })
+            .then(res=>res.json())
+            .then(data=>{
+                if(data.success){
+                    sessionStorage.setItem('visit_tracked', 'true');
+                    console.log('visita registrada');
+                }
+            }).catch(err=>console.error('error al registrar visitas: ', err));
+        }
+    })();
 });

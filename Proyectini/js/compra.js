@@ -115,22 +115,22 @@ document.addEventListener('DOMContentLoaded', function() {
         return;
     }
     
-    console.log('Aplicando cupón:', codigo); // 🔍 Debug
+    console.log('Aplicando cupón:', codigo); // 
     
     couponBtn.disabled = true;
     couponBtn.textContent = 'Verificando...';
 
     try{
-        const response = await fetch('./api/cupon.php', { // ✅ Agregué el ./
+        const response = await fetch('./api/cupon.php', { //
             method: 'POST',
             headers: {'Content-Type': 'application/json'},
             body: JSON.stringify({codigo: codigo})
         });
         
-        console.log('Response status:', response.status); // 🔍 Debug
+        console.log('Response status:', response.status); //
         
         const result = await response.json();
-        console.log('Response data:', result); // 🔍 Debug
+        console.log('Response data:', result); //
         
         if(!response.ok) { 
             throw new Error(result.error || 'Error al validar cupón');
@@ -140,19 +140,19 @@ document.addEventListener('DOMContentLoaded', function() {
         currentDiscount = parseFloat(result.descuento);
         currentCouponId = parseInt(result.id_cupon);
         
-        console.log('Descuento aplicado:', currentDiscount); // 🔍 Debug
+        console.log('Descuento aplicado:', currentDiscount); 
         
         couponInput.style.color = 'green';
-        couponInput.value = `Cupón ${codigo} aplicado ✓`;
+        couponInput.value = `Cupón ${codigo} aplicado :)`;
         couponInput.disabled = true;
-        couponBtn.textContent = '✓';
+        couponBtn.textContent = ':)';
         couponBtn.style.backgroundColor = 'green';
         couponBtn.disabled = true;
         
         updateCheckoutTotals(); // Actualizar totales
     
     } catch(error) {
-        console.error('Error completo:', error); // 🔍 Debug
+        console.error('Error completo:', error);
         
         currentDiscount = 0;
         currentCouponId = null;
@@ -466,9 +466,9 @@ document.addEventListener('DOMContentLoaded', function() {
     console.log('Coupon input:', couponInput);
     
     if(!couponBtn) {
-        console.error('❌ No se encontró el botón de cupón');
+        console.error(' No se encontró el botón de cupón');
     }
     if(!couponInput) {
-        console.error('❌ No se encontró el input de cupón');
+        console.error(' No se encontró el input de cupón');
     }
 });

@@ -1,4 +1,60 @@
-﻿const apiUrl = '../api/products.php';
+﻿document.addEventListener('DOMContentLoaded', () => {
+const navLinks = document.querySelectorAll('.admin-bar a[href^="#"]');
+const views = document.querySelectorAll('.admin-layout .view');
+// Función para ocultar todas las vistas
+function hideAllViews() {
+    views.forEach(view => {
+        view.style.display = 'none';
+    });
+}
+// 3. Añade un listener a CADA enlace
+navLinks.forEach(link => {
+    link.addEventListener('click', (e) => {
+        e.preventDefault();
+        const viewId = link.getAttribute('href').substring(1); // ej: "products-view"
+
+        // Oculta todo
+        hideAllViews();
+
+        // Muestra la vista seleccionada
+        const activeView = document.getElementById(viewId);
+        if (activeView) {
+            activeView.style.display = 'block';
+        }
+
+        // (marcar el link como activo)
+        navLinks.forEach(nav => nav.classList.remove('active'));
+        link.classList.add('active');
+
+        // 4. Llama a la función de carga correcta
+        switch (viewId) {
+            case 'products-view':
+                loadProducts(); 
+                break;
+            case 'orders-view':
+                // loadOrders(); 
+                break;
+            case 'stats-view':
+                cargarEstadisticas(); 
+                break;
+            case 'cupones-view':
+                cargarCupones(); 
+                break;
+            case 'banners-view':
+                cargarBanners(); 
+                break;
+        }
+    });
+});
+
+/*
+hideAllViews();
+document.getElementById('products-view').style.display = 'active';
+loadProducts();
+document.querySelector('.admin-bar a[href="#products-view"]').classList.add('active');
+*/
+
+const apiUrl = '../api/products.php';
 let products = [];
 
 const form = document.querySelector('#product-form');
@@ -9,6 +65,9 @@ const priceField = document.querySelector('#product-price');
 const descriptionField = document.querySelector('#product-description');
 const stockField = document.querySelector('#product-stock');
 const imageField = document.querySelector('#product-image');
+
+const statsView = document.querySelector('#stats-view');
+
 
 function formatCurrency(value) {
     return new Intl.NumberFormat('es-MX', { style: 'currency', currency: 'MXN' }).format(value);
@@ -160,4 +219,340 @@ form?.addEventListener('reset', () => {
 loadProducts().catch((error) => {
     console.error(error);
     rowsContainer.innerHTML = '<tr><td colspan="6">No se pudo cargar el catálogo.</td></tr>';
+});
+
+    // --- 2. LÓGICA DE ESTADÍSTICAS ---
+    let chartVentasMensuales, chartVentasEstacionales, chartVisitas, chartTopProductos;
+
+    function cargarEstadisticas() {
+        // Destruir gráficas anteriores para evitar duplicados
+        if (chartVentasMensuales) chartVentasMensuales.destroy();
+        if (chartVentasEstacionales) chartVentasEstacionales.destroy();
+        if (chartVisitas) chartVisitas.destroy();
+        if (chartTopProductos) chartTopProductos.destroy();
+
+        // 1. Gráfica de Ventas Mensuales
+        fetch('../api/stats.php?report=ventas_mensuales')
+            .then(res => res.json())
+            .then(response => {
+                if (response.data) {
+                    const ctx = document.getElementById('chart-ventas-mensuales').getContext('2d');
+                    chartVentasMensuales = new Chart(ctx, {
+                        type: 'bar',
+                        data: {
+                            labels: response.data.map(item => item.mes),
+                            datasets: [{ label: 'Ventas $MXN', data: response.data.map(item => item.total), backgroundColor: 'rgba(75, 192, 192, 0.5)' }]
+                        }
+                    });
+                }
+            });
+
+        // 2. Gráfica de Ventas Estacionales
+        fetch('../api/stats.php?report=ventas_estacionales')
+            .then(res => res.json())
+            .then(response => {
+                 if (response.data) {
+                    const ctx = document.getElementById('chart-ventas-estacionales').getContext('2d');
+                    chartVentasEstacionales = new Chart(ctx, {
+                        type: 'line',
+                        data: {
+                            labels: response.data.map(item => item.trimestre),
+                            datasets: [{ label: 'Ventas $MXN', data: response.data.map(item => item.total), borderColor: 'rgba(153, 102, 255, 1)', tension: 0.1 }]
+                        }
+                    });
+                }
+            });
+
+        // 3. Gráfica de Visitas Diarias
+        fetch('../api/stats.php?report=visitas_diarias')
+            .then(res => res.json())
+            .then(response => {
+                 if (response.data) {
+                    const ctx = document.getElementById('chart-visitas-diarias').getContext('2d');
+                    chartVisitas = new Chart(ctx, {
+                        type: 'line',
+                        data: {
+                            labels: response.data.map(item => item.fecha_visita).reverse(),
+                            datasets: [{ label: 'Visitas', data: response.data.map(item => item.contador).reverse(), borderColor: 'rgba(255, 159, 64, 1)' }]
+                        }
+                    });
+                }
+            });
+            
+        // 4. Gráfica Top 5 Productos
+        fetch('../api/stats.php?report=top_productos')
+            .then(res => res.json())
+            .then(response => {
+                 if (response.data) {
+                    const ctx = document.getElementById('chart-top-productos').getContext('2d');
+                    chartTopProductos = new Chart(ctx, {
+                        type: 'pie',
+                        data: {
+                            labels: response.data.map(item => item.nombre),
+                            datasets: [{ label: 'Total Vendido', data: response.data.map(item => item.total_vendido) }]
+                        }
+                    });
+                }
+            });
+    }
+
+    // --- 3. LÓGICA DE CUPONES ---
+    // (Seleccionamos los elementos que YA EXISTEN en tu index.php)
+    const formCupon = document.getElementById('form-cupon');
+    const tablaCuponesBody = document.getElementById('tabla-cupones-body');
+    const cuponIdField = document.getElementById('cupon-id');
+    const cuponCodigoField = document.getElementById('cupon-codigo');
+    const cuponDescripcionField = document.getElementById('cupon-descripcion');
+    const cuponValorField = document.getElementById('cupon-valor');
+    const cuponInicioField = document.getElementById('cupon-inicio');
+    const cuponFinField = document.getElementById('cupon-fin');
+    const cuponActivoField = document.getElementById('cupon-activo');
+    const btnCancelarCupon = document.getElementById('btn-cancelar-cupon');
+
+    function cargarCupones() {
+        const formData = new FormData();
+        formData.append('action', 'read_cupones');
+
+        fetch('../api/admin_manager.php', { method: 'POST', body: formData })
+            .then(res => res.json())
+            .then(response => {
+                tablaCuponesBody.innerHTML = ''; // Limpiar tabla
+                if (response.data) {
+                    response.data.forEach(cupon => {
+                        // Guardamos los datos en el 'dataset' de la fila para editarlos fácil
+                        tablaCuponesBody.innerHTML += `
+                            <tr data-id="${cupon.id_cupon}" 
+                                data-codigo="${cupon.codigo}" 
+                                data-descripcion="${cupon.descripcion}" 
+                                data-valor="${cupon.valor_descuento}" 
+                                data-inicio="${cupon.fecha_inicio}" 
+                                data-fin="${cupon.fecha_final}" 
+                                data-activo="${cupon.activo}">
+                                
+                                <td>${cupon.codigo}</td>
+                                <td>${cupon.descripcion}</td>
+                                <td>$${cupon.valor_descuento}</td>
+                                <td>${cupon.fecha_inicio}</td>
+                                <td>${cupon.fecha_final}</td>
+                                <td>${cupon.activo ? 'Sí' : 'No'}</td>
+                                <td>
+                                    <button class="btn-editar-cupon">Editar</button>
+                                    <button class="btn-borrar-cupon">Borrar</button>
+                                </td>
+                            </tr>
+                        `;
+                    });
+                }
+            });
+    }
+
+    function resetFormCupon() {
+        formCupon.reset();
+        cuponIdField.value = '';
+        btnCancelarCupon.style.display = 'none';
+    }
+
+    if(formCupon) {
+        formCupon.addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const id = cuponIdField.value;
+            const action = id ? 'update_cupon' : 'create_cupon';
+
+            const data = {
+                id_cupon: id || null,
+                codigo: cuponCodigoField.value,
+                descripcion: cuponDescripcionField.value,
+                valor_descuento: cuponValorField.value,
+                fecha_inicio: cuponInicioField.value.replace('T', ' '),
+                fecha_final: cuponFinField.value.replace('T', ' '),
+                activo: cuponActivoField.checked
+            };
+            
+            const formData = new FormData();
+            formData.append('action', action);
+            formData.append('data', JSON.stringify(data));
+
+            fetch('../api/admin_manager.php', { method: 'POST', body: formData })
+                .then(res => res.json())
+                .then(response => {
+                    alert(response.message);
+                    if(response.success) {
+                        cargarCupones(); // Recargar la tabla
+                        resetFormCupon();
+                    }
+                });
+        });
+    }
+
+    if(btnCancelarCupon) {
+        btnCancelarCupon.addEventListener('click', resetFormCupon);
+    }
+
+    if(tablaCuponesBody) {
+        tablaCuponesBody.addEventListener('click', function(e) {
+            const tr = e.target.closest('tr');
+            if (!tr) return;
+            const id = tr.dataset.id;
+            
+            // Botón Borrar
+            if (e.target.classList.contains('btn-borrar-cupon')) {
+                if (!confirm(`¿Seguro que quieres borrar el cupón ID ${id}?`)) return;
+                
+                const formData = new FormData();
+                formData.append('action', 'delete_cupon');
+                formData.append('data', JSON.stringify({ id_cupon: id }));
+
+                fetch('../api/admin_manager.php', { method: 'POST', body: formData })
+                    .then(res => res.json())
+                    .then(response => {
+                        alert(response.message);
+                        if (response.success) cargarCupones();
+                    });
+            }
+
+            // Botón Editar
+            if (e.target.classList.contains('btn-editar-cupon')) {
+                cuponIdField.value = id;
+                cuponCodigoField.value = tr.dataset.codigo;
+                cuponDescripcionField.value = tr.dataset.descripcion;
+                cuponValorField.value = tr.dataset.valor;
+                cuponInicioField.value = tr.dataset.inicio.replace(' ', 'T');
+                cuponFinField.value = tr.dataset.fin.replace(' ', 'T');
+                cuponActivoField.checked = (tr.dataset.activo == "1");
+                
+                btnCancelarCupon.style.display = 'inline-block';
+                formCupon.scrollIntoView({ behavior: 'smooth' });
+            }
+        });
+    }
+
+    // --- 4. LÓGICA DE BANNERS ---
+    const formBanner = document.getElementById('form-banner');
+    const tablaBannersBody = document.getElementById('tabla-banners-body');
+
+    function cargarBanners() {
+        const formData = new FormData();
+        formData.append('action', 'read_banners');
+
+        fetch('../api/admin_manager.php', { method: 'POST', body: formData })
+            .then(res => res.json())
+            .then(response => {
+                tablaBannersBody.innerHTML = ''; // Limpiar tabla
+                if (response.data) {
+                    response.data.forEach(banner => {
+                        tablaBannersBody.innerHTML += `
+                            <tr data-id="${banner.id_banner}">
+                                <td><img src="../${banner.imagen_url}" alt="${banner.titulo}" width="150"></td>
+                                <td>${banner.titulo}</td>
+                                <td>${banner.link_destino || 'N/A'}</td>
+                                <td>
+                                    <input type="checkbox" class="check-banner-activo" ${banner.activo ? 'checked' : ''}>
+                                </td>
+                                <td>
+                                    <button class="btn-borrar-banner">Borrar</button>
+                                </td>
+                            </tr>
+                        `;
+                    });
+                }
+            });
+    }
+
+    if(formBanner) {
+        formBanner.addEventListener('submit', function(e) {
+            e.preventDefault();
+            const submitButton = formBanner.querySelector('button[type="submit"]');
+            submitButton.disabled = true;
+            submitButton.textContent = 'Subiendo...';
+            
+            const fileInput = document.getElementById('banner-imagen-file');
+            if (fileInput.files.length === 0) {
+                alert('Por favor, selecciona una imagen.');
+                submitButton.disabled = false;
+                submitButton.textContent = 'Subir y Guardar Banner';
+                return;
+            }
+
+            // PASO 1: Subir la imagen
+            const fileData = new FormData();
+            fileData.append('fileToUpload', fileInput.files[0]);
+
+            fetch('../api/admin_upload.php', { method: 'POST', body: fileData })
+                .then(res => res.json())
+                .then(uploadResponse => {
+                    if (!uploadResponse.success) {
+                        throw new Error(uploadResponse.error || 'Error al subir la imagen');
+                    }
+                    
+                    // PASO 2: Guardar datos del banner
+                    const data = {
+                        titulo: document.getElementById('banner-titulo').value,
+                        descripcion_corta: document.getElementById('banner-descripcion').value,
+                        link_destino: document.getElementById('banner-link').value,
+                        imagen_url: uploadResponse.url
+                    };
+
+                    const managerData = new FormData();
+                    managerData.append('action', 'create_banner');
+                    managerData.append('data', JSON.stringify(data));
+
+                    return fetch('../api/admin_manager.php', { method: 'POST', body: managerData });
+                })
+                .then(res => res.json())
+                .then(managerResponse => {
+                    alert(managerResponse.message);
+                    if (managerResponse.success) {
+                         formBanner.reset();
+                         cargarBanners();
+                    }
+                })
+                .catch(err => {
+                    alert('Error en el proceso: ' + err.message);
+                })
+                .finally(() => {
+                    submitButton.disabled = false;
+                    submitButton.textContent = 'Subir y Guardar Banner';
+                });
+        });
+    }
+    
+    if(tablaBannersBody) {
+        tablaBannersBody.addEventListener('click', function(e) {
+            const tr = e.target.closest('tr');
+            if (!tr) return;
+            const id = tr.dataset.id;
+
+            // Borrar Banner
+            if (e.target.classList.contains('btn-borrar-banner')) {
+                if (!confirm(`¿Seguro que quieres borrar el banner ID ${id}?`)) return;
+                
+                const formData = new FormData();
+                formData.append('action', 'delete_banner');
+                formData.append('data', JSON.stringify({ id_banner: id }));
+
+                fetch('../api/admin_manager.php', { method: 'POST', body: formData })
+                    .then(res => res.json())
+                    .then(response => {
+                        alert(response.message);
+                        if (response.success) cargarBanners();
+                    });
+            }
+
+            // Actualizar estado 'Activo'
+            if (e.target.classList.contains('check-banner-activo')) {
+                const estaActivo = e.target.checked;
+                const formData = new FormData();
+                formData.append('action', 'update_banner_status');
+                formData.append('data', JSON.stringify({ id_banner: id, activo: estaActivo }));
+
+                fetch('../api/admin_manager.php', { method: 'POST', body: formData })
+                    .then(res => res.json())
+                    .then(response => {
+                        if (!response.success) alert('Error al actualizar');
+                    });
+            }
+        });
+    }
+
 });
