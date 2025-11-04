@@ -26,6 +26,7 @@
         // La variable $products es accesible aquí porque fue definida en header.php
         window.__INITIAL_PRODUCTS__ = <?php echo json_encode($products, JSON_UNESCAPED_UNICODE); ?>;
     </script>
-    <script src="app.js" defer></script>
-</body>
+        <script src="js/cart.js" defer></script>
+        <script src="app.js" defer></script>
+    </body>
 </html>

@@ -88,7 +88,7 @@ try{
                     c.nombre_categoria as categoria_nombre
                 FROM promociones promo
                 LEFT JOIN producto p ON promo.id_producto_asociado = p.id_producto
-                LEFT JOIN producto_categoria c ON promo.id_categoria_asociada c.id_categoria
+                LEFT JOIN producto_categoria c ON promo.id_categoria_asociada = c.id_categoria
                 ORDER BY promo.fecha_final DESC
             ");
             $response_data = $stmt->fetchAll(PDO::FETCH_ASSOC);

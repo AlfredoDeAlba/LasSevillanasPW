@@ -73,6 +73,6 @@ try{
             exit;
     }
     jsonResponse(['error'=>$report_type, 'data'=>$data]);
-}catch(PDOException $e){
+}catch(\Throwable $e){
     errorResponse('error al consultar las estadisticas: ' . $e->getMessage(), 500);
 }

@@ -567,7 +567,7 @@ loadProducts().catch((error) => {
     const promocionProductoField = document.getElementById('promocion-producto');
     const promocionCategoriaField = document.getElementById('promocion-categoria');
     const promocionInicioField = document.getElementById('promocion-inicio');
-    const promocionFinField = document.getElementById('promocion-fin');
+    const promocionFinField = document.getElementById('promocion-final');
     const promocionActivoField = document.getElementById('promocion-activo');
     const btnCancelarPromocion = document.getElementById('btn-cancelar-promocion');    
 
@@ -590,7 +590,7 @@ loadProducts().catch((error) => {
                 if(response.data){
                     promocionProductoField.innerHTML = '<option value="">Ninguno</option>';
                     response.data.forEach(prod=>{
-                        promocionProductoField.innerHTML += `<option value=""${prod.id}>${prod.name}</option>`;
+                        promocionProductoField.innerHTML += `<option value="${prod.id}">${prod.name}</option>`;
                     });
                 }
             });
@@ -607,7 +607,7 @@ loadProducts().catch((error) => {
                 if(response.data){
                     response.data.forEach(promo=>{
                         const productoNombre = promo.producto_nombre || 'NA';
-                        const categoriaNombre = promo.categoriaNombre || 'NA';
+                        const categoriaNombre = promo.categoria_nombre || 'NA';
 
                         tablaPromocionesBody.innerHTML += `
                             <tr data-id="${promo.id_promocion}"
@@ -665,14 +665,14 @@ loadProducts().catch((error) => {
                 activo: promocionActivoField.checked
             };
 
-            const formData = new formData();
+            const formData = new FormData();
             formData.append('action', action);
             formData.append('data', JSON.stringify(data));
 
             fetch('../api/admin_manager.php', {method: 'POST', body: formData})
                 .then(res=>res.json())
                 .then(response=>{
-                    alert(response.success);
+                    alert(response.message);
                     if(response.success){
                         cargarPromociones();
                         resetFormPromocion();
