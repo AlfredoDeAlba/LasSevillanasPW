@@ -15,6 +15,7 @@ use function App\Lib\jsonResponse;
 use function App\Lib\readProducts;
 use function App\Lib\storeUploadedFile;
 use function App\Lib\upsertProduct;
+use function App\Lib\applyPromotions;
 use function App\Lib\getPDO;
 
 // Requerimos los archivos que contienen esas funciones
@@ -62,7 +63,11 @@ try {
  * @param array $products - lista de productos de la bd
  * @return array - lista de productos con precios de descuento aplicados
  */
+/*
 function applyPromotions(array $products) : array {
+    if (empty($products)) {
+        return $products;
+    }
     try{
         $pdo = getPDO();
         //obtener todas las promociones activas
@@ -89,14 +94,19 @@ function applyPromotions(array $products) : array {
         }
         //iterar sobre los productos y se aplican descuentos
         foreach($products as &$product){//uso de & para modificar el arreglo original
-            $precioOriginal = (float)$product['precio'];
+            $precioOriginal = (float)($product['precio'] ?? 0.0);
             $descuento = 0.0;
+            // Obtenemos los IDs de forma segura
+            $productId = $product['id_producto'] ?? null;
+            $categoryId = $product['id_categoria'] ?? null; // Tu SQL confirma que esta columna existe
+
             //prioridad a promocion por producto
-            if(isset($promoPorProducto[$product['id_producto']])){
-                $descuento = $promoPorProducto[$product['id_producto']];
-                //busqueda de promocion por categorias
-            }elseif(isset($product['id_categoria']) && isset($promoPorCategoria[$product['id_categoria']])){
-                $descuento = $promoPorCategoria[$product['id_categoria']];
+            if($productId !== null && isset($promoPorProducto[$productId])){
+                $descuento = $promoPorProducto[$productId];
+            
+            //busqueda de promocion por categorias
+            }elseif($categoryId !== null && isset($promoPorCategoria[$categoryId])){
+                $descuento = $promoPorCategoria[$categoryId];
             }
             //aplicar el descuento en caso de existir
             if($descuento > 0){
@@ -110,7 +120,7 @@ function applyPromotions(array $products) : array {
         return $products;
     }
 }
-
+*/
 
 function handleGet() : void {
     $id = $_GET['id'] ?? null;
@@ -123,8 +133,8 @@ function handleGet() : void {
         jsonResponse(['data' => $productConDescuento[0]]);
     }else{ //obtener todos los productos
         $products = readProducts();
-        $productConDescuento = applyPromotions([$products]);
-        jsonResponse(['data' => $products]);
+        $productConDescuento = applyPromotions($products);
+        jsonResponse(['data' => $productConDescuento]);
     }
 }
 

@@ -297,7 +297,10 @@ document.addEventListener('DOMContentLoaded', function() {
             const response = await fetch('crear_payment_intent.php', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ cartItems: cartItems })
+                body: JSON.stringify({ 
+                    cartItems: cartItems 
+                    cuponId: currentCouponId
+                })
             });
 
             const data = await response.json();

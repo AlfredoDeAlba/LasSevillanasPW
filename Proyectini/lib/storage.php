@@ -86,3 +86,66 @@ function deleteProduct(string $id): void
     $stmt = getPDO()->prepare('DELETE FROM producto WHERE id_producto = :id');
     $stmt->execute([':id' => $id]);
 }
+
+/**
+ * funcion para aplicar descuentos: aplica promociones activas a una lista de productos
+ * @param array $products - lista de productos de la bd
+ * @return array - lista de productos con precios de descuento aplicados
+ */
+
+function applyPromotions(array $products) : array {
+    if (empty($products)) {
+        return $products;
+    }
+    try{
+        $pdo = getPDO();
+        //obtener todas las promociones activas
+        $stmt = $pdo->query("
+            SELECT id_promocion, valor_descuento,
+            id_producto_asociado, id_categoria_asociada
+            FROM promociones
+            WHERE activa = TRUE
+                AND NOW() BETWEEN fecha_inicio AND fecha_final
+        ");
+        $promos = $stmt->fetchAll(\PDO::FETCH_ASSOC);
+        if(empty($promos)){
+            return $products; //si no hay promociones, mandar los productos tal cual
+        }
+        //crear mapas de busqueda para mejorar eficiencia
+        $promoPorProducto = [];
+        $promoPorCategoria = [];
+        foreach($promos as $promo){
+            if($promo['id_producto_asociado']){
+                $promoPorProducto[$promo['id_producto_asociado']] = (float)$promo['valor_descuento'];
+            }elseif($promo['id_categoria_asociada']){
+                $promoPorCategoria[$promo['id_categoria_asociada']] = (float)$promo['valor_descuento'];
+            }
+        }
+        //iterar sobre los productos y se aplican descuentos
+        foreach($products as &$product){//uso de & para modificar el arreglo original
+            $precioOriginal = (float)($product['precio'] ?? 0.0);
+            $descuento = 0.0;
+            // Obtenemos los IDs de forma segura
+            $productId = $product['id_producto'] ?? null;
+            $categoryId = $product['id_categoria'] ?? null; // Tu SQL confirma que esta columna existe
+
+            //prioridad a promocion por producto
+            if($productId !== null && isset($promoPorProducto[$productId])){
+                $descuento = $promoPorProducto[$productId];
+            
+            //busqueda de promocion por categorias
+            }elseif($categoryId !== null && isset($promoPorCategoria[$categoryId])){
+                $descuento = $promoPorCategoria[$categoryId];
+            }
+            //aplicar el descuento en caso de existir
+            if($descuento > 0){
+                $product['precio_original'] = $precioOriginal;
+                $product['precio_descuento'] = max(0.01, $precioOriginal - $descuento);//con 0.01 se evitan precios negativos
+            }
+        }
+        return $products;
+    }catch(\Throwable $e){
+        error_log("error al aplicar las promociones: " . $e->getMessage());
+        return $products;
+    }
+}

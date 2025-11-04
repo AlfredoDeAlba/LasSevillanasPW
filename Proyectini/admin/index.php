@@ -54,12 +54,12 @@ $products = readProducts();
             <span class="brand-name">Panel administrativo</span>
         </div>
         <nav class="admin-nav">
-            <a href="#products-view">Gestionar Productos</a>
-            <a href="#stats-view">Estadísticas</a>
-            <a href="#cupones-view">Cupones</a>
-            <a href="#banners-view">Banners</a>
-            <a href="#promociones-view">Promociones</a>
-            <a href="logout.php" class="btn-logout">Cerrar Sesión</a>
+            <a href="#products-view" style="padding: var(--space-sm);">Gestionar Productos</a>
+            <a href="#stats-view" style="padding: var(--space-sm);">Estadísticas</a>
+            <a href="#cupones-view" style="padding: var(--space-sm);">Cupones</a>
+            <a href="#banners-view" style="padding: var(--space-sm);">Banners</a>
+            <a href="#promociones-view" style="padding: var(--space-sm);">Promociones</a>
+            <a href="logout.php" class="btn-logout" style="padding: var(--space-sm);">Cerrar Sesión</a>
         </nav>
     </header>
     <main class="admin-layout">

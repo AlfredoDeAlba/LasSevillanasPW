@@ -95,7 +95,7 @@ function renderRows() {
 
     rowsContainer.innerHTML = products.map((product) => {
         const imageCell = product.image
-            ? `<img src="../uploads/${product.image}" alt="${product.name}">`
+            ? `<img src="../${product.image}" alt="${product.name}">`
             : '<span class="hint">Sin imagen</span>';
 
         return `
