@@ -30,6 +30,16 @@ $products = readProducts();
         .table-actions button { padding-inline: var(--space-sm); }
         .form-actions { display: flex; gap: var(--space-sm); }
         .hint { color: var(--color-text-muted); font-size: 0.9rem; }
+        
+        /* Estilos básicos para la tabla de admin */
+        .admin-table { width: 100%; border-collapse: collapse; margin-top: var(--space-md); }
+        .admin-table th, .admin-table td { padding: 12px; border-bottom: 1px solid var(--color-border); text-align: left; vertical-align: top; }
+        .admin-form div { margin-bottom: var(--space-md); }
+        .admin-form label { display: block; margin-bottom: var(--space-xs); font-weight: bold; }
+        .admin-form input[type="text"],
+        .admin-form input[type="number"],
+        .admin-form input[type="datetime-local"] { width: 100%; max-width: 400px; padding: var(--space-sm); }
+
         @media (max-width: 720px) {
             .product-list-admin th:nth-child(4),
             .product-list-admin td:nth-child(4) { display: none; }
@@ -45,10 +55,10 @@ $products = readProducts();
         </div>
         <nav class="admin-nav">
             <a href="#products-view">Gestionar Productos</a>
-            <a href="#orders-view">Ver Pedidos</a>
             <a href="#stats-view">Estadísticas</a>
             <a href="#cupones-view">Cupones</a>
             <a href="#banners-view">Banners</a>
+            <a href="#promociones-view">Promociones</a>
             <a href="logout.php" class="btn-logout">Cerrar Sesión</a>
         </nav>
     </header>
@@ -170,15 +180,35 @@ $products = readProducts();
         </div>
         <div id="cupones-view" class="view" style="display: none;">
             <h2>Gestion de Cupones:</h2>
-            <form>
+            <form id="form-cupon" class="admin-form">
                 <h3>Crear / Editar Cupones</h3>
                 <input type="hidden" id="cupon-id" name="id_cupon">
-                Codigo: <input type="text" id="cupon-codigo" required>
-                Descripcion: <input type="text" id="cupon-descripcion">
-                Valor Descuento ($$$): <input type="number" step="0.01" id="cupon-valor" required>
-                Fecha Inicio: <input type="datetime-local" id="cupon-inicio" required>
-                Fecha Fin: <input type="datetime-local" id="cupon-fin" required>
-                Activo:<input type="checkbox" id="cupon-activo" checked>
+                <div>
+                    <label for="cupon-codigo">Codigo:</label>
+                    <input type="text" id="cupon-codigo" required>
+                </div>
+                <div>
+                    <label for="cupon-descripcion">Descripcion:</label>
+                    <input type="text" id="cupon-descripcion">
+                </div>
+                <div>
+                    <label for="cupon-valor">Valor Descuento ($$$):</label>
+                    <input type="number" step="0.01" id="cupon-valor" required>
+                </div>
+                <div>
+                    <label for="cupon-inicio">Fecha Inicio:</label>
+                    <input type="datetime-local" id="cupon-inicio" required>
+                </div>
+                <div>
+                    <label for="cupon-fin">Fecha Fin:</label>
+                    <input type="datetime-local" id="cupon-fin" required>
+                </div>
+                <div>
+                    <label>
+                        Activo:
+                        <input type="checkbox" id="cupon-activo" checked>
+                    </label>
+                </div>
                 <button type="submit">Guardar Cupón</button>
                 <button type="button" id="btn-cancelar-cupon" style="display: none;">Cancelar Edición</button>
             </form>
@@ -203,7 +233,7 @@ $products = readProducts();
             <h2> Gestión de Banners y Promociones Visuales</h2>
 
             <form id="form-banner" class="admin-form">
-                <h3>Nuevo Banner</h3>
+                <h3>Nueva Promoción (Banner)</h3>
                 <div>
                     <label for="banner-titulo">Título:</label>
                     <input type="text" id="banner-titulo" required>
@@ -236,6 +266,74 @@ $products = readProducts();
                 </thead>
                 <tbody id="tabla-banners-body">
                     </tbody>
+            </table>
+        </div>
+        <div id="promociones-view" class="view" style="display: none;">
+            <h2>Gestion de Promociones de Descuento</h2>
+            <form id="form-promocion" class="admin-form">
+                <h3>Crear o Editar Promocion</h3>
+                <input type="hidden" id="promocion-id" name="id_promocion">
+                <div>
+                    <label for="promocion-nombre">Nombre de la promocion:</label>
+                    <input type="text" id="promocion-nombre" required>
+                </div>
+                <div>
+                    <label for="promocion-descripcion">Descripcion:</label>
+                    <textarea id="promocion-descripcion" rows="3"></textarea>
+                </div>
+                <div>
+                    <label for="promocion-valor">Valor del Descuento (puede ser $ o %):</label>
+                    <input type="number" step="0.01" id="promocion-valor" required>
+                    <p class="hint">Ej: 15 para 15% o 50 para 50$mxn</p>
+                </div>
+                <div>
+                    <label for="promocion-producto">Asociar a Producto (Opcional):</label>
+                    <select id="promocion-producto" style="padding: var(--space-sm);">
+                        <option value="">Ninguno (Promocion general)</option>
+                    </select>
+                </div>
+                <div>
+                    <label for="promocion-categoria">Asociar a Categoria (opcional):</label>
+                    <select id="promocion-categoria" style="padding:var(--space-sm);">
+                        <option value="">Ninguna promo (promocion general)</option>
+                    </select>
+                    <p class="hint">Si asocias a un producto y a una categoria, la promocion se aplicara a ambos.</p>
+                </div>
+                <div>
+                    <label for="promocion-inicio">Fecha Inicio:</label>
+                    <input type="datetime-local" id="promocion-inicio" required>
+                </div>
+                <div>
+                    <label for="promocion-final">Fecha Final:</label>
+                    <input type="datetime-local" id="promocion-final" required>
+                </div>
+                <div>
+                    <label style="display: inline-block;">
+                        Activa:
+                        <input type="checkbox" id="promocion-activo" required>
+                    </label>
+                </div>
+
+                <button type="submit">Guardar Promocion</button>
+                <button type="button" id="btn-cancelar-promocion" style="display: none;">Cancelar Edicion</button>
+            </form>
+
+            <h3>Promociones Existentes</h3>
+            <table class="admin-table">
+                <thead>
+                    <tr>
+                        <th>Nombre</th>
+                        <th>Valor</th>
+                        <th>Aplica a Producto</th>
+                        <th>Aplica a Categoria</th>
+                        <th>Valido desde</th>
+                        <th>Valido hasta</th>
+                        <th>Activa</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody id="tabla-promociones-body">
+                </tbody>
             </table>
         </div>
     </main>

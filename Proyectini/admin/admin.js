@@ -43,6 +43,9 @@ navLinks.forEach(link => {
             case 'banners-view':
                 cargarBanners(); 
                 break;
+            case 'promociones-view':
+                cargarPromociones();
+                break;
         }
     });
 });
@@ -554,5 +557,169 @@ loadProducts().catch((error) => {
             }
         });
     }
+    //---5.Logica de Promociones---//
+    const formPromocion = document.getElementById('form-promocion');
+    const tablaPromocionesBody = document.getElementById('tabla-promociones-body');
+    const promocionIdField = document.getElementById('promocion-id');
+    const promocionNombreField = document.getElementById('promocion-nombre');
+    const promocionDescripcionField = document.getElementById('promocion-descripcion');
+    const promocionValorField = document.getElementById('promocion-valor');
+    const promocionProductoField = document.getElementById('promocion-producto');
+    const promocionCategoriaField = document.getElementById('promocion-categoria');
+    const promocionInicioField = document.getElementById('promocion-inicio');
+    const promocionFinField = document.getElementById('promocion-fin');
+    const promocionActivoField = document.getElementById('promocion-activo');
+    const btnCancelarPromocion = document.getElementById('btn-cancelar-promocion');    
 
+    async function cargarOpcionesPromociones(){
+        const catFormData = new FormData();
+        catFormData.append('action', 'read_categorias');
+        fetch('../api/admin_manager.php', {method: 'POST', body: catFormData})
+            .then(res=>res.json())
+            .then(response=>{
+                if(response.data){
+                    promocionCategoriaField.innerHTML = '<option value="">Ninguna</option>';
+                    response.data.forEach(cat=>{
+                        promocionCategoriaField.innerHTML += `<option value="${cat.id_categoria}">${cat.nombre_categoria}</option>`;
+                    });
+                }
+            });
+        fetch('../api/products.php')
+            .then(res=>res.json())
+            .then(response=>{
+                if(response.data){
+                    promocionProductoField.innerHTML = '<option value="">Ninguno</option>';
+                    response.data.forEach(prod=>{
+                        promocionProductoField.innerHTML += `<option value=""${prod.id}>${prod.name}</option>`;
+                    });
+                }
+            });
+    }
+
+    function cargarPromociones(){
+        const formData = new FormData();
+        formData.append('action', 'read_promociones');
+        fetch('../api/admin_manager.php', { method: 'POST', body: formData })
+            .then(res => res.json())
+            .then(response => {
+                if(!tablaPromocionesBody) return;
+                tablaPromocionesBody.innerHTML = '';
+                if(response.data){
+                    response.data.forEach(promo=>{
+                        const productoNombre = promo.producto_nombre || 'NA';
+                        const categoriaNombre = promo.categoriaNombre || 'NA';
+
+                        tablaPromocionesBody.innerHTML += `
+                            <tr data-id="${promo.id_promocion}"
+                                data-nombre_promo="${promo.nombre_promo}"
+                                data-descripcion="${promo.descripcion || ''}"
+                                data-valor_descuento="${promo.valor_descuento}"
+                                data-id_producto_asociado="${promo.id_producto_asociado || ''}"
+                                data-id_categoria_asociada="${promo.id_categoria_asociada || ''}"
+                                data-fecha_inicio="${promo.fecha_inicio}"
+                                data-fecha_final="${promo.fecha_final}"
+                                data-activa="${promo.activa}">
+
+                                <td>${promo.nombre_promo}</td>
+                                <td>${promo.valor_descuento}</td>
+                                <td>${productoNombre}</td>
+                                <td>${categoriaNombre}</td>
+                                <td>${promo.fecha_inicio}</td>
+                                <td>${promo.fecha_final}</td>
+                                <td>${promo.activa ? 'Sí' : 'No'}</td>
+                                <td>
+                                    <button class="btn-editar-promocion">Editar</button>
+                                    <button class="btn-borrar-promocion">Borrar</button>
+                                </td>
+                            </tr>
+                        `;
+                    });
+                }
+            });
+        cargarOpcionesPromociones();
+    }
+
+    function resetFormPromocion(){
+        if(formPromocion) formPromocion.reset();
+        if(promocionIdField) promocionIdField.value = '';
+        if(promocionProductoField) promocionProductoField.value = '';
+        if(promocionCategoriaField) promocionCategoriaField.value = '';
+        if(btnCancelarPromocion) btnCancelarPromocion.style.display = 'none';
+    }
+
+    if(formPromocion){
+        formPromocion.addEventListener('submit', function(e){
+            e.preventDefault();
+            const id = promocionIdField.value;
+            const action = id ? 'update_promocion' : 'create_promocion';
+
+            const data={
+                id_promocion: id || null,
+                nombre_promo: promocionNombreField.value,
+                descripcion: promocionDescripcionField.value,
+                valor_descuento: promocionValorField.value,
+                id_producto_asociado: promocionProductoField.value || null, // Enviar null si está vacío
+                id_categoria_asociada: promocionCategoriaField.value || null, // Enviar null si está vacío
+                fecha_inicio: promocionInicioField.value.replace('T', ' '),
+                fecha_final: promocionFinField.value.replace('T', ' '),
+                activo: promocionActivoField.checked
+            };
+
+            const formData = new formData();
+            formData.append('action', action);
+            formData.append('data', JSON.stringify(data));
+
+            fetch('../api/admin_manager.php', {method: 'POST', body: formData})
+                .then(res=>res.json())
+                .then(response=>{
+                    alert(response.success);
+                    if(response.success){
+                        cargarPromociones();
+                        resetFormPromocion();
+                    }
+                });
+        });
+    }
+    if(btnCancelarPromocion){
+        btnCancelarPromocion.addEventListener('click', resetFormPromocion);
+    }
+    if(tablaPromocionesBody){
+        tablaPromocionesBody.addEventListener('click', function(e) {
+        const tr = e.target.closest('tr');
+        if (!tr) return;
+        const id = tr.dataset.id;
+
+        // Botón Borrar
+        if (e.target.classList.contains('btn-borrar-promocion')) {
+            if (!confirm(`¿Seguro que quieres borrar la promoción ID ${id}?`)) return;
+
+            const formData = new FormData();
+            formData.append('action', 'delete_promocion');
+            formData.append('data', JSON.stringify({ id_promocion: id }));
+
+            fetch('../api/admin_manager.php', { method: 'POST', body: formData })
+                .then(res => res.json())
+                .then(response => {
+                    alert(response.message);
+                    if (response.success) cargarPromociones();
+                });
+        }
+
+        // Botón Editar
+        if (e.target.classList.contains('btn-editar-promocion')) {
+            promocionIdField.value = id;
+            promocionNombreField.value = tr.dataset.nombre_promo;
+            promocionDescripcionField.value = tr.dataset.descripcion;
+            promocionValorField.value = tr.dataset.valor_descuento;
+            promocionProductoField.value = tr.dataset.id_producto_asociado;
+            promocionCategoriaField.value = tr.dataset.id_categoria_asociada;
+            promocionInicioField.value = tr.dataset.fecha_inicio.replace(' ', 'T');
+            promocionFinField.value = tr.dataset.fecha_final.replace(' ', 'T');
+            promocionActivoField.checked = (tr.dataset.activa == "1");
+
+            btnCancelarPromocion.style.display = 'inline-block';
+            formPromocion.scrollIntoView({ behavior: 'smooth' });
+        }
+        });
+    }
 });
