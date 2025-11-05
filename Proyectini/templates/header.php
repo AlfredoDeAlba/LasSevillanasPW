@@ -31,6 +31,7 @@ $products = readProducts();
     <script src="https://js.stripe.com/v3/"></script>
 
     <script src="app.js" defer></script>
+    <script src="users/user.js" defer></script>
     <?php
         // Inyectamos los productos que ya cargamos en PHP al 'window' de JavaScript
         echo "<script>";

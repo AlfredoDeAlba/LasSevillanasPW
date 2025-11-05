@@ -5,6 +5,7 @@ namespace App\Lib;
 
 use Dompdf\Dompdf;
 use Dompdf\Options;
+use PDO;
 
 /**
  * Construye el HTML del recibo.
@@ -86,4 +87,49 @@ function generateOrderPdfStream(string $htmlContent): string
     $dompdf->render();
     
     return $dompdf->output();
+}
+
+// ... (Código existente de generateOrderReceipt) ...
+
+/**
+ * NUEVA FUNCIÓN
+ * Busca la cabecera de un pedido por su ID.
+ * (Requerido por gracias.php)
+ */
+function findOrderById(int $orderId): ?array
+{
+    try {
+        $pdo = getPDO();
+        $stmt = $pdo->prepare("SELECT * FROM pedidos WHERE id = ?");
+        $stmt->execute([$orderId]);
+        $order = $stmt->fetch(PDO::FETCH_ASSOC);
+        return $order ?: null;
+    } catch (\PDOException $e) {
+        error_log($e->getMessage());
+        return null;
+    }
+}
+
+/**
+ * NUEVA FUNCIÓN
+ * Busca los detalles (items) de un pedido por su ID.
+ * (Requerido por gracias.php)
+ */
+function findOrderItemsById(int $orderId): array
+{
+    try {
+        $pdo = getPDO();
+        // Hacemos un JOIN con la tabla de productos para obtener el nombre
+        $stmt = $pdo->prepare("
+            SELECT dp.*, p.nombre AS producto_nombre
+            FROM detalles_pedido dp
+            JOIN productos p ON dp.id_producto = p.id
+            WHERE dp.id_pedido = ?
+        ");
+        $stmt->execute([$orderId]);
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    } catch (\PDOException $e) {
+        error_log($e->getMessage());
+        return [];
+    }
 }
