@@ -18,13 +18,13 @@ require_once __DIR__ . '/lib/response.php'; // Contiene 'sendError' y 'sendJson'
 try {
     $data = json_decode(file_get_contents('php://input'), true);
 
-    if ($data === null || empty($data['items'])) {
+    if ($data === null || empty($data['cartItems'])) {
         // Llamada con namespace completo
         errorResponse('No se recibieron productos.', 400);
         exit;
     }
 
-    $items = $data['items'];
+    $items = $data['cartItems'];
     $couponId = $data['coupon_id'] ?? null; 
 
     // Llamada con namespace completo

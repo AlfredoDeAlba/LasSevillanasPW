@@ -1,5 +1,3 @@
-// Usamos DOMContentLoaded, asumiendo que ya arreglaste
-// el orden de carga (cart.js antes de compra.js)
 document.addEventListener('DOMContentLoaded', function() {
     // Referencias a elementos del DOM
     const stripe = Stripe(window.STRIPE_PUBLIC_KEY);
@@ -53,60 +51,78 @@ document.addEventListener('DOMContentLoaded', function() {
      * Dibuja los items del carrito en la lista del checkout.
      */
     async function renderCheckoutCart() {
-        if (!window.Cart || !cartListEl || !cartEmptyEl) return;
+    if (!window.Cart || !cartListEl || !cartEmptyEl) return;
 
-        const cart = window.Cart.getItems(); 
+    const cart = window.Cart.getItems(); 
 
-        if (cart.length === 0) {
-            cartListEl.innerHTML = '';
-            cartEmptyEl.style.display = 'block';
-            subtotalAmountEl.textContent = formatCurrency(0);
-            totalAmountEl.textContent = formatCurrency(0);
-            discountAmountEl.textContent = formatCurrency(0);
-            // Deshabilitar el formulario si el carrito está vacío
-            submitBtn.disabled = true;
-            addCardBtn.disabled = true;
-            couponBtn.disabled = true;
-            return;
-        }
+    if (cart.length === 0) {
+        cartListEl.innerHTML = '';
+        cartEmptyEl.style.display = 'block';
+        /*
+        subtotalAmountEl.textContent = formatCurrency(0);
+        totalAmountEl.textContent = formatCurrency(0);
+        discountAmountEl.textContent = formatCurrency(0);
+        */
+        submitBtn.disabled = true;
+        addCardBtn.disabled = true;
+        couponBtn.disabled = true;
+        return;
+    }
 
-        cartEmptyEl.style.display = 'none';
+    cartEmptyEl.style.display = 'none';
+    
+    // Habilitar botones
+    submitBtn.disabled = false;
+    addCardBtn.disabled = false;
+    couponBtn.disabled = false;
+    
+    // --- PASO 1: CALCULAR SUBTOTAL AQUÍ ---
+    const subtotal = cart.reduce((acc, item) => {
+        // Asegurarse de que son números
+        const price = parseFloat(item.price) || 0;
+        const quantity = parseInt(item.quantity) || 0;
+        return acc + (price * quantity);
+    }, 0);
+
+
+    // Recreando la lógica de 'cart.js' para el checkout
+    const itemsHtml = cart.map(item => {
+        // Asegurarse de que son números para el total del item
+        const price = parseFloat(item.price) || 0;
+        const quantity = parseInt(item.quantity) || 0;
+        const itemTotal = (price * quantity).toFixed(2);
         
-        // Habilitar botones
-        submitBtn.disabled = false;
-        addCardBtn.disabled = false;
-        couponBtn.disabled = false;
-        
-        // Recreando la lógica de 'cart.js' para el checkout
-        // NOTA: 'cart.js' no expone 'getProductDetails', así que
-        // usamos la información que SÍ está en el carrito.
-        const itemsHtml = cart.map(item => {
-            const itemTotal = (item.price * item.quantity).toFixed(2);
-            
-            return `
-                <div class="checkout-item">
-                    <div class="checkout-item-image">
-                        <img src="${item.image || 'uploads/placeholder.jpg'}" alt="${item.name}">
-                        <span class="checkout-item-quantity">${item.quantity}</span>
-                    </div>
-                    <div class="checkout-item-details">
-                        <span class="checkout-item-name">${item.name}</span>
-                        <div class="checkout-item-controls">
-                            <button type="button" class="qty-btn" data-id="${item.id}" data-action="decrease-qty" aria-label="Disminuir cantidad">-</button>
-                            <span>${item.quantity}</span>
-                            <button type="button" class="qty-btn" data-id="${item.id}" data-action="increase-qty" aria-label="Aumentar cantidad">+</button>
-                        </div>
-                    </div>
-                    <div class="checkout-item-price">
-                        <span>$${itemTotal}</span>
-                        <button type="button" class="remove-btn" data-id="${item.id}" data-action="remove-item" aria-label="Eliminar">&times;</button>
+        return `
+            <div class="checkout-item">
+                <div class="checkout-item-image">
+                    <img src="${item.image || 'uploads/placeholder.jpg'}" alt="${item.name}">
+                    <span class="checkout-item-quantity">${quantity}</span>
+                </div>
+                <div class="checkout-item-details">
+                    <span class="checkout-item-name">${item.name}</span>
+                    <div class="checkout-item-controls">
+                        <button type="button" class="qty-btn" data-id="${item.id}" data-action="decrease-qty" aria-label="Disminuir cantidad">-</button>
+                        <span>${quantity}</span>
+                        <button type="button" class="qty-btn" data-id="${item.id}" data-action="increase-qty" aria-label="Aumentar cantidad">+</button>
                     </div>
                 </div>
-            `;
-        });
-        
-        cartListEl.innerHTML = itemsHtml.join('');
-    }
+                <div class="checkout-item-price">
+                    <span>$${itemTotal}</span>
+                    <button type="button" class="remove-btn" data-id="${item.id}" data-action="remove-item" aria-label="Eliminar">&times;</button>
+                </div>
+            </div>
+        `;
+    });
+    
+    cartListEl.innerHTML = itemsHtml.join('');
+
+    // --- PASO 2: MOSTRAR TOTALES TEMPORALES ---
+    // (Estos se actualizarán por 'initializePayment' si hay descuentos)
+    //subtotalAmountEl.textContent = formatCurrency(subtotal);
+    //discountAmountEl.textContent = formatCurrency(0);
+    // El total es (subtotal - descuento). Como aún no hay descuento, es igual al subtotal.
+    //totalAmountEl.textContent = formatCurrency(subtotal);
+}
 
     
     /**
