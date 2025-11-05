@@ -54,7 +54,8 @@ $products = readProducts();
             <span class="brand-name">Panel administrativo</span>
         </div>
         <nav class="admin-nav">
-            <a href="#products-view" style="padding: var(--space-sm);">Gestionar Productos</a>
+            <a href="#products-view" style="padding: var(--space-sm);">Productos</a>
+            <a href="#categorias-view" style="padding: var(--space-sm);">Categorias</a>
             <a href="#stats-view" style="padding: var(--space-sm);">Estadísticas</a>
             <a href="#cupones-view" style="padding: var(--space-sm);">Cupones</a>
             <a href="#banners-view" style="padding: var(--space-sm);">Banners</a>
@@ -155,6 +156,9 @@ $products = readProducts();
                     </table>
                 </div>
             </section>
+        </div>
+        <div id="categorias-view" class="view" style="display: none;">
+            <h2>Categorias</h2>
         </div>
         <div id="stats-view" class="view" style="display: none;">
             <h2>Estadisticas y Reportes:</h2>

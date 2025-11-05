@@ -27,5 +27,9 @@
         window.__INITIAL_PRODUCTS__ = <?php echo json_encode($products, JSON_UNESCAPED_UNICODE); ?>;
     </script>
         <script src="js/cart.js" defer></script>
+
+        <?php if (strpos($_SERVER['PHP_SELF'], 'compra.php') !== false): ?>
+            <script src="js/compra.js" defer></script>
+        <?php endif; ?>
     </body>
 </html>

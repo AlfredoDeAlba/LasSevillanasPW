@@ -30,7 +30,6 @@ if (!$product) {
             <ul>
                 <li><strong>Disponibilidad:</strong> <?= ($product['stock'] > 0) ? $product['stock'] . ' unidades en stock' : 'Agotado' ?></li>
                 <li><strong>Categoría:</strong> Dulce Típico</li>
-                <li><strong>Fecha de adición:</strong> <?= ($product['date']) ?></li>
             </ul>
         </div>
     </div>

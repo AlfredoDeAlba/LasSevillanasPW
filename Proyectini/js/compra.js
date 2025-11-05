@@ -1,3 +1,5 @@
+// Usamos DOMContentLoaded, asumiendo que ya arreglaste
+// el orden de carga (cart.js antes de compra.js)
 document.addEventListener('DOMContentLoaded', function() {
     // Referencias a elementos del DOM
     const stripe = Stripe(window.STRIPE_PUBLIC_KEY);
@@ -19,10 +21,20 @@ document.addEventListener('DOMContentLoaded', function() {
     const couponInput = document.getElementById('coupon-code');
     const couponBtn = document.getElementById('apply-coupon-btn');
 
-    // Estado local para descuentos (simulado)
-    let currentDiscount = 0;
+    // Referencias al Modal
+    const addCardModal = document.getElementById('add-card-modal');
+    const addCardBtn = document.getElementById('add-card-btn');
+    const closeModalBtn = document.getElementById('close-modal-btn');
+    const cancelCardBtn = document.getElementById('cancel-card-btn');
+    const submitCardBtn = document.getElementById('submit-card-btn');
+    
+    const cardHolderNameEl = document.getElementById('cardholder-name');
+    const cardErrorsEl = document.getElementById('card-errors');
+
+    // Estado local
     let currentCouponId = null;
     let currentClientSecret = null;
+    let isSubmitting = false;
 
 
     function formatCurrency(amount) {
@@ -30,448 +42,429 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     /**
-     * Calcula y actualiza los totales en el resumen de la derecha.
+     * Esta función ya no es necesaria, la dejamos vacía.
+     * initializePayment() obtendrá los totales correctos del servidor.
      */
     function updateCheckoutTotals() {
-        if (!window.Cart) return;
-        const subtotal = window.Cart.getSubtotal();
-        const total = subtotal - currentDiscount;
-
-        subtotalAmountEl.textContent = formatCurrency(subtotal);
-        discountAmountEl.textContent = formatCurrency(currentDiscount > 0 ? -currentDiscount : 0);
-        totalAmountEl.textContent = formatCurrency(total > 0 ? total : 0);
+        // (vacía)
     }
 
     /**
-     * Renderiza los items del carrito en la lista de la izquierda.
+     * Dibuja los items del carrito en la lista del checkout.
      */
-    function renderCheckoutCart() {
+    async function renderCheckoutCart() {
         if (!window.Cart || !cartListEl || !cartEmptyEl) return;
 
-        const items = window.Cart.getItems();
-        cartListEl.innerHTML = ''; 
+        const cart = window.Cart.getItems(); 
 
-        if (items.length === 0) {
+        if (cart.length === 0) {
+            cartListEl.innerHTML = '';
             cartEmptyEl.style.display = 'block';
+            subtotalAmountEl.textContent = formatCurrency(0);
+            totalAmountEl.textContent = formatCurrency(0);
+            discountAmountEl.textContent = formatCurrency(0);
+            // Deshabilitar el formulario si el carrito está vacío
             submitBtn.disabled = true;
+            addCardBtn.disabled = true;
+            couponBtn.disabled = true;
             return;
         }
 
         cartEmptyEl.style.display = 'none';
-        submitBtn.disabled = false;
         
-        const fragment = document.createDocumentFragment();
-        items.forEach(item => {
-            const itemEl = document.createElement('div');
-            itemEl.className = 'cart-item'; // 
-            itemEl.innerHTML = `
-                <img src="${item.image || 'placeholder.jpg'}" alt="${item.name}">
-                <div class="cart-item-info">
-                    <h3>${item.name}</h3>
-                    <div class="quantity-selector">
-                        <label for="qty-${item.id}">Cant:</label>
-                        <input type="number" id="qty-${item.id}" data-id="${item.id}" class="cart-item-qty" value="${item.quantity}" min="1" max="99">
+        // Habilitar botones
+        submitBtn.disabled = false;
+        addCardBtn.disabled = false;
+        couponBtn.disabled = false;
+        
+        // Recreando la lógica de 'cart.js' para el checkout
+        // NOTA: 'cart.js' no expone 'getProductDetails', así que
+        // usamos la información que SÍ está en el carrito.
+        const itemsHtml = cart.map(item => {
+            const itemTotal = (item.price * item.quantity).toFixed(2);
+            
+            return `
+                <div class="checkout-item">
+                    <div class="checkout-item-image">
+                        <img src="${item.image || 'uploads/placeholder.jpg'}" alt="${item.name}">
+                        <span class="checkout-item-quantity">${item.quantity}</span>
+                    </div>
+                    <div class="checkout-item-details">
+                        <span class="checkout-item-name">${item.name}</span>
+                        <div class="checkout-item-controls">
+                            <button type="button" class="qty-btn" data-id="${item.id}" data-action="decrease-qty" aria-label="Disminuir cantidad">-</button>
+                            <span>${item.quantity}</span>
+                            <button type="button" class="qty-btn" data-id="${item.id}" data-action="increase-qty" aria-label="Aumentar cantidad">+</button>
+                        </div>
+                    </div>
+                    <div class="checkout-item-price">
+                        <span>$${itemTotal}</span>
+                        <button type="button" class="remove-btn" data-id="${item.id}" data-action="remove-item" aria-label="Eliminar">&times;</button>
                     </div>
                 </div>
-                <strong>${formatCurrency(item.price * item.quantity)}</strong>
-                <button type="button" class="cart-item-remove" data-id="${item.id}" aria-label="Quitar">&times;</button>
             `;
-            fragment.appendChild(itemEl);
-        });
-        cartListEl.appendChild(fragment);
-        updateCheckoutTotals();
-    }
-
-    /**
-     * Maneja los clics en la lista del carrito (quitar o cambiar cantidad).
-     */
-    function handleCartListInteraction(event) {
-        const target = event.target;
-        const id = target.dataset.id;
-        if (!id || !window.Cart) return;
-
-        if (target.classList.contains('cart-item-remove')) {
-            window.Cart.removeItem(id);
-            renderCheckoutCart(); 
-        }
-
-        if (target.classList.contains('cart-item-qty')) {
-            let newQuantity = parseInt(target.value, 10);
-            if (isNaN(newQuantity) || newQuantity < 1) {
-                newQuantity = 1;
-                target.value = 1;
-            }
-            
-            window.Cart.updateItemQuantity(id, newQuantity);
-
-            renderCheckoutCart(); // Re-renderizar todo
-        }
-    }
-
-    async function handleApplyCoupon(){
-    const codigo = couponInput.value.trim();
-    if(!codigo) {
-        alert('Por favor ingresa un código de cupón');
-        return;
-    }
-    
-    console.log('Aplicando cupón:', codigo); // 
-    
-    couponBtn.disabled = true;
-    couponBtn.textContent = 'Verificando...';
-
-    try{
-        const response = await fetch('./api/cupon.php', { //
-            method: 'POST',
-            headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify({codigo: codigo})
         });
         
-        console.log('Response status:', response.status); //
-        
-        const result = await response.json();
-        console.log('Response data:', result); //
-        
-        if(!response.ok) { 
-            throw new Error(result.error || 'Error al validar cupón');
-        }
-        
-        // Cupón aplicado exitosamente
-        currentDiscount = parseFloat(result.descuento);
-        currentCouponId = parseInt(result.id_cupon);
-        
-        console.log('Descuento aplicado:', currentDiscount); 
-        
-        couponInput.style.color = 'green';
-        couponInput.value = `Cupón ${codigo} aplicado :)`;
-        couponInput.disabled = true;
-        couponBtn.textContent = ':)';
-        couponBtn.style.backgroundColor = 'green';
-        couponBtn.disabled = true;
-        
-        updateCheckoutTotals(); // Actualizar totales
-    
-    } catch(error) {
-        console.error('Error completo:', error);
-        
-        currentDiscount = 0;
-        currentCouponId = null;
-        
-        couponInput.style.color = 'var(--color-error)';
-        alert('Error: ' + error.message); // Alerta temporal para ver el error
-        
-        updateCheckoutTotals();
-        
-    } finally {
-        if(!couponBtn.disabled) {
-            couponBtn.textContent = 'Aplicar';
-        }
+        cartListEl.innerHTML = itemsHtml.join('');
     }
-}
 
+    
     /**
-     * Maneja el envío del formulario de pago.
+     * Maneja la interacción del usuario con la lista del carrito (cambiar cantidad, eliminar).
      */
-    async function handlePaymentSubmit(event) {
-        event.preventDefault();
-        submitBtn.disabled = true;
-        submitBtn.textContent = 'Procesando...';
+    async function handleCartListInteraction(e) {
+        const action = e.target.dataset.action;
+        const id = e.target.dataset.id;
 
-        // 1. Recolectar datos del formulario
-        const formData = new FormData(form);
-        const data = Object.fromEntries(formData.entries());
+        if (!action || !id) return;
 
-        // 2. Recolectar items del carrito
-        const cartItems = window.Cart.getItems();
-        if (cartItems.length === 0) {
-            paymentStatusEl.textContent = 'Tu carrito está vacío.';
-            submitBtn.disabled = false;
-            submitBtn.textContent = 'Procesar Pago';
-            return;
-        }
-        
-
-        // 4. Enviar todo al nuevo endpoint
-        try {
-            const response = await fetch('procesar_pedido.php', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Accept': 'application/json'
-                },
-                body: JSON.stringify({
-                    formData: data,
-                    cartItems: cartItems,
-                    discount: currentDiscount
-                })
-            });
-
-            const result = await response.json();
-
-            if (result.success) {
-                paymentStatusEl.textContent = `¡Pedido #${result.orderId} creado con éxito! Redirigiendo...`;
-                paymentStatusEl.style.color = 'green';
-                window.Cart.clear(); // Limpiar carrito
-                // Redirigir a una página de "gracias"
-                setTimeout(() => {
-                    window.location.href = `/gracias.php?order_id=${result.orderId}`;
-                }, 2000);
+        if (action === 'increase-qty') {
+            // 'addItem' en cart.js suma la cantidad si el producto ya existe
+            window.Cart.addItem({ id: id }, 1); 
+        } else if (action === 'decrease-qty') {
+            // Necesitamos una función para decrementar que no está en tu cart.js
+            // Usaremos updateItemQuantity
+            const item = window.Cart.getItems().find(i => i.id === id);
+            if (item && item.quantity > 1) {
+                window.Cart.updateItemQuantity(id, item.quantity - 1);
             } else {
-                throw new Error(result.error || 'Ocurrió un error desconocido.');
+                window.Cart.removeItem(id); // Elimina si es 1
             }
-
-        } catch (error) {
-            console.error('Error al procesar el pago:', error);
-            paymentStatusEl.textContent = `Error: ${error.message}`;
-            paymentStatusEl.style.color = 'var(--color-error)';
-            submitBtn.disabled = false;
-            submitBtn.textContent = 'Procesar Pago';
+        } else if (action === 'remove-item') {
+            window.Cart.removeItem(id);
         }
+
+        // Volver a dibujar el carrito
+        renderCheckoutCart();
+        
+        // Después de cualquier cambio, recalcular los totales llamando al servidor
+        await initializePayment(currentCouponId);
     }
+
 
     /**
-     * Inicializa y monta el formulario de Stripe Elements.
+     * Obtiene el client_secret del backend y prepara los elementos de Stripe.
+     * ESTA FUNCIÓN AHORA TAMBIÉN ACTUALIZA LOS TOTALES.
      */
-    function initializeStripeElements() {
-        if (!cardElement) {
-            elements = stripe.elements();
-            const style = {
-                base: {
-                    fontSize: '16px',
-                    fontFamily: '"Poppins", system-ui, sans-serif'
-                }
-            };
-            cardElement = elements.create('card', { style: style, hidePostalCode: true });
-            cardElement.mount('#card-element');
-
-            cardElement.on('change', (event) => {
-                if (event.error) {
-                    cardErrorsEl.textContent = event.error.message;
-                } else {
-                    cardErrorsEl.textContent = '';
-                }
-            });
-        }
-    }
-
-    // --- Lógica del Modal de Tarjeta  ---
-    const addCardBtn = document.getElementById('add-card-btn');
-    const addCardModal = document.getElementById('add-card-modal');
-    const closeModalBtn = document.getElementById('close-modal-btn');
-    const cancelCardBtn = document.getElementById('cancel-card-btn');
-    const submitCardBtn = document.getElementById('submit-card-btn'); // Botón "Pagar" dentro del modal
-    const cardHolderName = document.getElementById('cardholder-name');
-    const cardErrorsEl = document.getElementById('card-errors');
-
-    function openModal() {
-        if (addCardModal) {
-            initializeStripeElements(); // Inicializa Stripe al abrir el modal
-            addCardModal.style.display = 'flex';
-        }
-    }    
-    function closeModal() { if (addCardModal) addCardModal.style.display = 'none'; }
-
-    addCardBtn?.addEventListener('click', openModal);
-    closeModalBtn?.addEventListener('click', closeModal);
-    cancelCardBtn?.addEventListener('click', closeModal);
-  
-    form?.addEventListener('submit', (e) => {
-        e.preventDefault(); // Evita que el formulario principal se envíe
-        openModal();
-    });
-
-/**
-     * Paso 1: Llamar al backend para crear un Payment Intent.
-     */
-    async function createPaymentIntent() {
-        setLoading(true, 'Iniciando pago...');
+    async function initializePayment(couponId = null) {
+        setLoading(true);
+        paymentStatusEl.textContent = 'Actualizando totales...';
         
-        const cartItems = window.Cart.getItems();
-        if (cartItems.length === 0) {
-            showError('Tu carrito está vacío.');
-            setLoading(false);
-            return false;
-        }
-
+        const cartItems = window.Cart.getItems(); 
+        
         try {
-            const response = await fetch('crear_payment_intent.php', {
+            const response = await fetch('./crear_payment_intent.php', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ 
-                    cartItems: cartItems 
-                    cuponId: currentCouponId
+                body: JSON.stringify({
+                    cartItems: cartItems, // <-- Enviamos el carrito
+                    cuponId: couponId 
                 })
             });
 
             const data = await response.json();
 
             if (data.error) {
-                throw new Error(data.error);
+                showError(data.error);
+                return;
+            }
+
+            // Guardamos el client secret
+            currentClientSecret = data.clientSecret;
+
+            // ¡ACTUALIZAMOS TOTALES DESDE EL SERVIDOR!
+            totalAmountEl.textContent = formatCurrency(data.total);
+            subtotalAmountEl.textContent = formatCurrency(data.subtotal);
+            discountAmountEl.textContent = formatCurrency(data.discount); 
+
+            // Manejar pedidos gratis (total 0)
+            if (data.total === 0) {
+                submitBtn.textContent = 'Completar Pedido (Gratis)';
+                addCardBtn.style.display = 'none'; 
+            } else {
+                // Configurar Stripe Elements si no es gratis
+                submitBtn.textContent = 'Procesar Pago';
+                addCardBtn.style.display = 'block';
+
+                if (!elements) {
+                    elements = stripe.elements({ clientSecret: currentClientSecret });
+                    cardElement = elements.create('card', {
+                        // Opciones de estilo
+                    });
+                    cardElement.mount('#card-element');
+                    cardElement.on('change', (e) => {
+                        cardErrorsEl.textContent = e.error ? e.error.message : '';
+                    });
+                }
             }
             
-            currentClientSecret = data.clientSecret; // Guarda el secret
-            return true;
+            setLoading(false);
+            paymentStatusEl.textContent = ''; // Limpiar estado
 
         } catch (error) {
-            showError(`Error: ${error.message}`);
-            setLoading(false);
-            return false;
+            showError('No se pudo conectar con el servidor de pagos. ' + error.message);
         }
     }
-
+    
     /**
-     * Paso 2: Confirmar el pago en el cliente (aquí ocurre 3D Secure).
+     * Intenta aplicar un cupón
      */
-    async function confirmCardPayment() {
-        if (!currentClientSecret) {
-            showError('No se pudo inicializar el pago.');
-            return null;
+    async function handleApplyCoupon() {
+        const code = couponInput.value.trim();
+        if (!code) {
+            showError('Ingresa un código de cupón.');
+            return;
         }
-
-        setLoading(true, 'Procesando tarjeta...');
         
-        const { paymentIntent, error } = await stripe.confirmCardPayment(currentClientSecret, {
-            payment_method: {
-                card: cardElement,
-                billing_details: {
-                    name: cardHolderName.value,
-                    email: document.getElementById('email').value, // Tomamos el email del form principal
-                },
-            },
-        });
-
-        if (error) {
-            showError(error.message);
-            setLoading(false);
-            return null;
-        }
-
-        if (paymentIntent.status === 'succeeded') {
-            return paymentIntent; 
-        } else {
-            showError(`Estado del pago: ${paymentIntent.status}`);
-            setLoading(false);
-            return null;
-        }
-    }
-
-    /**
-     * Paso 3: Guardar el pedido en nuestra base de datos.
-     */
-    async function saveOrderToDatabase(paymentIntent) {
-        setLoading(true, 'Guardando pedido...');
-        
-        const formData = new FormData(form);
-        const data = Object.fromEntries(formData.entries());
-        const cartItems = window.Cart.getItems();
+        setLoading(true);
+        paymentStatusEl.textContent = 'Validando cupón...';
 
         try {
-            const response = await fetch('procesar_pedido.php', {
+            const response = await fetch('./api/cupon.php', { // Asumiendo que esta es tu API
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    formData: data,
-                    cartItems: cartItems,
-                    //discount: currentDiscount,
-                    cuponId: currentCouponId,
-                    paymentIntentId: paymentIntent.id // Enviamos el ID del pago exitoso
-                })
+                body: JSON.stringify({ action: 'apply', code: code })
             });
+            const data = await response.json();
 
-            const result = await response.json();
-
-            if (result.success) {
-                showSuccess(`¡Pedido #${result.orderId} creado! Redirigiendo...`);
-                window.Cart.clear();
-                setTimeout(() => {
-                    // *** CREA ESTA PÁGINA DE "GRACIAS" ***
-                    window.location.href = `gracias.php?order_id=${result.orderId}`;
-                }, 2000);
+            if (data.success) {
+                currentCouponId = data.cuponId;
+                couponInput.disabled = true;
+                couponBtn.disabled = true;
+                couponBtn.textContent = 'Aplicado';
+                
+                // Si el cupón es válido, RECALCULAMOS todo el intento de pago
+                await initializePayment(currentCouponId);
+                
+                showSuccess('Cupón aplicado con éxito.');
             } else {
-                throw new Error(result.error || 'No se pudo guardar el pedido en la base de datos.');
+                showError(data.error || 'Cupón no válido.');
             }
-
         } catch (error) {
-            showError(`Error crítico: ${error.message}. Tu pago fue procesado, contacta a soporte.`);
+            showError('Error al conectar con el servidor de cupones.');
+        } finally {
             setLoading(false);
         }
     }
 
     /**
-     * Flujo de pago principal (orquestador).
+     * Valida el formulario de dirección/contacto
+     */
+    function validateForm() {
+        form.classList.add('was-validated');
+        if (!form.checkValidity()) {
+            showError('Por favor, completa todos los campos de contacto y envío.');
+            const invalidField = form.querySelector(':invalid');
+            if (invalidField) {
+                invalidField.focus();
+            }
+            return false;
+        }
+        return true;
+    }
+
+    /**
+     * Muestra el modal de la tarjeta
+     */
+    function showCardModal() {
+        if (validateForm()) {
+            addCardModal.style.display = 'flex';
+        }
+    }
+
+    /**
+     * Oculta el modal de la tarjeta
+     */
+    function hideCardModal() {
+        addCardModal.style.display = 'none';
+    }
+
+    /**
+     * Maneja el flujo de pago principal (botón "Pagar" o "Completar Pedido")
      */
     async function handlePaymentFlow() {
-        // Validar campos de formulario (nombre, email, etc.)
-        if (!form.checkValidity()) {
-            form.reportValidity();
-            showError('Por favor, completa la información de envío y contacto.');
-            closeModal();
+        if (isSubmitting) return;
+
+        // 1. Validar el formulario de contacto/envío
+        if (!validateForm()) {
             return;
         }
 
-        // Paso 1: Crear Payment Intent
-        const intentCreated = await createPaymentIntent();
-        if (!intentCreated) return;
+        // 2. Obtener los datos del formulario
+        const formData = new FormData(form);
+        const billingDetails = {
+            name: formData.get('nom_cliente'),
+            email: formData.get('email'),
+            phone: formData.get('num_cel'),
+            address: {
+                line1: formData.get('direccion'),
+                city: formData.get('ciudad'),
+                postal_code: formData.get('cod_post'),
+                country: 'MX', // Asumir México
+            },
+        };
 
-        // Paso 2: Confirmar Pago (en el cliente)
-        const paymentIntent = await confirmCardPayment();
-        if (!paymentIntent) return;
+        // 3. Manejar caso de PEDIDO GRATIS
+        if (totalAmountEl.textContent === formatCurrency(0)) {
+            setLoading(true);
+            showSuccess('Procesando pedido gratuito...');
+            await processOrderOnServer(currentClientSecret, billingDetails);
+            return;
+        }
 
-        // Paso 3: Guardar Pedido (en nuestro backend)
-        await saveOrderToDatabase(paymentIntent);
-    }
-    
-    // Listener para el botón "Pagar" DENTRO del modal
-    submitCardBtn?.addEventListener('click', handlePaymentFlow);
+        // 4. Manejar caso de PEDIDO CON PAGO (Stripe)
+        if (!cardElement) {
+            showError('El formulario de pago no se ha cargado correctamente.');
+            return;
+        }
+        
+        setLoading(true);
+        showSuccess('Procesando pago con Stripe...');
 
-    // --- Funciones de Utilidad ---
-    function setLoading(isLoading, message = '') {
-        submitBtn.disabled = isLoading;
-        submitCardBtn.disabled = isLoading;
-        if (isLoading) {
-            paymentStatusEl.textContent = message;
-            paymentStatusEl.className = 'status-loading';
-        } else {
-            paymentStatusEl.textContent = '';
+        try {
+            const { error, paymentIntent } = await stripe.confirmCardPayment(
+                currentClientSecret,
+                {
+                    payment_method: {
+                        card: cardElement,
+                        billing_details: billingDetails,
+                    },
+                }
+            );
+
+            if (error) {
+                showError(error.message || 'Ocurrió un error con el pago.');
+                isSubmitting = false;
+                setLoading(false);
+                return;
+            }
+
+            if (paymentIntent.status === 'succeeded') {
+                showSuccess('¡Pago exitoso! Guardando tu pedido...');
+                // 5. Enviar el pedido al servidor
+                await processOrderOnServer(paymentIntent.id, billingDetails);
+            }
+
+        } catch (e) {
+            showError('Error al confirmar el pago: ' + e.message);
+        } finally {
+            // setLoading(false) se maneja dentro de processOrderOnServer
         }
     }
 
+    /**
+     * Envía los datos finales al servidor para crear el pedido en la BD
+     */
+    async function processOrderOnServer(paymentIntentId, billingDetails) {
+        try {
+            const cartItems = window.Cart.getItems(); 
+
+            const response = await fetch('./procesar_pedido.php', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    cartItems: cartItems,
+                    formData: {
+                        // Aplanar los datos para el backend
+                        nom_cliente: billingDetails.name,
+                        email: billingDetails.email,
+                        num_cel: billingDetails.phone,
+                        direccion: billingDetails.address.line1,
+                        ciudad: billingDetails.address.city,
+                        cod_post: billingDetails.address.postal_code
+                    },
+                    paymentIntentId: paymentIntentId,
+                    cuponId: currentCouponId
+                })
+            });
+
+            const data = await response.json();
+
+            if (data.success) {
+                window.Cart.clear();
+                // Redirigir a la página de "gracias" con el ID del pedido
+                window.location.href = `./gracias.php?orderId=${data.orderId}`;
+            } else {
+                showError(data.error || 'Error al guardar el pedido.');
+                isSubmitting = false;
+                setLoading(false);
+            }
+        } catch (e) {
+            showError('Error de conexión al guardar el pedido: ' + e.message);
+            isSubmitting = false;
+            setLoading(false);
+        }
+    }
+
+
+    // --- Funciones de utilidad (setLoading, showError, showSuccess) ---
+    function setLoading(isLoading) {
+        isSubmitting = isLoading;
+        submitBtn.disabled = isLoading;
+        submitCardBtn.disabled = isLoading;
+        
+        if (isLoading) {
+            submitBtn.textContent = 'Procesando...';
+            submitCardBtn.textContent = 'Procesando...';
+            paymentStatusEl.className = 'status-loading';
+        } else {
+            if (totalAmountEl.textContent === formatCurrency(0)) {
+                submitBtn.textContent = 'Completar Pedido (Gratis)';
+            } else {
+                submitBtn.textContent = 'Procesar Pago';
+            }
+            submitCardBtn.textContent = 'Pagar';
+            paymentStatusEl.className = '';
+        }
+    }
+    
     function showError(message) {
         setLoading(false);
         paymentStatusEl.textContent = message;
         paymentStatusEl.className = 'error-message';
-        // También muestra en los errores de la tarjeta si es relevante
         cardErrorsEl.textContent = message;
     }
     
     function showSuccess(message) {
-        setLoading(false);
         paymentStatusEl.textContent = message;
         paymentStatusEl.className = 'success-message';
     }
 
     // --- Inicialización ---
     renderCheckoutCart();
+    initializePayment(); 
     
     // Listeners
     cartListEl?.addEventListener('change', handleCartListInteraction);
     cartListEl?.addEventListener('click', handleCartListInteraction);
     couponBtn?.addEventListener('click', handleApplyCoupon);
-    submitCardBtn?.addEventListener('click', handlePaymentFlow);
-    //form?.addEventListener('submit', handlePaymentSubmit);
     
-    // Escuchar eventos de 'cart.js' (si el dropdown sigue existiendo)
-    document.addEventListener('cart:updated', () => {
-        renderCheckoutCart();
+    submitBtn?.addEventListener('click', (e) => {
+        e.preventDefault(); 
+        if (totalAmountEl.textContent === formatCurrency(0)) {
+            handlePaymentFlow();
+        } else {
+            showCardModal();
+        }
     });
 
-    console.log('Coupon button:', couponBtn);
-    console.log('Coupon input:', couponInput);
+    submitCardBtn?.addEventListener('click', handlePaymentFlow);
+
+    // Listeners del Modal
+    addCardBtn?.addEventListener('click', showCardModal);
+    closeModalBtn?.addEventListener('click', hideCardModal);
+    cancelCardBtn?.addEventListener('click', hideCardModal);
     
-    if(!couponBtn) {
-        console.error(' No se encontró el botón de cupón');
-    }
-    if(!couponInput) {
-        console.error(' No se encontró el input de cupón');
-    }
+    addCardModal?.addEventListener('click', (e) => {
+        if (e.target === addCardModal) {
+            hideCardModal();
+        }
+    });
+    
+    // Escuchar eventos de 'cart:updated' (por si acaso)
+    document.addEventListener('cart:updated', () => {
+        renderCheckoutCart();
+        initializePayment(currentCouponId); 
+    });
+    
 });

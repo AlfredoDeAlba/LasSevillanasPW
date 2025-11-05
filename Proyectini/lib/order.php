@@ -59,7 +59,7 @@ SQL;
 function calculateServerTotal(array $cartItems, ?int $cuponId): array
 {
     if (empty($cartItems)) {
-        return [0.0, 0.0, 0.0];
+        return [0.0, 0.0, 0.0, 0.0, 0.0];
     }
 
     // 1. Obtener IDs y crear un mapa de cantidades
@@ -87,14 +87,17 @@ function calculateServerTotal(array $cartItems, ?int $cuponId): array
 
     // 4. Calcular el subtotal (ya con promociones)
     $subtotalConPromos = 0.0;
+    $subtotalOriginal = 0.0;
     foreach ($productsWithPromos as $product) {
         $id = (int)$product['id_producto'];
         // Usar precio_descuento si existe, si no, el precio normal
         $precioReal = (float)($product['precio_descuento'] ?? $product['precio']);
-        
+        $precioOriginal = (float)$product['precio'];
         // Asegurarse de que el ID esté en el mapa (debería estarlo)
         if (isset($quantityMap[$id])) {
-             $subtotalConPromos += $precioReal * $quantityMap[$id];
+             $cantidad = $quantityMap[$id];
+             $subtotalConPromos += $precioReal * $cantidad;
+             $subtotalOriginal += $precioOriginal * $cantidad;
         }
     }
 
@@ -120,7 +123,10 @@ function calculateServerTotal(array $cartItems, ?int $cuponId): array
     // Asegurarse de que el total no sea negativo (ej. cupón mayor que el total)
     $totalFinal = max(0.0, $totalFinal); 
 
-    return [$totalFinal, $subtotalConPromos, $descuentoCupon];
+    $descuentoPromociones = $subtotalOriginal - $subtotalConPromos;
+    $descuentoTotal = $descuentoPromociones + $descuentoCupon;
+
+    return [$totalFinal, $subtotalOriginal, $descuentoTotal];
 }
 
 
