@@ -109,6 +109,11 @@ document.addEventListener('DOMContentLoaded', () => {
      * para evitar que el contenido se oculte debajo del header sticky.
      * --- VERSIÓN 3 (Estable, sin ResizeObserver) ---
      */
+    /**
+     * Observa el tamaño del header y aplica un padding-top al <main>
+     * para evitar que el contenido se oculte debajo del header sticky.
+     * --- VERSIÓN 4 (Estable, con 'load' event) ---
+     */
     function setupHeaderPadding() {
         const topBar = document.querySelector('.top-bar');
         const main = document.querySelector('main');
@@ -123,13 +128,14 @@ document.addEventListener('DOMContentLoaded', () => {
         };
 
         // 1. Ejecuta la función cuando la ventana cambie de tamaño
-        // (Esto es para cuando pasas de móvil a escritorio)
         window.addEventListener('resize', updatePadding);
 
-        // 2. Ejecuta la función una vez al inicio
-        // (Lo ejecutamos después de un breve momento para asegurar
-        // que todo el CSS y las fuentes han cargado)
-        setTimeout(updatePadding, 100);
+        // 2. Ejecuta la función tan pronto el DOM está listo
+        updatePadding();
+
+        // 3. Ejecuta la función OTRA VEZ cuando toda la página
+        // (incluyendo imágenes y fuentes) haya cargado.
+        window.addEventListener('load', updatePadding);
     }
 
     /**

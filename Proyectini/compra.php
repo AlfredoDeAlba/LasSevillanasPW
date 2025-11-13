@@ -4,7 +4,8 @@ require_once __DIR__ . '/templates/header.php';
 require_once __DIR__ . '/lib/config.php';
 ?>
 
-<main class="container" class="purchase-page">
+<!-- FIX: Remove duplicate class attribute -->
+<main class="container purchase-page">
     <div class="purchase-container">
         
         <section class="payment-form-section">
@@ -15,7 +16,8 @@ require_once __DIR__ . '/lib/config.php';
                     <h3>Tu Carrito</h3>
                 </div>
                 <div id="checkout-cart-list" class="checkout-list">
-                    </div>
+                    <!-- Cart items will be rendered here by JavaScript -->
+                </div>
                 <div id="cart-empty-message" style="display: none;">
                     <p>Tu carrito está vacío. <a href="catalogo.php">Volver al catálogo</a>.</p>
                 </div>
@@ -69,12 +71,20 @@ require_once __DIR__ . '/lib/config.php';
                         <span class="section-number">4</span>
                         <h3>Método de Pago</h3>
                     </div>
-                    <button type="button" id="add-card-btn" class="secondary button full-width">
+                    <button type="button" id="add-card-btn" class="secondary full-width">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                          <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+                        </svg>
                         Agregar una nueva tarjeta
                     </button>
                 </div>
 
-                <button type="submit" id="submit-payment-btn" class="primary button full-width">Procesar Pago</button>
+                <button type="submit" id="submit-payment-btn" class="primary full-width">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 10-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 002.25-2.25v-6.75a2.25 2.25 0 00-2.25-2.25H6.75a2.25 2.25 0 00-2.25 2.25v6.75a2.25 2.25 0 002.25 2.25z" />
+                    </svg>
+                    Procesar Pago
+                </button>
                 <div id="payment-status"></div>
             </form>
         </section>
@@ -100,6 +110,7 @@ require_once __DIR__ . '/lib/config.php';
         </aside>
     </div>
 
+    <!-- Modal for adding card -->
     <div id="add-card-modal" class="modal-overlay" style="display: none;">
         <div class="modal-content">
             <div class="modal-header">
@@ -111,13 +122,13 @@ require_once __DIR__ . '/lib/config.php';
                 <form id="stripe-card-form">
                     <div class="form-field">
                         <label for="cardholder-name">Nombre del titular</label>
-                        <input id="cardholder-name" type="text" class="StripeElement" placeholder="Nombre como aparece en la tarjeta" required>
+                        <input id="cardholder-name" type="text" placeholder="Nombre como aparece en la tarjeta" required>
                     </div>
 
                     <div class="form-field">
                         <label for="card-element">Datos de la Tarjeta</label>
                         <div id="card-element"></div>
-                        <div id="card-errors" role="alert" class="error-message" style="margin-top: 10px;"></div>
+                        <div id="card-errors" role="alert"></div>
                     </div>
                 </form>
 

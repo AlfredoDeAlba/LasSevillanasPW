@@ -66,6 +66,10 @@ $categories = readCategories();
             <nav class="main-nav" aria-label="Principal (Escritorio)">
                 <ul>
                     <li><a href="/LasSevillanas/Proyectini/index.php" class="<?php echo $currentPage == 'index.php' ? 'active' : ''; ?>">Inicio</a></li>
+                    <li><a href="/LasSevillanas/Proyectini/catalogo.php" class="<?php echo $currentPage == 'catalogo.php' ? 'active' : ''; ?>">Cat&aacute;logo</a></li>
+                    <li><a href="/LasSevillanas/Proyectini/historia.php" class="<?php echo $currentPage == 'historia.php' ? 'active' : ''; ?>">Historia</a></li>
+                    <li><a href="/LasSevillanas/Proyectini/index.php#valores">Valores</a></li>
+                    <li><a href="/LasSevillanas/Proyectini/index.php#contacto">Contacto</a></li>
                     <li><a href="/LasSevillanas/Proyectini/terminos.php" class="<?php echo $currentPage == 'terminos.php' ? 'active' : ''; ?>">T&eacute;rminos y Condiciones</a></li>
                 </ul>
             </nav>
