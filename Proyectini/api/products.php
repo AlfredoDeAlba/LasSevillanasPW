@@ -129,12 +129,12 @@ function handleGet() : void {
         if(!$product){
             errorResponse('Producto no encontrado', 404);
         }
-        $productConDescuento = applyPromotions([$product]); //ahora le pasamos la funcion de aplicar promos primero
-        jsonResponse(['data' => $productConDescuento[0]]);
+        //$productConDescuento = applyPromotions([$product]); //ahora le pasamos la funcion de aplicar promos primero
+        jsonResponse(['data' => $product]);
     }else{ //obtener todos los productos
         $products = readProducts();
-        $productConDescuento = applyPromotions($products);
-        jsonResponse(['data' => $productConDescuento]);
+        //$productConDescuento = applyPromotions($products);
+        jsonResponse(['data' => $products]);
     }
 }
 

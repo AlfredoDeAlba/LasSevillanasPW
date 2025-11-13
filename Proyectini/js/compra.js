@@ -174,7 +174,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     cartItems: cartItems, // <-- Enviamos el carrito
-                    cuponId: couponId 
+                    coupon_id: couponId 
                 })
             });
 
@@ -239,12 +239,12 @@ document.addEventListener('DOMContentLoaded', function() {
             const response = await fetch('./api/cupon.php', { // Asumiendo que esta es tu API
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ action: 'apply', code: code })
+                body: JSON.stringify({ action: 'apply', codigo: code })
             });
             const data = await response.json();
 
             if (data.success) {
-                currentCouponId = data.cuponId;
+                currentCouponId = data.cupon.id_cupon;
                 couponInput.disabled = true;
                 couponBtn.disabled = true;
                 couponBtn.textContent = 'Aplicado';

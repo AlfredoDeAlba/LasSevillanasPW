@@ -225,79 +225,313 @@ loadProducts().catch((error) => {
 });
 
     // --- 2. LÓGICA DE ESTADÍSTICAS ---
-    let chartVentasMensuales, chartVentasEstacionales, chartVisitas, chartTopProductos;
+ // --- 2. LÓGICA DE ESTADÍSTICAS (FIXED) ---
+let chartVentasMensuales, chartVentasEstacionales, chartVisitas, chartTopProductos;
 
-    function cargarEstadisticas() {
-        // Destruir gráficas anteriores para evitar duplicados
-        if (chartVentasMensuales) chartVentasMensuales.destroy();
-        if (chartVentasEstacionales) chartVentasEstacionales.destroy();
-        if (chartVisitas) chartVisitas.destroy();
-        if (chartTopProductos) chartTopProductos.destroy();
+function cargarEstadisticas() {
+    console.log('🔄 Cargando estadísticas...');
+    
+    // Destruir gráficas anteriores para evitar duplicados
+    if (chartVentasMensuales) {
+        chartVentasMensuales.destroy();
+        chartVentasMensuales = null;
+    }
+    if (chartVentasEstacionales) {
+        chartVentasEstacionales.destroy();
+        chartVentasEstacionales = null;
+    }
+    if (chartVisitas) {
+        chartVisitas.destroy();
+        chartVisitas = null;
+    }
+    if (chartTopProductos) {
+        chartTopProductos.destroy();
+        chartTopProductos = null;
+    }
 
+    // CRÍTICO: Esperar a que el DOM esté visible antes de crear gráficas
+    setTimeout(() => {
         // 1. Gráfica de Ventas Mensuales
         fetch('../api/stats.php?report=ventas_mensuales')
-            .then(res => res.json())
+            .then(res => {
+                if (!res.ok) throw new Error('HTTP error ' + res.status);
+                return res.json();
+            })
             .then(response => {
-                if (response.data) {
-                    const ctx = document.getElementById('chart-ventas-mensuales').getContext('2d');
+                console.log('📊 Ventas mensuales:', response);
+                
+                if (response.data && response.data.length > 0) {
+                    const canvas = document.getElementById('chart-ventas-mensuales');
+                    if (!canvas) {
+                        console.error('❌ Canvas chart-ventas-mensuales no encontrado');
+                        return;
+                    }
+                    
+                    // Verificar que el canvas sea visible
+                    const rect = canvas.getBoundingClientRect();
+                    console.log('Canvas dimensions:', rect.width, 'x', rect.height);
+                    
+                    const ctx = canvas.getContext('2d');
                     chartVentasMensuales = new Chart(ctx, {
                         type: 'bar',
                         data: {
-                            labels: response.data.map(item => item.mes),
-                            datasets: [{ label: 'Ventas $MXN', data: response.data.map(item => item.total), backgroundColor: 'rgba(75, 192, 192, 0.5)' }]
+                            labels: response.data.map(item => item.Mes),
+                            datasets: [{
+                                label: 'Ventas $MXN',
+                                data: response.data.map(item => {
+                                    const valor = parseFloat(item.Total);
+                                    console.log('Valor mensual:', item.Mes, '=', valor);
+                                    return valor;
+                                }),
+                                backgroundColor: 'rgba(75, 192, 192, 0.6)',
+                                borderColor: 'rgba(75, 192, 192, 1)',
+                                borderWidth: 2
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: true,
+                            plugins: {
+                                legend: {
+                                    display: true,
+                                    position: 'top'
+                                }
+                            },
+                            scales: {
+                                y: {
+                                    beginAtZero: true,
+                                    ticks: {
+                                        callback: function(value) {
+                                            return '$' + value.toLocaleString('es-MX');
+                                        }
+                                    }
+                                }
+                            }
                         }
                     });
+                    console.log('✅ Gráfica de ventas mensuales creada');
+                } else {
+                    console.warn('⚠️ No hay datos de ventas mensuales');
+                    const canvas = document.getElementById('chart-ventas-mensuales');
+                    if (canvas && canvas.parentElement) {
+                        canvas.parentElement.innerHTML = '<p style="text-align:center;color:#666;">No hay datos disponibles</p>';
+                    }
                 }
-            });
+            })
+            .catch(err => console.error('❌ Error ventas mensuales:', err));
 
         // 2. Gráfica de Ventas Estacionales
         fetch('../api/stats.php?report=ventas_estacionales')
-            .then(res => res.json())
+            .then(res => {
+                if (!res.ok) throw new Error('HTTP error ' + res.status);
+                return res.json();
+            })
             .then(response => {
-                 if (response.data) {
-                    const ctx = document.getElementById('chart-ventas-estacionales').getContext('2d');
+                console.log('📊 Ventas estacionales:', response);
+                
+                if (response.data && response.data.length > 0) {
+                    const canvas = document.getElementById('chart-ventas-estacionales');
+                    if (!canvas) {
+                        console.error('❌ Canvas chart-ventas-estacionales no encontrado');
+                        return;
+                    }
+                    
+                    const ctx = canvas.getContext('2d');
                     chartVentasEstacionales = new Chart(ctx, {
                         type: 'line',
                         data: {
-                            labels: response.data.map(item => item.trimestre),
-                            datasets: [{ label: 'Ventas $MXN', data: response.data.map(item => item.total), borderColor: 'rgba(153, 102, 255, 1)', tension: 0.1 }]
+                            labels: response.data.map(item => item.Trimestre),
+                            datasets: [{
+                                label: 'Ventas $MXN',
+                                data: response.data.map(item => {
+                                    const valor = parseFloat(item.Total);
+                                    console.log('Valor trimestral:', item.Trimestre, '=', valor);
+                                    return valor;
+                                }),
+                                borderColor: 'rgba(153, 102, 255, 1)',
+                                backgroundColor: 'rgba(153, 102, 255, 0.2)',
+                                tension: 0.4,
+                                fill: true,
+                                borderWidth: 3
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: true,
+                            plugins: {
+                                legend: {
+                                    display: true,
+                                    position: 'top'
+                                }
+                            },
+                            scales: {
+                                y: {
+                                    beginAtZero: true,
+                                    ticks: {
+                                        callback: function(value) {
+                                            return '$' + value.toLocaleString('es-MX');
+                                        }
+                                    }
+                                }
+                            }
                         }
                     });
+                    console.log('✅ Gráfica de ventas estacionales creada');
+                } else {
+                    console.warn('⚠️ No hay datos de ventas estacionales');
+                    const canvas = document.getElementById('chart-ventas-estacionales');
+                    if (canvas && canvas.parentElement) {
+                        canvas.parentElement.innerHTML = '<p style="text-align:center;color:#666;">No hay datos disponibles</p>';
+                    }
                 }
-            });
+            })
+            .catch(err => console.error('❌ Error ventas estacionales:', err));
 
         // 3. Gráfica de Visitas Diarias
         fetch('../api/stats.php?report=visitas_diarias')
-            .then(res => res.json())
+            .then(res => {
+                if (!res.ok) throw new Error('HTTP error ' + res.status);
+                return res.json();
+            })
             .then(response => {
-                 if (response.data) {
-                    const ctx = document.getElementById('chart-visitas-diarias').getContext('2d');
+                console.log('📊 Visitas diarias:', response);
+                
+                if (response.data && response.data.length > 0) {
+                    const canvas = document.getElementById('chart-visitas-diarias');
+                    if (!canvas) {
+                        console.error('❌ Canvas chart-visitas-diarias no encontrado');
+                        return;
+                    }
+                    
+                    const ctx = canvas.getContext('2d');
                     chartVisitas = new Chart(ctx, {
                         type: 'line',
                         data: {
-                            labels: response.data.map(item => item.fecha_visita).reverse(),
-                            datasets: [{ label: 'Visitas', data: response.data.map(item => item.contador).reverse(), borderColor: 'rgba(255, 159, 64, 1)' }]
+                            labels: response.data.map(item => item.Fecha_visita).reverse(),
+                            datasets: [{
+                                label: 'Visitas',
+                                data: response.data.map(item => parseInt(item.Contador)).reverse(),
+                                borderColor: 'rgba(255, 159, 64, 1)',
+                                backgroundColor: 'rgba(255, 159, 64, 0.2)',
+                                tension: 0.3,
+                                fill: true,
+                                borderWidth: 3
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: true,
+                            plugins: {
+                                legend: {
+                                    display: true,
+                                    position: 'top'
+                                }
+                            },
+                            scales: {
+                                y: {
+                                    beginAtZero: true,
+                                    ticks: {
+                                        stepSize: 1
+                                    }
+                                }
+                            }
                         }
                     });
+                    console.log('✅ Gráfica de visitas diarias creada');
+                } else {
+                    console.warn('⚠️ No hay datos de visitas');
+                    const canvas = document.getElementById('chart-visitas-diarias');
+                    if (canvas && canvas.parentElement) {
+                        canvas.parentElement.innerHTML = '<p style="text-align:center;color:#666;">No hay visitas registradas aún</p>';
+                    }
                 }
-            });
-            
+            })
+            .catch(err => console.error('❌ Error visitas diarias:', err));
+
         // 4. Gráfica Top 5 Productos
         fetch('../api/stats.php?report=top_productos')
-            .then(res => res.json())
+            .then(res => {
+                if (!res.ok) throw new Error('HTTP error ' + res.status);
+                return res.json();
+            })
             .then(response => {
-                 if (response.data) {
-                    const ctx = document.getElementById('chart-top-productos').getContext('2d');
+                console.log('📊 Top productos:', response);
+                
+                if (response.data && response.data.length > 0) {
+                    const canvas = document.getElementById('chart-top-productos');
+                    if (!canvas) {
+                        console.error('❌ Canvas chart-top-productos no encontrado');
+                        return;
+                    }
+                    
+                    const ctx = canvas.getContext('2d');
                     chartTopProductos = new Chart(ctx, {
                         type: 'pie',
                         data: {
                             labels: response.data.map(item => item.nombre),
-                            datasets: [{ label: 'Total Vendido', data: response.data.map(item => item.total_vendido) }]
+                            datasets: [{
+                                label: 'Total Vendido',
+                                data: response.data.map(item => parseInt(item.Total_vendido)),
+                                backgroundColor: [
+                                    'rgba(255, 99, 132, 0.8)',
+                                    'rgba(54, 162, 235, 0.8)',
+                                    'rgba(255, 206, 86, 0.8)',
+                                    'rgba(75, 192, 192, 0.8)',
+                                    'rgba(153, 102, 255, 0.8)'
+                                ],
+                                borderColor: [
+                                    'rgba(255, 99, 132, 1)',
+                                    'rgba(54, 162, 235, 1)',
+                                    'rgba(255, 206, 86, 1)',
+                                    'rgba(75, 192, 192, 1)',
+                                    'rgba(153, 102, 255, 1)'
+                                ],
+                                borderWidth: 2
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: true,
+                            plugins: {
+                                legend: {
+                                    position: 'bottom',
+                                    labels: {
+                                        padding: 15,
+                                        font: {
+                                            size: 12
+                                        }
+                                    }
+                                },
+                                tooltip: {
+                                    callbacks: {
+                                        label: function(context) {
+                                            let label = context.label || '';
+                                            if (label) {
+                                                label += ': ';
+                                            }
+                                            label += context.parsed + ' unidades';
+                                            return label;
+                                        }
+                                    }
+                                }
+                            }
                         }
                     });
+                    console.log('✅ Gráfica de top productos creada');
+                } else {
+                    console.warn('⚠️ No hay datos de productos');
+                    const canvas = document.getElementById('chart-top-productos');
+                    if (canvas && canvas.parentElement) {
+                        canvas.parentElement.innerHTML = '<p style="text-align:center;color:#666;">No hay datos de ventas de productos</p>';
+                    }
                 }
-            });
-    }
+            })
+            .catch(err => console.error('❌ Error top productos:', err));
+
+    }, 150); // Delay de 150ms para asegurar que el DOM esté renderizado
+    
+    console.log('✅ Proceso de carga de estadísticas iniciado');
+}
 
     // --- 3. LÓGICA DE CUPONES ---
     // (Seleccionamos los elementos que YA EXISTEN en tu index.php)

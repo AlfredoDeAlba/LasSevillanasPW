@@ -65,9 +65,107 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
+    /**
+     * Añade la lógica para el header "sticky" en móviles.
+     * Agrega una clase '.scrolled' al .top-bar cuando el usuario baja la página.
+     */
+    function setupStickyHeader() {
+        const topBar = document.querySelector('.top-bar');
+        if (!topBar) {
+            return;
+        }
+        const scrollThreshold = 10; 
+
+        window.addEventListener('scroll', () => {
+            topBar.classList.toggle('scrolled', window.scrollY > scrollThreshold);
+        }, { passive: true });
+    }
+/*
+    function setupMobileMenu(){
+        const toggleBtn = document.querySelector('.mobile-nav-toggle');
+        const navMenu = document.getElementById('main-nav');
+        if(!toggleBtn || !navMenu){ return; }
+        toggleBtn.addEventListener('click', () => {
+            //anade como quita la clase de mobile nav open al body del header
+            const isOpen = document.body.classList.toggle('mobile-nav-open');
+            //actualiza el estado para lectores de pantalla
+            toggleBtn.setAttribute('aria-expanded', String(isOpen));
+        });
+        navMenu.addEventListener('click', (e) => {
+            if(e.target.tagName === 'A'){
+                document.body.classList.remove('mobile-nav-open');
+                toggleBtn.setAttribute('aria-expanded', 'false');
+            }
+        });
+    }
+*/
+
+    /**
+     * Observa el tamaño del header y aplica un padding-top al <main>
+     * para evitar que el contenido se oculte debajo del header sticky.
+     */
+    /**
+     * Observa el tamaño del header y aplica un padding-top al <main>
+     * para evitar que el contenido se oculte debajo del header sticky.
+     * --- VERSIÓN 3 (Estable, sin ResizeObserver) ---
+     */
+    function setupHeaderPadding() {
+        const topBar = document.querySelector('.top-bar');
+        const main = document.querySelector('main');
+        if (!topBar || !main) {
+            return;
+        }
+
+        // Esta es la única función que necesitamos
+        const updatePadding = () => {
+            const headerHeight = topBar.offsetHeight;
+            main.style.paddingTop = `${headerHeight}px`;
+        };
+
+        // 1. Ejecuta la función cuando la ventana cambie de tamaño
+        // (Esto es para cuando pasas de móvil a escritorio)
+        window.addEventListener('resize', updatePadding);
+
+        // 2. Ejecuta la función una vez al inicio
+        // (Lo ejecutamos después de un breve momento para asegurar
+        // que todo el CSS y las fuentes han cargado)
+        setTimeout(updatePadding, 100);
+    }
+
+    /**
+     * Añade la lógica para mostrar/ocultar la barra de búsqueda.
+     */
+    function setupSearchToggle() {
+        const topBar = document.querySelector('.top-bar');
+        const searchToggleBtn = document.querySelector('.search-toggle');
+        const searchCancelBtn = document.getElementById('search-cancel-btn');
+        const searchInput = document.getElementById('search-input');
+
+        if (!topBar || !searchToggleBtn || !searchCancelBtn || !searchInput) {
+            console.warn('Elementos de búsqueda no encontrados, la función no se activará.');
+            return;
+        }
+
+        // Abrir la búsqueda
+        searchToggleBtn.addEventListener('click', () => {
+            topBar.classList.add('search-active');
+            searchInput.focus(); 
+        });
+
+        // Cerrar la búsqueda
+        searchCancelBtn.addEventListener('click', () => {
+            topBar.classList.remove('search-active');
+            searchInput.value = ''; // Limpiar el input
+        });
+    }
+
     const initialTheme = loadThemePreference();
     applyTheme(initialTheme);
     setupSmoothScroll();
+    setupStickyHeader();
+    setupHeaderPadding();
+    //setupSearchToggle();
+    //setupMobileMenu();
 
     themeToggle?.addEventListener('click', () => {
         const nextTheme = body.dataset.theme === 'dark' ? 'light' : 'dark';

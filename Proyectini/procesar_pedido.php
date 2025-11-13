@@ -1,6 +1,9 @@
 <?php
 // ¡Iniciamos la sesión ANTES de cualquier cosa!
 
+use function App\Lib\buildReceiptHtml;
+use function App\Lib\findOrderById;
+use function App\Lib\findOrderItemsById;
 use function App\Lib\generateOrderPdfStream;
 
 session_start();
@@ -28,17 +31,16 @@ try {
     }
 
     // Validar datos básicos
-    $paymentIntentId = $data['payment_intent_id'] ?? null;
-    $name = $data['name'] ?? 'Cliente';
-    $email = $data['email'] ?? null;
-    $phone = $data['phone'] ?? null;
-    $address = $data['address'] ?? null;
-    $city = $data['city'] ?? null;
-    $state = $data['state'] ?? null;
-    $zip = $data['zip'] ?? null;
-    $items = $data['items'] ?? [];
+    $formData = $data['formData'] ?? [];
+    $paymentIntentId = $data['paymentIntentId'] ?? null;
+    $name = $formData['nom_cliente'] ?? 'Cliente';
+    $email = $formData['email'] ?? null;
+    $phone = $formData['num_cel'] ?? null;
+    $address = $formData['direccion'] ?? null;
+    $zip = $formData['cod_post'] ?? null;
+    $items = $data['cartItems'] ?? [];
     $userId = $data['user_id'] ?? null;
-    $couponId = $data['coupon_id'] ?? null;
+    $couponId = $data['cuponId'] ?? null;
 
 
     if (!$paymentIntentId || !$email || empty($items)) {
@@ -54,26 +56,33 @@ try {
     // Llamamos a la función con su namespace completo
     $success = \App\Lib\createOrder(
         $name, $email, $phone,
-        $address, $city, $state, $zip,
+        $address,
+        $zip,
         $items,
         $paymentIntentId,
         $userId,
-        $couponId
+        $couponId ? (int)$couponId : null
     );
 
     if ($success && isset($_SESSION['last_order_id'])) {
         $orderId = $_SESSION['last_order_id'];
+        $orderData = findOrderById((int)$orderId);
+        $orderItems = findOrderItemsById((int)$orderId);
 
-        // Generar el recibo en PDF (con namespace completo)
-        $pdfData = generateOrderPdfStream((int)$orderId);
-        $filename = "recibo_pedido_{$orderId}.pdf";
+        if($orderData && $orderItems){
+            // Generar el recibo en PDF (con namespace completo)
+            $htmlContent = buildReceiptHtml($orderData, $orderItems);
+            $pdfData = generateOrderPdfStream($htmlContent);
+            $filename = "recibo_pedido_{$orderId}.pdf";
 
-        // Enviar correo de confirmación (con namespace completo)
-        $emailBody = "<h1>¡Gracias por tu compra!</h1>";
-        $emailBody .= "<p>Hola {$name}, tu pedido #{$orderId} ha sido confirmado.</p>";
-        $emailBody .= "<p>Adjuntamos tu recibo de compra. ¡Vuelve pronto!</p>";
+            // Enviar correo de confirmación (con namespace completo)
+            $emailBody = "<h1>¡Gracias por tu compra!</h1>";
+            $emailBody .= "<p>Hola {$name}, tu pedido #{$orderId} ha sido confirmado.</p>";
+            $emailBody .= "<p>Adjuntamos tu recibo de compra. ¡Vuelve pronto!</p>";
         
-        \App\Lib\sendEmail($email, 'Confirmación de tu pedido #' . $orderId, $emailBody, $pdfData, $filename);
+            \App\Lib\sendEmail($email, 'Confirmación de tu pedido #' . $orderId, $emailBody, $pdfData, $filename);
+        
+        }
         
         // Respondemos al frontend con éxito
         echo json_encode(['success' => true, 'order_id' => $orderId]);

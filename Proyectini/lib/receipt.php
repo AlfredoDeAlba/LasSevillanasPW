@@ -2,6 +2,8 @@
 declare(strict_types=1);
 
 namespace App\Lib;
+require_once __DIR__ . '/../../vendor/autoload.php';
+require_once __DIR__ . '/db.php';
 
 use Dompdf\Dompdf;
 use Dompdf\Options;
@@ -40,12 +42,8 @@ function buildReceiptHtml(array $order, array $items) : string {
             <h3>Resumen de Artículos</h3>
             <?php foreach ($items as $item): ?>
                 <div class="cart-item">
-                    <strong><?= htmlspecialchars($item['nombre']) ?></strong><br>
-                    
-                    Cantidad: <?= htmlspecialchars((string) $item['cantidad']) ?> x $<?= number_format((float)$item['precio_unitario'], 2) ?> c/u
-                    
-                    <span style="float: right;"><strong>$<?= number_format((float)$item['precio_total'], 2) ?></strong></span>
-                </div>
+                    <strong><?= htmlspecialchars($item['nombre_producto'])?></strong><br>Cantidad: <?= htmlspecialchars((string)$item['cantidad'])?> x $<?= number_format((float)$item['precio_unitario'], 2)?> c/u
+                    <span style="float: right;"><strong>$<?= number_format((float)($item['precio_unitario'] * $item['cantidad']), 2) ?></strong></span>                </div>
             <?php endforeach; ?>
 
             <div class="order-total">
@@ -100,7 +98,7 @@ function findOrderById(int $orderId): ?array
 {
     try {
         $pdo = getPDO();
-        $stmt = $pdo->prepare("SELECT * FROM pedidos WHERE id = ?");
+        $stmt = $pdo->prepare("SELECT * FROM pedido WHERE id_pedido = ?");
         $stmt->execute([$orderId]);
         $order = $stmt->fetch(PDO::FETCH_ASSOC);
         return $order ?: null;
@@ -121,10 +119,10 @@ function findOrderItemsById(int $orderId): array
         $pdo = getPDO();
         // Hacemos un JOIN con la tabla de productos para obtener el nombre
         $stmt = $pdo->prepare("
-            SELECT dp.*, p.nombre AS producto_nombre
-            FROM detalles_pedido dp
-            JOIN productos p ON dp.id_producto = p.id
-            WHERE dp.id_pedido = ?
+            SELECT pi.*, p.nombre AS nombre_producto
+            FROM pedido_item pi
+            JOIN producto p ON pi.id_producto = p.id_producto
+            WHERE pi.id_pedido = ?
         ");
         $stmt->execute([$orderId]);
         return $stmt->fetchAll(PDO::FETCH_ASSOC);

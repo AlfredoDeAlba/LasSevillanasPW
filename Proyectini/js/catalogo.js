@@ -2,17 +2,17 @@ document.addEventListener('DOMContentLoaded', () => {
     const productList = document.querySelector('.product-list');
     const viewToggleButtons = document.querySelectorAll('.view-toggle button');
     const categoryContainer = document.querySelector('.category-filters');
-    const API_PRODUCTS_URL = 'api/products.php';
+    const categoryButtonContainer = categoryContainer?.querySelector('.category-filters-desktop');
+    const categoryMobileContainer = categoryContainer?.querySelector('.category-filters-mobile');
+    const categorySelect = categoryMobileContainer?.querySelector('#category-select-mobile');
+
     const products = Array.isArray(window.__INITIAL_PRODUCTS__)
         ? window.__INITIAL_PRODUCTS__
         : [];
 
-    const CATEGORY_KEYWORDS = [
-        'Alegrías', 'Cocadas', 'Cajeta', 'Chocolate',
-        'Obleas', 'Glorias', 'Jamoncillo', 'Muéganos', 'Tamarindo',
-        'Mazapán', 'Palanqueta', 'Polvorones', 'Galletas', 'Pepitorias',
-        'Gaznates', 'Calaveras'
-    ];
+    const categories = Array.isArray(window.__INITIAL_CATEGORIES__)
+        ? window.__INITIAL_CATEGORIES__
+        : [];
 
     function formatCurrency(value) {
         return new Intl.NumberFormat('es-MX', {
@@ -22,9 +22,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function showFeedback(target, message, type = 'info') {
-        if (!target) {
-            return;
-        }
+        if (!target) { return ; }
         target.textContent = message;
         target.dataset.state = type;
         target.hidden = false;
@@ -102,31 +100,23 @@ document.addEventListener('DOMContentLoaded', () => {
         return card;
     }
 
-    //-- Función para extraer categorías de los productos ---
-    function extractCategories(products) {
-        const foundCategories = new Set();
-        products.forEach(product => {
-            const productNameLower = product.name.toLowerCase();
-            for (const keyword of CATEGORY_KEYWORDS) {
-                if (productNameLower.includes(keyword.toLowerCase())) {
-                    foundCategories.add(keyword); // Añade la palabra clave (ej. "Chocolate")
-                    break; // Pasa al siguiente producto una vez que encuentra una categoría
-                }
-            }
+    function handleFilterChange(categoryId){
+        renderProducts(categoryId);
+        if(!categorySelect || !categoryButtonContainer) return;
+        categorySelect.value = categoryId;
+        categoryButtonContainer.querySelectorAll('button').forEach(btn => {
+            btn.classList.toggle('active', btn.dataset.categoryId == categoryId);
         });
-        // Devuelve un array ordenado con "Todos" al principio
-        return ['Todos', ...Array.from(foundCategories).sort()];
     }
 
     // --- Función para renderizar los botones de filtro ---
     function renderCategories(categories) {
-        if (!categoryContainer) return;
-        categoryContainer.innerHTML = ''; // Limpiar por si acaso
-
-        const label = document.createElement('span');
-        label.className = 'control-label';
-        label.textContent = 'Categoría:';
-        categoryContainer.appendChild(label);
+        if (!categoryButtonContainer || !categorySelect) {
+            console.warn('no se encontraron los contenedores de categorias');
+            return;
+        }
+        categoryButtonContainer.innerHTML = ''; // Limpiar por si acaso
+        categorySelect.innerHTML = '';
 
         // Usamos una clase similar a 'view-toggle' para reutilizar estilos
         const group = document.createElement('div');
@@ -134,50 +124,60 @@ document.addEventListener('DOMContentLoaded', () => {
         group.setAttribute('role', 'group');
         group.setAttribute('aria-label', 'Filtrar por categoría');
 
-        categories.forEach((category, index) => {
+        const allCategories = [
+            { id_categoria: 'Todos', nombre_categoria: 'Todos'},
+            ...categories
+        ];
+
+        allCategories.forEach((category, index) => {
+            const categoryId = category.id_categoria;
+            const categoryName = category.nombre_categoria;
+
+            // --- Crear Botón ---
             const button = document.createElement('button');
             button.type = 'button';
-            button.textContent = category;
-            button.dataset.category = category;
-            if (index === 0) { // 'Todos' es el activo por defecto
-                button.classList.add('active');
-            }
-            
+            button.textContent = categoryName;
+            button.dataset.categoryId = categoryId; 
+            if (index === 0) button.classList.add('active');
+
             button.addEventListener('click', () => {
-                // Actualizar el botón activo
-                categoryContainer.querySelectorAll('button').forEach(btn => {
-                    btn.classList.toggle('active', btn === button);
-                });
-                // Volver a renderizar los productos con el filtro
-                renderProducts(category); 
+                // Llama a la nueva función controladora
+                handleFilterChange(categoryId);
             });
             group.appendChild(button);
+
+            // --- Crear Opción de Dropdown ---
+            const option = document.createElement('option');
+            option.value = categoryId;
+            option.textContent = categoryName;
+            categorySelect.appendChild(option);
         });
-        categoryContainer.appendChild(group);
+        categoryButtonContainer.appendChild(group);
+        categorySelect.addEventListener('change', () => {
+            handleFilterChange(categorySelect.value);
+        });
     }
 
     // --- Funcion: Render Products, muestra tantos los productos como filtrados por categoria ---
-    function renderProducts(filterCategory = 'Todos') {
+    function renderProducts(filterCategoryId = 'Todos') {
         if (!productList) {
             return;
         }
         productList.innerHTML = '';
 
         // --- Lógica de filtrado ---
-        const filteredProducts = (filterCategory === 'Todos')
+        const filteredProducts = (filterCategoryId === 'Todos')
             ? products // Si es 'Todos', usa la lista completa
-            : products.filter(p => // Si no, filtra
-                p.name.toLowerCase().includes(filterCategory.toLowerCase())
-              );
+            : products.filter(p => p.id_categoria == filterCategoryId);
         // --- Fin lógica de filtrado ---
 
         if (!filteredProducts.length) { // Comprueba la lista filtrada
             const empty = document.createElement('p');
             empty.className = 'lead';
             // Mensaje contextual
-            empty.textContent = (filterCategory === 'Todos')
+            empty.textContent = (filterCategoryId === 'Todos')
                 ? 'Pronto agregaremos nuevos productos a nuestro catalogo.'
-                : `No se encontraron productos en la categoría "${filterCategory}".`;
+                : `No se encontraron productos en la categoría.`;
             productList.appendChild(empty);
             return;
         }
@@ -207,14 +207,8 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     setupViewToggle();
-    
-    // Si tenemos productos, los renderizamos
-    if (products.length > 0) {
-        const categories = extractCategories(products);
-        renderCategories(categories);
-        renderProducts(); // Renderiza 'Todos' por defecto
-    } else {
-        // Opcional: manejar el caso de que no haya productos
-        renderProducts(); 
-    }
+    // Pasamos las categorías reales (de window) a la función
+    renderCategories(categories); 
+    // Renderiza 'Todos' por defecto
+    renderProducts();
 });

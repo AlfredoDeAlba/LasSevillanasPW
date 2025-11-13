@@ -55,7 +55,7 @@ try{
             ");
             $data = $stmt->fetchAll(PDO::FETCH_ASSOC);
             break;
-        case 'top_products':
+        case 'top_productos':
             $stmt = $pdo->query("
                 SELECT p.nombre, SUM(pi.cantidad) as Total_vendido
                 FROM pedido_item pi

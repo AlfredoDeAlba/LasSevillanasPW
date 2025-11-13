@@ -3,7 +3,6 @@
 require_once __DIR__ . '/../lib/auth.php';
 require_once __DIR__ . '/../lib/storage.php';
 
-use function App\Lib\requireAuth;
 use function App\Lib\readProducts;
 
 //requireAuth();
@@ -45,6 +44,40 @@ $products = readProducts();
             .product-list-admin td:nth-child(4) { display: none; }
             .product-list-admin img { width: 60px; height: 60px; }
         }
+
+        #stats-view {
+        padding: var(--space-lg);
+    }
+    
+    #stats-view > div {
+        background: white;
+        padding: var(--space-lg);
+        margin-bottom: var(--space-xl);
+        border-radius: var(--radius-base);
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+    
+    #stats-view h3 {
+        margin-bottom: var(--space-md);
+        color: var(--color-text);
+        font-size: 1.25rem;
+    }
+    
+    #stats-view canvas {
+        display: block !important;
+        max-width: 100%;
+        height: auto !important;
+        min-height: 300px;
+    }
+    
+    /* Contenedores para las gráficas */
+    .chart-container {
+        position: relative;
+        width: 100%;
+        max-width: 900px;
+        margin: 0 auto;
+        padding: var(--space-md);
+    }
     </style>
 </head>
 <body data-theme="light">
@@ -157,31 +190,29 @@ $products = readProducts();
                 </div>
             </section>
         </div>
-        <div id="categorias-view" class="view" style="display: none;">
-            <h2>Categorias</h2>
-        </div>
         <div id="stats-view" class="view" style="display: none;">
-            <h2>Estadisticas y Reportes:</h2>
-            <div style="width: 80%; margin: auto;">
-                <h3>Ventas Mensuales</h3>
-                <canvas id="chart-ventas-mensuales"></canvas>
-            </div>
-            
-            <div style="width: 80%; margin: auto; margin-top: 50px;">
-                <h3>Ventas Estacionales (Trimestrales)</h3>
-                <canvas id="chart-ventas-estacionales"></canvas>
-            </div>
-            
-            <div style="width: 80%; margin: auto; margin-top: 50px;">
-                <h3>Visitas Diarias (Últimos 30 días)</h3>
-                <canvas id="chart-visitas-diarias"></canvas>
-            </div>
-
-            <div style="width: 80%; margin: auto; margin-top: 50px;">
-                <h3>Top 5 Productos Vendidos</h3>
-                <canvas id="chart-top-productos"></canvas>
-            </div>
+            <h2>Estadísticas y Reportes</h2>
+    
+        <div class="chart-container">
+            <h3>Ventas Mensuales</h3>
+            <canvas id="chart-ventas-mensuales"></canvas>
         </div>
+    
+        <div class="chart-container">
+            <h3>Ventas Estacionales (Trimestrales)</h3>
+            <canvas id="chart-ventas-estacionales"></canvas>
+        </div>
+    
+        <div class="chart-container">
+            <h3>Visitas Diarias (Últimos 30 días)</h3>
+            <canvas id="chart-visitas-diarias"></canvas>
+        </div>
+
+    <div class="chart-container">
+        <h3>Top 5 Productos Vendidos</h3>
+        <canvas id="chart-top-productos"></canvas>
+    </div>
+</div>
         <div id="cupones-view" class="view" style="display: none;">
             <h2>Gestion de Cupones:</h2>
             <form id="form-cupon" class="admin-form">

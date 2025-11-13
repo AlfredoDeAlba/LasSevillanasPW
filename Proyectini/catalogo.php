@@ -1,6 +1,6 @@
 <?php require_once __DIR__ . '/templates/header.php'; ?>
 
-    <main>
+    <main class="container">
         <section id="catalogo" class="section">
             <header class="section-header">
                 <h2>Cat&aacute;logo de productos</h2>
@@ -8,7 +8,13 @@
             </header>
 
             <div class="category-filters">
+                <div class="category-filters-desktop"></div>
+    
+                <div class="category-filters-mobile">
+                    <label for="category-select-mobile" class="control-label">Categoría:</label>
+                    <select id="category-select-mobile"></select>
                 </div>
+            </div>
             
             <div class="product-controls">
                 <span class="control-label">Vista:</span>

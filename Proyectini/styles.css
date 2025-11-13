@@ -35,19 +35,46 @@
 }
 
 body {
-    margin: var(--space-lg);
+    margin: 0;
     font-family: var(--font-family);
     font-size: var(--font-size-base);
     line-height: 1.6;
     background: var(--color-background);
     color: var(--color-text);
     transition: background var(--transition-base), color var(--transition-base);
+    
+    /* --- Layout Sticky Footer --- */
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
 }
 
-img {
-    max-width: 100%;
-    display: block;
-    border-radius: var(--radius-base);
+main {
+    /* Esto hace que el contenido principal crezca y empuje el footer */
+    flex-grow: 1; 
+    
+    /* Esto centra el contenido (main) en la pantalla */
+    width: 100%;
+    max-width: 1440px; /* Ajusta este valor al ancho máximo que desees */
+    margin-left: auto;
+    margin-right: auto;
+    
+    /* Espacio para que el contenido no se pegue a los bordes en escritorio */
+    padding-left: var(--space-lg);
+    padding-right: var(--space-lg);
+}
+
+.footer {
+    /* Esto centra el footer para que coincida con main */
+    width: 100%;
+    max-width: 1440px; /* Debe ser el mismo max-width que main */
+    margin-left: auto;
+    margin-right: auto;
+    margin-bottom: var(--space-lg); /* Espacio al final */
+    
+    /* Espacio para que no se pegue a los bordes */
+    padding-left: var(--space-lg);
+    padding-right: var(--space-lg);
 }
 
 a {
@@ -90,18 +117,67 @@ button.primary:focus-visible {
     background: #a90756;
 }
 
+/* ============================================ */
+/* INICIO: REGLAS DE HEADER (ESCRITORIO Y MÓVIL) */
+/* ============================================ */
+
+/* --- 1. ESTILOS DE ESCRITORIO (Por defecto) --- */
+
+/* Estilo principal del header en ESCRITORIO (Y BASE PARA MÓVIL) */
 .top-bar {
-    display: grid;
-    grid-template-columns: auto auto 1fr auto;
-    align-items: center;
-    gap: var(--space-md);
-    padding: var(--space-md);
-    margin-bottom: var(--space-lg);
-    border: 1px solid var(--color-border);
-    border-radius: var(--radius-base);
+    /* --- Layout STICKY --- */
+    position: sticky; /* SIEMPRE será sticky */
+    top: 0;
+    z-index: 1000;
+    width: 100%;
+    
+    /* --- Estilos Visuales --- */
     background: var(--color-surface);
     box-shadow: var(--shadow-soft);
+    border-bottom: 1px solid var(--color-border); /* Borde inferior para contraste */
+
+    /* --- Layout Interno (Grid de Escritorio) --- */
+    display: grid;
+    grid-template-columns: auto auto 1fr auto; /* El grid original */
+    align-items: center;
+    gap: var(--space-md);
+    
+    /* Padding interno para que el contenido no se pegue a los bordes */
+    padding: var(--space-md) var(--space-lg);
+
+    /* --- Reseteos (para anular estilos viejos) --- */
+    margin: 0; 
+    border-radius: 0;
+    flex-direction: row; /* Asegura que sea horizontal en PC */
+    height: auto;
 }
+
+/* Estilo de la marca (Base) */
+.top-bar .brand {
+    position: static;
+    transform: none;
+    display: flex; /* Cambiado de 'grid' a 'flex' para consistencia */
+    align-items: center;
+    justify-content: flex-start;
+    height: auto;
+    background: transparent;
+    border-bottom: none;
+    width: auto;
+}
+
+
+/* --- 1. ESTILOS DE ESCRITORIO (Por defecto) --- */
+
+/* Oculta la fila de búsqueda móvil en escritorio */
+.mobile-search-row {
+    display: none;
+}
+
+/* Muestra los items de escritorio (navegación, carrito, etc.) */
+.desktop-header-items {
+    display: contents; /* Se integra al grid del .top-bar */
+}
+
 
 .header-actions {
     display: flex;
@@ -487,6 +563,469 @@ button.primary:focus-visible {
     background: var(--color-accent);
 }
 
+
+/* --- INICIO ESTILOS MENÚ MÓVIL --- */
+
+/* 1. Estilo del botón "hamburguesa" (oculto por defecto) */
+.mobile-nav-toggle {
+    display: none; /* Oculto en escritorio */
+    background: transparent;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-base);
+    padding: 0;
+    width: 42px;
+    height: 42px;
+    cursor: pointer;
+    z-index: 1001; /* Encima de otros elementos del header */
+    
+    /* Centrar el icono dentro */
+    position: relative; 
+    justify-content: center;
+    align-items: center;
+}
+
+.hamburger-icon {
+    display: block;
+    position: relative;
+    width: 22px; /* Ancho del icono */
+    height: 2px;
+    background: currentColor; /* Usa el color de texto actual */
+    border-radius: 2px;
+    transition: transform 0.2s ease-in-out, background 0.2s ease-in-out;
+}
+.hamburger-icon::before,
+.hamburger-icon::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    width: 100%;
+    height: 2px;
+    background: currentColor;
+    border-radius: 2px;
+    transition: transform 0.2s ease-in-out;
+}
+.hamburger-icon::before { top: -7px; } /* Separación de las barras */
+.hamburger-icon::after { top: 7px; }
+
+
+/* Por defecto (escritorio), ocultamos la fila de búsqueda móvil */
+.mobile-search-row {
+    display: none;
+}
+
+/* 2. Media Query para pantallas pequeñas (la misma que ya usas) */
+@media (max-width: 900px) {
+
+    /* --- 1. OCULTAR ITEMS DE ESCRITORIO --- */
+    .desktop-header-items {
+        display: none;
+    }
+
+    /* Oculta el botón de búsqueda de JS */
+    .header-actions .search-toggle {
+        display: none;
+    }
+
+    /* Oculta elementos específicos de escritorio */
+    .main-nav,
+    .user-session,
+    .theme-toggle,
+    .social-links,
+    .cart-dropdown {
+        display: none !important; /* !important para sobreescribir otros */
+    }
+    
+    /* Oculta texto "Carrito" en el icono de escritorio */
+    .cart-toggle .desktop-only {
+        display: none;
+    }
+
+
+    /* --- 2. MOSTRAR Y ESTILIZAR HEADER MÓVIL --- */
+
+    /* Estilo principal del header en MÓVIL (Fijo) */
+    .top-bar {
+        display: flex;
+        flex-direction: column; /* Apilado vertical */
+        height: auto;
+        padding: 0;
+        position: sticky;
+        top: 0;
+        z-index: 1000;
+        border: none;
+        border-radius: 0;
+        margin: 0; /* Sin márgenes */
+        width: 100%;        
+        max-width: 100%;    
+        
+        /* Quitar el grid de escritorio */
+        grid-template-columns: none; 
+    }
+
+    /* Estilo de la marca en MÓVIL (Fila 1 - Centrada) */
+    .top-bar .brand {
+        position: static;
+        transform: none;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        width: 100%;
+        height: 60px;
+        background: var(--color-surface);
+        border-bottom: 1px solid var(--color-border);
+        
+        /* Quitar efecto de scroll (si lo había) */
+        opacity: 1 !important;
+        visibility: visible !important;
+    }
+
+    /* Muestra la fila de búsqueda en MÓVIL (Fila 2) */
+    .mobile-search-row {
+        display: flex;
+        align-items: center;
+        gap: var(--space-sm);
+        width: 100%;
+        height: 60px; 
+        padding: 0 var(--space-md); 
+        background: var(--color-surface);
+        border-bottom: 1px solid var(--color-border);
+    }
+    
+    .mobile-search-row .search-icon-input {
+        flex-shrink: 0; 
+    }
+    .mobile-search-row .search-icon-input svg {
+        width: 1.5rem; /* 24px */
+        height: 1.5rem;
+        color: var(--color-text-muted);
+    }
+
+    .mobile-search-row input[type="search"] {
+        flex: 1; 
+        font-size: 1rem;
+        border: none;
+        outline: none;
+        background: transparent;
+        color: var(--color-text);
+        padding: 0;
+        -webkit-appearance: none;
+    }
+    
+    /* Estilos para el carrito en la Fila 2 */
+    .mobile-search-row .cart-wrapper {
+        flex-shrink: 0;
+    }
+    .mobile-search-row .cart-toggle {
+        border: none;
+        background: transparent;
+        box-shadow: none;
+        padding: 0.25rem;
+    }
+
+
+    /* --- 3. OCULTAR BARRA DE BÚSQUEDA ANTIGUA --- */
+    .search-bar-container {
+        display: none !important;
+    }
+
+
+    /* --- 4. MOSTRAR NAVEGACIÓN INFERIOR --- */
+    .bottom-nav-bar {
+        display: flex; /* Muestra la barra inferior en móvil */
+    }
+
+    /* Definir la altura de la barra inferior */
+    :root {
+        --bottom-nav-height: 70px;
+    }
+
+
+    /* --- 5. AJUSTE DE LAYOUT PRINCIPAL (BODY y MAIN) --- */
+    
+    /* Quitamos TODOS los márgenes del body en móvil */
+    body {
+        margin: 0; 
+    }
+    
+    /* Ajustamos el padding del main */
+    main {
+        /*padding-top: 120px; *//* Para el header fijo de 120px (60+60) */
+        
+        /* Añadimos padding lateral para que el contenido no se pegue */
+        padding-left: var(--space-md);
+        padding-right: var(--space-md);
+
+        /* Esta regla es correcta para el bottom-nav */
+        padding-bottom: calc(var(--bottom-nav-height) + var(--space-md)) !important; 
+    }
+    
+    
+    /* --- 6. OTROS AJUSTES MÓVILES (QUE YA TENÍAS) --- */
+    
+    /* Hero Section (si se usa) */
+    .hero {
+        grid-template-columns: 1fr;
+    }
+
+    /* Pago */
+    .purchase-container {
+        grid-template-columns: 1fr;
+    }
+    .product-summary {
+        grid-row: 1; 
+    }
+    .form-row {
+        grid-template-columns: 1fr; 
+    }
+    
+    /* Detalles de Producto */
+    .product-page-container {
+        grid-template-columns: 1fr; 
+    }
+    .product-action-card {
+        grid-column: 1;
+        grid-row: auto;
+        position: static;
+    }
+    
+    /* Filtros de Categoría */
+    .category-filters-desktop {
+        display: none; /* Oculta los botones en móvil */
+    }
+    
+    .category-filters-mobile {
+        display: grid; /* Muestra el dropdown en móvil */
+        grid-template-columns: auto 1fr;
+        align-items: center;
+        gap: var(--space-sm);
+        margin-bottom: var(--space-md);
+    }
+}
+
+/* 3. Estilos para cuando el menú está ABIERTO (controlado por JS) */
+
+/* El JS añadirá la clase .mobile-nav-open al <body> */
+.mobile-nav-open .main-nav {
+    display: flex; /* Mostramos el menú */
+}
+
+/* Animación del botón hamburguesa a "X" */
+.mobile-nav-open .hamburger-icon {
+    background: transparent; /* La barra del medio desaparece */
+}
+.mobile-nav-open .hamburger-icon::before {
+    transform: translateY(7px) rotate(45deg);
+}
+.mobile-nav-open .hamburger-icon::after {
+    transform: translateY(-7px) rotate(-45deg);
+}
+
+/* --- INICIO ESTILOS BOTTOM NAVIGATION BAR --- */
+
+/* Por defecto, la barra inferior está oculta */
+.bottom-nav-bar {
+    display: none; 
+    position: fixed; /* Se queda fija al fondo */
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    background-color: var(--color-surface); /* Fondo del tema */
+    border-top: 1px solid var(--color-border); /* Borde superior */
+    box-shadow: var(--shadow-soft); /* Sombra sutil */
+    z-index: 999; /* Asegura que esté por encima del contenido */
+    height: var(--bottom-nav-height); /* Definimos una altura fija */
+    padding: var(--space-xs) 0;
+}
+
+.bottom-nav-bar ul {
+    display: flex;
+    justify-content: space-evenly; /* Distribuye los elementos uniformemente */
+    align-items:center;
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    height: 100%;
+}
+
+.bottom-nav-bar li {
+    /*flex: 1;*/ /* Cada elemento ocupa el mismo espacio */
+    text-align: center;
+}
+
+.bottom-nav-bar a {
+    display: flex;
+    flex-direction: column; /* Icono arriba, texto abajo */
+    align-items: center;
+    justify-content: center;
+    text-decoration: none;
+    color: var(--color-text-light); /* Color de texto normal */
+    font-size: 0.75rem; /* Tamaño de fuente más pequeño */
+    font-weight: var(--font-weight-medium);
+    padding: var(--space-xs);
+    border-radius: var(--radius-base);
+    transition: background-color 0.2s ease, color 0.2s ease;
+    height: 100%; /* Para que el área clicable sea grande */
+}
+
+.bottom-nav-bar a .icon {
+    font-size: 1.5rem; /* Tamaño del icono */
+    margin-bottom: 2px;
+}
+
+.bottom-nav-bar a .icon svg {
+    width: 1.75rem;
+    height: 1.75rem;
+}
+
+.bottom-nav-bar a.active {
+    color: var(--color-primary); /* Color de acento para el elemento activo */
+    background-color: var(--color-primary-light); /* Fondo suave para activo */
+}
+
+.bottom-nav-bar a:hover,
+.bottom-nav-bar a:focus {
+    background-color: var(--color-hover); /* Fondo al pasar el ratón/enfocar */
+    color: var(--color-text); /* Color más oscuro al pasar el ratón */
+}
+
+/* Badge para el carrito en la barra inferior */
+.bottom-nav-bar .cart-count-mobile.badge {
+    position: absolute;
+    top: 5px; /* Ajusta según el diseño de tu icono */
+    right: 5px;
+    transform: translate(50%, -50%);
+    min-width: 18px;
+    height: 18px;
+    padding: 0 5px;
+    font-size: 0.7rem;
+    line-height: 18px;
+    pointer-events: none; /* Para que el clic pase al enlace */
+}
+
+/* Media Query para mostrar la barra inferior en móvil */
+@media (max-width: 900px) {
+    .bottom-nav-bar {
+        display: flex; /* Muestra la barra inferior en móvil */
+    }
+
+    /* Definir la altura de la barra inferior para usar en el padding del main */
+    :root {
+        --bottom-nav-height: 70px; /* Ajusta esto si los iconos son más grandes/pequeños */
+    }
+}
+
+/* Estilos para los elementos de la página "Más" */
+.more-options-list {
+    display: flex;
+    flex-direction: column;
+    gap: 1px; /* Espacio entre los elementos, como en tu imagen */
+    background-color: var(--color-border); /* Fondo para simular la división */
+    border-radius: var(--radius-base);
+    overflow: hidden; /* Asegura que el borde no se escape */
+}
+
+.more-option-item {
+    display: flex;
+    align-items: center;
+    gap: var(--space-md);
+    padding: var(--space-md) var(--space-lg);
+    background-color: var(--color-surface); /* Fondo de cada opción */
+    color: var(--color-text);
+    text-decoration: none;
+    font-size: 1rem;
+    font-weight: var(--font-weight-medium);
+    transition: background-color 0.2s ease;
+}
+
+.more-option-item .icon {
+    font-size: 1.5rem; /* Tamaño del icono */
+    color: var(--color-primary); /* Color de acento para los iconos */
+}
+
+.more-option-item:hover,
+.more-option-item:focus {
+    background-color: var(--color-hover);
+}
+
+/* Si tienes alguna regla .bottom-nav-bar { display: flex; } en el CSS actual, elimínala o anúlala */
+/* --- FIN ESTILOS BOTTOM NAVIGATION BAR --- */
+
+/* Estilo general del botón de búsqueda (para icono) */
+.search-toggle {
+    display: none; /* <-- OCULTO EN ESCRITORIO POR DEFECTO */
+    background: none;
+    border: none;
+    color: var(--color-text);
+    cursor: pointer;
+    padding: 0; /* Ajustado en @media */
+    border-radius: var(--radius-full);
+    width: 44px; /* Tamaño táctil estándar */
+    height: 44px;
+    display: flex; /* Para centrar el SVG */
+    align-items: center;
+    justify-content: center;
+}
+.search-toggle:hover {
+    background-color: var(--color-hover);
+}
+.search-toggle .icon svg {
+    width: 1.75rem; /* 28px */
+    height: 1.75rem; /* 28px */
+}
+
+/* --- INICIO ESTILOS BARRA DE BÚSQUEDA --- */
+
+/* 1. Contenedor de la barra de búsqueda (oculto por defecto) */
+/* --- INICIO ESTILOS BARRA DE BÚSQUEDA --- */
+/* (Este es el estilo de la Fila 2 que aparece al hacer clic) */
+
+.search-bar-container {
+    display: none; /* Oculta por defecto */
+    align-items: center;
+    gap: var(--space-sm);
+    padding: var(--space-sm);
+    background: var(--color-surface);
+    border-bottom: 1px solid var(--color-border);
+    
+    /* Se fija debajo del header (70px) */
+    position: sticky;
+    /* La altura debe coincidir con la altura del .top-bar en móvil */
+    top: 70px; 
+    z-index: 999; 
+}
+
+.search-bar-container .search-icon-input svg {
+    width: 1.5rem; /* 24px */
+    height: 1.5rem;
+    color: var(--color-text-light);
+}
+
+.search-bar-container input[type="search"] {
+    flex: 1; /* Ocupa todo el espacio */
+    font-size: 1rem;
+    border: none;
+    outline: none;
+    background: transparent;
+    color: var(--color-text);
+    padding: 0;
+}
+
+.search-bar-container .search-cancel-btn {
+    font-size: 1rem;
+    background: none;
+    border: none;
+    color: var(--color-primary);
+    cursor: pointer;
+    padding: 0;
+}
+
+/* Estado Activo: Muestra la barra de búsqueda */
+/* Esta regla se activa con JS */
+.top-bar.search-active + .search-bar-container {
+    display: flex;
+}
+/* --- FIN ESTILOS BARRA DE BÚSQUEDA --- */
+
 .social-links {
     display: flex;
     gap: var(--space-sm);
@@ -809,7 +1348,7 @@ button.primary:focus-visible {
     margin: 0;
     color: var(--color-text-muted);
 }
-
+/**
 @media (max-width: 900px) {
     .top-bar {
         grid-template-columns: 1fr;
@@ -824,7 +1363,8 @@ button.primary:focus-visible {
         grid-template-columns: 1fr;
     }
 }
-
+**/
+/*
 @media (max-width: 600px) {
     body {
         margin: var(--space-sm);
@@ -837,7 +1377,7 @@ button.primary:focus-visible {
     }
 }
 
-
+*/
 /* ============================================ */
 /* Pagina de la parte de detalles del producto ( es la llamada vista_producto.php) */
 .product-page-container {
@@ -1303,3 +1843,57 @@ button.secondary svg {
     }
 }
 
+    /* --- INICIO ESTILOS RESPONSIVE CATEGORÍAS --- */
+
+/* Por defecto (escritorio), mostramos los botones y ocultamos el dropdown */
+.category-filters-desktop {
+    display: flex; /* Reutiliza el estilo de .category-filters */
+    align-items: center;
+    gap: var(--space-sm);
+    flex-wrap: wrap;
+    padding-bottom: var(--space-md);
+    border-bottom: 1px solid var(--color-border);
+}
+
+.category-filters-mobile {
+    display: none; /* Oculto en escritorio */
+}
+
+/* Estilos para que el <select> se vea bien, usando tus variables */
+#category-select-mobile {
+    width: 100%;
+    font: inherit;
+    font-size: 1rem;
+    padding: 0.75rem;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-base);
+    background-color: var(--color-elevated);
+    color: var(--color-text);
+    cursor: pointer;
+    
+    /* Apariencia (flecha) */
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='%23333'%3E%3Cpath d='M8 11.03a.75.75 0 0 1-.53-.22l-3-3a.75.75 0 1 1 1.06-1.06L8 9.19l2.47-2.47a.75.75 0 1 1 1.06 1.06l-3 3a.75.75 0 0 1-.53.22Z'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 0.5rem center;
+    background-size: 1.5em 1.5em;
+    padding-right: 2.5rem;
+}
+
+
+/* Media Query para móviles (usamos 768px como en tus otros estilos) */
+@media (max-width: 768px) {
+    .category-filters-desktop {
+        display: none; /* Oculta los botones en móvil */
+    }
+    
+    .category-filters-mobile {
+        display: grid; /* Muestra el dropdown en móvil */
+        grid-template-columns: auto 1fr;
+        align-items: center;
+        gap: var(--space-sm);
+        margin-bottom: var(--space-md);
+    }
+}

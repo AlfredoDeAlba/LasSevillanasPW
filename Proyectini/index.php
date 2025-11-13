@@ -27,30 +27,6 @@
                 <p class="carousel-status" data-carousel-status role="status" aria-live="polite"></p>
             </div>
         </section>
-
-        <div class="swiper" id="hero-slider" style="width: 100%; height: 400px; background-color: #f0f0f0;">
-            <div class="swiper-wrapper" id="banners-wrapper">
-            </div>
-            <div class="swiper-pagination"></div>
-            <div class="swiper-button-prev"></div>
-            <div class="swiper-button-next"></div>
-        </div>
-    
-        <main>
-            <h2>Nuestros Productos</h2>
-        </main>
-
-        <section class="parallax-section" style="
-            background-image: url('uploads/fondo_parallax_sevillanas.jpg'); 
-            min-height: 400px;
-            background-attachment: fixed;
-            background-position: center;
-            background-repeat: no-repeat;
-            background-size: cover;
-            margin: 40px 0;
-            ">
-        </section>
-    
         <section id="valores" class="section values">
             <header class="section-header">
                 <h2>Valores que nos definen</h2>
@@ -148,35 +124,3 @@
     </main>
 
 <?php require_once __DIR__ . '/templates/footer.php'; ?>
-    
-        <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            fetch('api/banners.php')
-            .then(res => res.json())
-            .then(data => {
-                const wrapper = document.getElementById('banners-wrapper');
-                if (!data.banners || data.banners.length === 0) {
-                    wrapper.innerHTML = `<div class="swiper-slide" style="display: flex; align-items: center; justify-content: center; font-size: 1.5rem;"><h2>Las Sevillanas</h2></div>`;
-                } else {
-                    data.banners.forEach(banner => {
-                        wrapper.innerHTML += `
-                            <div class="swiper-slide" style="background-image: url('${banner.imagen_url}'); background-size: cover; background-position: center;">
-                                <a href="${banner.link_destino || '#'}" style="display: block; width: 100%; height: 100%;" aria-label="${banner.titulo}">
-                                    </a>
-                            </div>
-                        `;
-                    });
-                }
-                
-                new Swiper('#hero-slider', {
-                    loop: true,
-                    pagination: { el: '.swiper-pagination', clickable: true },
-                    navigation: {
-                        nextEl: '.swiper-button-next',
-                        prevEl: '.swiper-button-prev',
-                    },
-                    autoplay: { delay: 5000, disableOnInteraction: false },
-                });
-            });
-        });
-        </script>

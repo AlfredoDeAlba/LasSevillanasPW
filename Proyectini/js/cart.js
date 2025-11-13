@@ -151,6 +151,21 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
+    function updateCartCountDisplay() {
+        const count = getCartTotalQuantity();
+        const badge = document.querySelector('.cart-count'); // Badge de escritorio
+        const badgeMobile = document.querySelector('.cart-count-mobile'); // NUEVO: Badge móvil
+
+        if (badge) {
+            badge.textContent = count > 0 ? String(count) : '';
+            badge.hidden = count === 0;
+        }
+        if (badgeMobile) { // NUEVO: Actualizar el badge móvil
+            badgeMobile.textContent = count > 0 ? String(count) : '';
+            badgeMobile.hidden = count === 0;
+        }
+    }
+
     
     function updateItemQuantity(id, quantity) {
         const parsedQuantity = Math.max(1, Number(quantity) || 1);

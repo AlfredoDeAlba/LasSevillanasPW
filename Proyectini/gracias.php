@@ -1,9 +1,7 @@
 <?php
-// Requerimos los archivos necesarios
-require_once __DIR__ . '/lib/auth_usr.php'; // Para la sesión
-require_once __DIR__ . '/lib/receipt.php';  // ¡Contiene las nuevas funciones!
+require_once __DIR__ . '/lib/auth_usr.php'; 
+require_once __DIR__ . '/lib/receipt.php'; 
 
-// Usamos las funciones del namespace
 use function App\Lib\startSecureSession;
 use function App\Lib\findOrderById;
 use function App\Lib\findOrderItemsById;
@@ -15,14 +13,9 @@ $order = null;
 $items = [];
 
 if ($orderId) {
-    // === INICIO DE LA CORRECIÓN ===
-    //
-    // Llamamos a las nuevas funciones con su namespace
     //
     $order = findOrderById((int)$orderId);
     $items = findOrderItemsById((int)$orderId);
-    // === FIN DE LA CORRECIÓN ===
-    
     // Limpiamos el ID de la sesión para que no se muestre en futuras visitas
     unset($_SESSION['last_order_id']);
 }
@@ -37,26 +30,26 @@ if (!$order) {
 require_once __DIR__ . '/templates/header.php';
 ?>
 
-<main class="section" style="padding-top: 40px; min-height: 70vh;">
+<main class="container" class="section" style="padding-top: 40px; min-height: 70vh;">
     <header class="section-header" style="max-width: 800px; margin: auto;">
-        <h1>¡Gracias por tu compra, <?php echo htmlspecialchars($order['nombre_cliente']); ?>!</h1>
+        <h1>¡Gracias por tu compra, <?php echo htmlspecialchars($order['nom_cliente']); ?>!</h1>
         <p class.lead">Tu pedido ha sido confirmado.</p>
     </header>
 
     <div class="order-summary-card" style="max-width: 800px; margin: 40px auto; padding: 24px; border: 1px solid var(--color-border); border-radius: var(--radius-base);">
         
-        <h2>Resumen del Pedido #<?php echo htmlspecialchars($order['id']); ?></h2>
+        <h2>Resumen del Pedido #<?php echo htmlspecialchars($order['id_pedido']); ?></h2>
         
         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
             <div>
                 <h3>Detalles del Cliente</h3>
                 <p><strong>Email:</strong> <?php echo htmlspecialchars($order['email_cliente']); ?></p>
-                <p><strong>Teléfono:</strong> <?php echo htmlspecialchars($order['telefono_cliente']); ?></p>
+                <p><strong>Teléfono:</strong> <?php echo htmlspecialchars($order['num_cel']); ?></p>
             </div>
             <div>
                 <h3>Dirección de Envío</h3>
                 <p><?php echo htmlspecialchars($order['direccion']); ?></p>
-                <p><?php echo htmlspecialchars($order['ciudad']); ?>, <?php echo htmlspecialchars($order['estado']); ?>, <?php echo htmlspecialchars($order['cp']); ?></p>
+                <p>CP: <?php echo htmlspecialchars($order['cod_post']); ?></p>
             </div>
         </div>
 
@@ -65,7 +58,7 @@ require_once __DIR__ . '/templates/header.php';
             <?php foreach ($items as $item): ?>
                 <li style="display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid var(--color-border-light);">
                     <span>
-                        <?php echo htmlspecialchars($item['producto_nombre']); ?> 
+                        <?php echo htmlspecialchars($item['nombre_producto']); ?> 
                         (x <?php echo htmlspecialchars($item['cantidad']); ?>)
                     </span>
                     <strong>$<?php echo number_format($item['precio_unitario'] * $item['cantidad'], 2); ?></strong>
@@ -74,11 +67,11 @@ require_once __DIR__ . '/templates/header.php';
         </ul>
 
         <div style="text-align: right; margin-top: 20px; font-size: 1.1rem;">
-            <p><strong>Subtotal:</strong> $<?php echo number_format($order['subtotal'], 2); ?></p>
-            <?php if ($order['descuento'] > 0): ?>
-                <p style="color: var(--color-success);"><strong>Descuento:</strong> -$<?php echo number_format($order['descuento'], 2); ?></p>
+            <p><strong>Subtotal:</strong> $<?php echo number_format($order['precio_subtotal'], 2); ?></p>
+            <?php if ($order['descuento_aplicado'] > 0): ?>
+                <p style="color: var(--color-success);"><strong>Descuento:</strong> -$<?php echo number_format($order['descuento_aplicado'], 2); ?></p>
             <?php endif; ?>
-            <h3 style="margin-top: 10px;"><strong>Total Pagado: $<?php echo number_format($order['total'], 2); ?></strong></h3>
+            <h3 style="margin-top: 10px;"><strong>Total Pagado: $<?php echo number_format($order['precio_total'], 2); ?></strong></h3>
         </div>
 
         <p style="text-align: center; margin-top: 30px;">

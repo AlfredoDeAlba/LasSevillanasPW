@@ -28,18 +28,23 @@ try {
     $couponId = $data['coupon_id'] ?? null; 
 
     // Llamada con namespace completo
-    $totalAmountInCents = \App\Lib\calculateOrderAmount($items, $couponId);
+    $orderData = \App\Lib\calculateOrderAmount($items, $couponId);
 
     // Crear el Payment Intent con el monto total calculado
     $intent = \Stripe\PaymentIntent::create([
-        'amount' => $totalAmountInCents,
+        'amount' => $orderData['totalInCents'], // <-- Usamos el valor del array
         'currency' => 'mxn',
         'automatic_payment_methods' => ['enabled' => true],
     ]);
 
     // Llamada con namespace completo
-    jsonResponse(['client_secret' => $intent->client_secret]);
-
+    jsonResponse([
+        'clientSecret' => $intent->client_secret,
+        'subtotal' => $orderData['subtotal'],
+        'discount' => $orderData['discountAmount'],
+        'total' => $orderData['total']
+    ]);
+    
 } catch (\Stripe\Exception\ApiErrorException $e) {
     // Asegurarnos de que lib/response.php se cargó para usar sendError
     if (function_exists('\App\Lib\sendError')) {
