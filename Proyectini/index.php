@@ -1,6 +1,6 @@
 ﻿<?php require_once __DIR__ . '/templates/header.php'; ?>
 
-    <main>
+    <main class="container">
         <section id="inicio" class="hero section">
             <div class="hero-content">
                 <p class="eyebrow">Sabor artesanal</p>

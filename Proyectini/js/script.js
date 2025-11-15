@@ -118,19 +118,26 @@ function buildHeroCarousel() {
         .slice(0, 8);
 
     const slides = featured.length > 0 ? featured : fallbackSlides;
-
-    slides.forEach((product) => {
+    carouselTrack.innerHTML = '';
+    slides.forEach((product, index) => {
         const slide = document.createElement('li');
         slide.className = 'carousel-slide';
         slide.dataset.id = product.id ?? '';
 
+        // Create image with proper attributes
         const image = document.createElement('img');
         const imageSrc = product.image && product.image !== ''
             ? product.image
             : fallbackSlides[Math.floor(Math.random() * fallbackSlides.length)].image;
+        
         image.src = imageSrc;
         image.alt = product.name;
-        image.loading = 'lazy';
+        image.loading = index === 0 ? 'eager' : 'lazy';
+        
+        // Handle image errors
+        image.onerror = function() {
+            this.src = fallbackSlides[0].image;
+        };
 
         const caption = document.createElement('div');
         caption.className = 'carousel-caption';
@@ -145,7 +152,7 @@ function buildHeroCarousel() {
         const button = document.createElement('button');
         button.type = 'button';
         button.className = 'secondary';
-        button.textContent = featured.length > 0 ? 'Ver detalle' : 'Ir al catalogo';
+        button.textContent = featured.length > 0 ? 'Ver detalle' : 'Ir al catálogo';
         button.addEventListener('click', () => {
             const targetUrl = product.id
                 ? `vista_producto.php?id_producto=${encodeURIComponent(product.id)}`
@@ -158,6 +165,16 @@ function buildHeroCarousel() {
         carouselTrack.appendChild(slide);
     });
 
+    carouselIndex = 0;
+    carouselTrack.style.transition = 'none';
+    carouselTrack.style.transform = 'translateX(0%)';
+
+    void carouselTrack.offsetHeight;
+
+    requestAnimationFrame(()=>{
+        carouselTrack.style.transition = 'transform 600ms cubic-bezier(0.4, 0, 0.2, 1)';
+    })
+
     updateCarouselUI();
     startCarouselTimer();
 }
@@ -166,7 +183,7 @@ function buildHeroCarousel() {
         if (!carouselTrack) {
             return;
         }
-        const slides = carouselTrack.children;
+        const slides = Array.from(carouselTrack.children);
         if (!slides.length) {
             return;
         }
@@ -177,7 +194,8 @@ function buildHeroCarousel() {
                 ? `Producto destacado: ${name}`
                 : 'Descubre nuestros dulces artesanales.';
         }
-        carouselTrack.style.transform = `translateX(-${carouselIndex * 100}%)`;
+        const translateValue = -carouselIndex * 100;
+        carouselTrack.style.transform = `translateX(${translateValue}%)`;
 
         if (carouselIndicator) {
             const total = slides.length;
@@ -200,7 +218,7 @@ function buildHeroCarousel() {
 
     function startCarouselTimer() {
         stopCarouselTimer();
-        carouselTimer = window.setInterval(() => moveCarousel(1), 3000);
+        carouselTimer = window.setInterval(() => moveCarousel(1), 4000);
     }
 
     function stopCarouselTimer() {
@@ -210,19 +228,32 @@ function buildHeroCarousel() {
         }
     }
 
-    prevButton?.addEventListener('click', () => {
-        moveCarousel(-1);
-        startCarouselTimer();
-    });
+    if (prevButton) {
+        prevButton.addEventListener('click', () => {
+            moveCarousel(-1);
+            startCarouselTimer(); // Restart timer after manual control
+        });
+    }
 
-    nextButton?.addEventListener('click', () => {
-        moveCarousel(1);
-        startCarouselTimer();
-    });
+    if (nextButton) {
+        nextButton.addEventListener('click', () => {
+            moveCarousel(1);
+            startCarouselTimer(); // Restart timer after manual control
+        });
+    }
 
-    heroCarousel?.addEventListener('mouseenter', stopCarouselTimer);
-    heroCarousel?.addEventListener('mouseleave', startCarouselTimer);
-
+    // Pause on hover
+    if (heroCarousel) {
+        heroCarousel.addEventListener('mouseenter', stopCarouselTimer);
+        heroCarousel.addEventListener('mouseleave', startCarouselTimer);
+    
+        // Touch support for mobile
+        heroCarousel.addEventListener('touchstart', stopCarouselTimer);
+        heroCarousel.addEventListener('touchend', () => {
+            setTimeout(startCarouselTimer, 500);
+        });
+    }
+    
     renderTestimonials();
     buildHeroCarousel();
 

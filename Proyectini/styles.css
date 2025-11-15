@@ -73,8 +73,19 @@ main {
     margin-bottom: var(--space-lg); /* Espacio al final */
     
     /* Espacio para que no se pegue a los bordes */
-    padding-left: var(--space-lg);
-    padding-right: var(--space-lg);
+    /*padding-left: var(--space-lg);
+    padding-right: var(--space-lg);*/
+    padding: var(--space-lg);
+}
+
+/* Specific fix for pages with .container class */
+main.container {
+    padding: var(--space-lg); /* Override any extra padding */
+}
+
+/* Remove extra spacing from sections inside main */
+main > .section:first-child {
+    margin-top: 0; /* Remove top margin from first section */
 }
 
 a {
@@ -148,8 +159,8 @@ button.primary:focus-visible {
     /* --- Reseteos (para anular estilos viejos) --- */
     margin: 0; 
     border-radius: 0;
-    flex-direction: row; /* Asegura que sea horizontal en PC */
-    height: auto;
+    /*flex-direction: row;*/ /* Asegura que sea horizontal en PC */
+    /*height: auto;*/
 }
 
 /* Estilo de la marca (Base) */
@@ -163,6 +174,8 @@ button.primary:focus-visible {
     background: transparent;
     border-bottom: none;
     width: auto;
+    padding: 0;
+    margin: 0;
 }
 
 
@@ -199,11 +212,23 @@ button.primary:focus-visible {
     border: 1px solid var(--color-border);
     padding: 0.45rem 0.8rem;
     box-shadow: var(--shadow-soft);
+    cursor: pointer;
+    transition: var(--transition-base);
+}
+
+.cart-toggle:hover{
+    background: var(--color-elevated);
+    border-color: var(--color-primary);
 }
 
 .cart-toggle svg {
-    width: 22px;
-    height: 22px;
+    width: 24px;
+    height: 24px;
+    flex-shrink: 0;
+}
+
+.desktop-only {
+    font-weight: 500;
 }
 
 .cart-count {
@@ -218,6 +243,7 @@ button.primary:focus-visible {
     align-items: center;
     justify-content: center;
     padding: 0 6px;
+    line-height: 1;
 }
 
 .cart-dropdown {
@@ -225,14 +251,16 @@ button.primary:focus-visible {
     top: calc(100% + var(--space-sm));
     right: 0;
     width: min(340px, 90vw);
+    max-height: 80vh;
     border: 1px solid var(--color-border);
     border-radius: var(--radius-base);
     background: var(--color-surface);
     box-shadow: var(--shadow-soft);
-    padding: var(--space-md);
-    display: grid;
-    gap: var(--space-md);
-    z-index: 20;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    z-index: 100;
+    overflow: hidden;
 }
 
 .cart-dropdown[hidden] {
@@ -244,11 +272,15 @@ button.primary:focus-visible {
     align-items: center;
     justify-content: space-between;
     gap: var(--space-sm);
+    padding: var(--space-md);
+    border-bottom: 1px solid var(--color-border);
+    background: var(--color-elevated);
 }
 
 .cart-dropdown-header h2 {
     margin: 0;
     font-size: 1.1rem;
+    font-weight: 600;
 }
 
 .cart-close {
@@ -256,16 +288,33 @@ button.primary:focus-visible {
     background: transparent;
     font-size: 1.4rem;
     line-height: 1;
+    color: var(--color-text-muted);
+    cursor: pointer;
+    padding: 0;
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: var(--transition-base);
+}
+
+.cart-close:hover {
+    color: var(--color-text);
+    background: var(--color-border);
+    border-radius: 50%;
 }
 
 .cart-items {
-    display: grid;
+    display: flex;
+    flex-direction: column;
     gap: var(--space-sm);
     margin: 0;
-    padding: 0;
+    padding: var(--space-md);
     list-style: none;
-    max-height: 260px;
+    max-height: 400px;
     overflow-y: auto;
+    flex: 1;
 }
 
 .cart-item {
@@ -273,6 +322,16 @@ button.primary:focus-visible {
     grid-template-columns: 60px 1fr auto;
     gap: var(--space-sm);
     align-items: center;
+    padding: var(--space-sm);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-base);
+    background: var(--color-elevated);
+    transition: var(--transition-base);
+}
+
+.cart-item:hover {
+    border-color: var(--color-primary);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
 }
 
 .cart-item img {
@@ -280,16 +339,23 @@ button.primary:focus-visible {
     height: 60px;
     object-fit: cover;
     border-radius: var(--radius-base);
+    border: 1px solid var(--color-border);
 }
 
 .cart-item-info {
-    display: grid;
+    display: flex;
+    flex-direction: column;
     gap: 4px;
+    min-width: 0;
 }
 
 .cart-item h3 {
     margin: 0;
     font-size: 0.95rem;
+    font-size: 500;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 .cart-item .cart-item-meta {
@@ -300,6 +366,25 @@ button.primary:focus-visible {
     font-size: 0.85rem;
 }
 
+/* Remove button */
+.cart-item-remove,
+.cart-item button[data-cart-remove] {
+    background: transparent;
+    border: none;
+    color: var(--color-error);
+    font-size: 0.85rem;
+    cursor: pointer;
+    padding: 0.25rem 0.5rem;
+    border-radius: var(--radius-base);
+    transition: var(--transition-base);
+}
+
+.cart-item-remove:hover,
+.cart-item button[data-cart-remove]:hover {
+    background: rgba(223, 63, 64, 0.1);
+    color: var(--color-error);
+}
+
 .cart-item button {
     background: transparent;
     border: none;
@@ -308,26 +393,39 @@ button.primary:focus-visible {
 }
 
 .cart-empty {
-    padding: var(--space-md);
+    padding: var(--space-lg);
     text-align: center;
     color: var(--color-text-muted);
     border: 1px dashed var(--color-border);
     border-radius: var(--radius-base);
+    background: var(--color-elevated);
 }
 
 .cart-dropdown-footer {
     display: grid;
+    flex-direction: column;
     gap: var(--space-sm);
+    padding: var(--space-md);
+    border-top: 1px solid var(--color-border);
+    background: var(--color-elevated);
 }
 
 .cart-summary {
     display: flex;
     justify-content: space-between;
     align-items: center;
+    padding: var(--space-sm) 0;
+}
+
+.cart-summary span {
+    font-size: 0.95rem;
+    color: var(--color-text-muted);
 }
 
 .cart-summary strong {
-    font-size: 1.05rem;
+    font-size: 1.15rem;
+    color: var(--color-primary);
+    font-weight: 600;
 }
 
 .cart-actions {
@@ -335,14 +433,42 @@ button.primary:focus-visible {
     gap: var(--space-sm);
 }
 
+.cart-actions button,
+.cart-actions a {
+    flex: 1;
+    text-align: center;
+    padding: 0.65rem;
+    font-size: 0.95rem;
+    border-radius: var(--radius-base);
+    transition: var(--transition-base);
+}
+
 .cart-actions .secondary {
     border: 1px solid var(--color-border);
+    background: var(--color-surface);
+    color: var(--color-text);
 }
 
 .cart-actions .secondary:hover {
     border-color: var(--color-error);
     color: var(--color-error);
+    background: rgba(223, 63, 64, 0.05);
 }
+
+.cart-actions .primary {
+    background: var(--color-primary);
+    color: #fff;
+    border: 1px solid var(--color-primary);
+    font-weight: 600;
+    text-decoration: none;
+    display: inline-block;
+}
+
+.cart-actions .primary:hover {
+    background: #a90756;
+    border-color: #a90756;
+}
+
 
 /* Cart empty message */
 #cart-empty-message {
@@ -356,12 +482,30 @@ button.primary:focus-visible {
     text-decoration: underline;
 }
 
+/* Cart feedback messages */
+#cart-feedback {
+    font-size: 0.85rem;
+    padding: var(--space-xs);
+    border-radius: var(--radius-base);
+    text-align: center;
+}
+
 #cart-feedback[data-state="success"] {
     color: #1d9a6c;
+    background: rgba(29, 154, 108, 0.1);
 }
 
 #cart-feedback[data-state="error"] {
     color: var(--color-error);
+    background: rgba(223, 63, 64, 0.1);
+}
+
+/* Mobile cart (in header search row) */
+#mobile-cart .cart-toggle {
+    border: none;
+    background: transparent;
+    box-shadow: none;
+    padding: 0.25rem;
 }
 
 .hero {
@@ -373,7 +517,8 @@ button.primary:focus-visible {
     border-radius: var(--radius-base);
     padding: clamp(1.5rem, 2.5vw, 3rem);
     background: var(--color-elevated);
-    box-shadow: var(--shadow-soft);
+    /*box-shadow: var(--shadow-soft);
+    margin-bottom: var(--space-lg);*/
 }
 
 .hero-content {
@@ -414,31 +559,40 @@ button.primary:focus-visible {
     border: 1px solid var(--color-border);
     background: var(--color-surface);
     box-shadow: 0 18px 40px rgba(17, 25, 40, 0.15);
-    min-height: clamp(280px, 36vw, 420px);
+    /*min-height: clamp(280px, 36vw, 420px);*/
+    height: 420px;
+    width: 100%;
 }
 
 .hero-carousel.is-empty {
     min-height: auto;
+    height: 300px;
 }
 
 .carousel-window {
     overflow: hidden;
     height: 100%;
+    width: 100%;
 }
 
 .carousel-track {
     display: flex;
     height: 100%;
-    transition: transform 600ms ease;
+    width: 100%;
+    transition: transform 600ms cubic-bezier(0.4, 0, 0.2, 1);
     will-change: transform;
 }
 
 .carousel-slide {
     flex: 0 0 100%;
-    display: grid;
+    min-width: 100%;
+    height: 100%;
+    display: flex;
+    /*display: grid;
     grid-template-columns: 1fr;
-    grid-template-rows: 1fr auto;
-    justify-items: center;
+    grid-template-rows: 1fr auto;*/
+    flex-direction: column;
+    justify-content: center;
     align-items: center;
     gap: var(--space-md);
     padding: clamp(1.2rem, 2vw, 2rem);
@@ -446,10 +600,13 @@ button.primary:focus-visible {
 }
 
 .carousel-slide img {
-    width: min(78%, 380px);
-    max-height: clamp(200px, 28vw, 320px);
+    width: 100%;
+    max-width: 320px;
+    height: 280px;
     object-fit: contain;
+    object-position: center;
     filter: drop-shadow(0 18px 26px rgba(17, 25, 40, 0.18));
+    flex-shrink: 0;/* Prevent image from shrinking */
 }
 
 .carousel-slide.is-empty {
@@ -460,24 +617,35 @@ button.primary:focus-visible {
 }
 
 .carousel-caption {
-    display: grid;
-    gap: 6px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--space-xs);
     text-align: center;
+    width: 100%;
+    padding: var(--space-sm);
 }
 
 .carousel-caption h3 {
     margin: 0;
     font-size: 1.35rem;
+    line-height: 1.2;
 }
 
 .carousel-price {
     font-weight: 600;
+    font-size: 1.2rem;
     color: var(--color-primary);
+    margin-bottom: var(--space-xs);
+}
+
+.carousel-caption button {
+    margin-top: var(--space-xs);
 }
 
 .carousel-control {
     position: absolute;
-    top: 50%;
+    top: 40%;
     transform: translateY(-50%);
     border-radius: 50%;
     width: 42px;
@@ -490,6 +658,7 @@ button.primary:focus-visible {
     box-shadow: 0 12px 30px rgba(17, 25, 40, 0.18);
     z-index: 2;
     transition: transform 200ms ease, background 200ms ease;
+    cursor: pointer;
 }
 
 .carousel-control:hover {
@@ -511,21 +680,25 @@ button.primary:focus-visible {
     border-radius: 999px;
     background: rgba(255, 255, 255, 0.5);
     overflow: hidden;
+    position: relative;
 }
 
 .carousel-indicator::after {
     content: '';
-    display: block;
+    display: absolute;
+    top: 0;
+    left: 0;
     width: var(--progress, 0%);
     height: 100%;
     background: var(--color-primary);
-    transition: width 0.6s ease;
+    transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .carousel-status {
     margin: 0;
     font-size: 0.9rem;
     color: var(--color-text-muted);
+    text-align: center;
 }
 
 .brand {
@@ -650,6 +823,42 @@ button.primary:focus-visible {
         cursor: pointer;
     }
 
+    /* Hide desktop cart dropdown on mobile */
+    #desktop-cart .cart-dropdown {
+        display: none !important;
+    }
+
+    .mobile-search-row #mobile-cart {
+        display: block;
+    }
+
+    #desktop-cart {
+        display: none !important;
+    }
+
+    #mobile-cart {
+        position: relative;
+    }
+    
+    #mobile-cart .cart-toggle {
+        position: relative;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    /* Make mobile cart more visible */
+    #mobile-cart .cart-count {
+        min-width: 18px;
+        height: 18px;
+        font-size: 0.7rem;
+        padding: 0 4px;
+    }
+    
+    .desktop-only {
+        display: none;
+    }
+
     /* Oculta elementos específicos de escritorio */
     .main-nav,
     .user-session,
@@ -697,7 +906,8 @@ button.primary:focus-visible {
         height: 60px;
         background: var(--color-surface);
         border-bottom: 1px solid var(--color-border);
-        
+        padding: 0;
+        margin: 0;
         /* Quitar efecto de scroll (si lo había) */
         opacity: 1 !important;
         visibility: visible !important;
@@ -752,12 +962,6 @@ button.primary:focus-visible {
         display: none !important;
     }
 
-
-    /* --- 4. MOSTRAR NAVEGACIÓN INFERIOR --- */
-    .bottom-nav-bar {
-        display: flex; /* Muestra la barra inferior en móvil */
-    }
-
     /* Definir la altura de la barra inferior */
     :root {
         --bottom-nav-height: 70px;
@@ -782,13 +986,30 @@ button.primary:focus-visible {
         /* Esta regla es correcta para el bottom-nav */
         padding-bottom: calc(var(--bottom-nav-height) + var(--space-md)) !important; 
     }
-    
-    
+
+    /* Show bottom nav bar */
+    .bottom-nav-bar {
+        display: flex; /* Show on mobile */
+    }
+        
     /* --- 6. OTROS AJUSTES MÓVILES (QUE YA TENÍAS) --- */
     
     /* Hero Section (si se usa) */
     .hero {
         grid-template-columns: 1fr;
+    }
+
+    .carousel-slide {
+        height: 380px;
+    }
+
+    .carousel-slide img {
+        max-width: 280px;
+        height: 240px;
+    }
+
+    .carousel-caption h3 {
+        font-size: 1.2rem;
     }
 
     /* Pago */
@@ -917,11 +1138,15 @@ button.primary:focus-visible {
     padding: 0;
     margin: 0;
     height: 100%;
+    width: 100%;
 }
 
 .bottom-nav-bar li {
-    /*flex: 1;*/ /* Cada elemento ocupa el mismo espacio */
+    flex: 1; /* Cada elemento ocupa el mismo espacio */
     text-align: center;
+    display: flex;
+    justify-content: center;
+    align-items: center;
 }
 
 .bottom-nav-bar a {
@@ -937,11 +1162,15 @@ button.primary:focus-visible {
     border-radius: var(--radius-base);
     transition: background-color 0.2s ease, color 0.2s ease;
     height: 100%; /* Para que el área clicable sea grande */
+    width: 100%;
 }
 
 .bottom-nav-bar a .icon {
     font-size: 1.5rem; /* Tamaño del icono */
     margin-bottom: 2px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 .bottom-nav-bar a .icon svg {
@@ -960,6 +1189,31 @@ button.primary:focus-visible {
     color: var(--color-text); /* Color más oscuro al pasar el ratón */
 }
 
+.bottom-nav-bar .cart-icon-nav .icon {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.bottom-nav-bar .cart-count-mobile {
+    position: absolute;
+    top: -4px;
+    right: -8px;
+    min-width: 18px;
+    height: 18px;
+    padding: 0 5px;
+    font-size: 0.7rem;
+    line-height: 18px;
+    border-radius: 9px;
+    background: var(--color-primary);
+    color: #fff;
+    font-weight: 600;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
 /* Badge para el carrito en la barra inferior */
 .bottom-nav-bar .cart-count-mobile.badge {
     position: absolute;
@@ -974,8 +1228,47 @@ button.primary:focus-visible {
     pointer-events: none; /* Para que el clic pase al enlace */
 }
 
+.bottom-nav-bar .cart-count-mobile[hidden] {
+    display: none;
+}
+
+/* Mobile cart badge in bottom nav */
+.cart-count-mobile {
+    position: absolute;
+    top: -2px;
+    right: -6px;
+    min-width: 18px;
+    height: 18px;
+    padding: 0 5px;
+    font-size: 0.7rem;
+    line-height: 18px;
+    border-radius: 9px;
+    background: var(--color-primary);
+    color: #fff;
+    font-weight: 600;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
 /* Media Query para mostrar la barra inferior en móvil */
 @media (max-width: 900px) {
+    main {
+        padding: var(--space-md); /* Smaller padding on mobile */
+        padding-bottom: calc(70px + var(--space-md)) !important; /* Space for bottom nav */
+    }
+
+    main.container {
+        padding: var(--space-md);
+        padding-bottom: calc(70px + var(--space-md)) !important;
+    }
+
+    /* Ensure no extra margin/padding on body */
+    body {
+        margin: 0;
+        padding: 0;
+    }
+
     .bottom-nav-bar {
         display: flex; /* Muestra la barra inferior en móvil */
     }
@@ -1983,6 +2276,16 @@ button.full-width {
 
 /* Ajustes para móviles */
 @media (max-width: 600px) {
+    main {
+        padding: var(--space-sm);
+        padding-bottom: calc(70px + var(--space-sm)) !important;
+    }
+
+    main.container {
+        padding: var(--space-sm);
+        padding-bottom: calc(70px + var(--space-sm)) !important;
+    }
+
     .product-list[data-view="grid"] {
         grid-template-columns: 1fr;
     }
@@ -2024,6 +2327,51 @@ button.full-width {
     .order-total .total-line,
     .order-total .total-line strong {
         font-size: 1.1rem;
+    }
+
+    .cart-dropdown {
+        width: 95vw;
+        max-height: 70vh;
+    }
+    
+    .cart-items {
+        max-height: 300px;
+    }
+    
+    .cart-item {
+        grid-template-columns: 50px 1fr auto;
+    }
+    
+    .cart-item img {
+        width: 50px;
+        height: 50px;
+    }
+
+    .hero-carousel {
+        height: 340px;
+    }
+
+    .carousel-slide {
+        padding: var(--space-md);
+        gap: var(--space-sm);
+    }
+
+    .carousel-slide img {
+        max-width: 220px;
+        height: 200px;
+    }
+
+    .carousel-caption h3 {
+        font-size: 1.1rem;
+    }
+    
+    .carousel-price {
+        font-size: 1.1rem;
+    }
+    
+    .carousel-control {
+        width: 36px;
+        height: 36px;
     }
 }
 
