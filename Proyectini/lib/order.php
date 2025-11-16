@@ -11,19 +11,19 @@ use PDO;
 
 /**
  * Busca un cupón válido y devuelve su valor de descuento.
- * ¡CORREGIDO!
+ * @param ?int $couponId
+ * @return ?array Un array con [valor_descuento, tipo_descuento] o null si no es válido.
  */
-function getCouponDiscount(?int $couponId): float
+function getCouponDiscount(?int $couponId): ?array
 {
     if ($couponId === null) {
-        return 0.0;
+        return null;
     }
 
     try {
         $pdo = getPDO();
-        // Corrección: WHERE id_cupon = :id y SELECT valor_descuento
         $stmt = $pdo->prepare("
-            SELECT valor_descuento
+            SELECT valor_descuento, tipo_descuento
             FROM cupones
             WHERE id_cupon = :id
               AND activo = 1
@@ -33,20 +33,22 @@ function getCouponDiscount(?int $couponId): float
         $coupon = $stmt->fetch(PDO::FETCH_ASSOC);
 
         if (!$coupon) {
-            return 0.0; // Cupón no encontrado o no válido
+            return null; // Cupón no encontrado o no válido
         }
 
         // Asumimos que todos los cupones son de monto fijo
-        return (float)$coupon['valor_descuento'];
+        return [
+            'valor_descuento' => (float)$coupon['valor_descuento'],
+            'tipo_descuento' => $coupon['tipo_descuento'] ?? 'fijo'
+        ];
 
     } catch (\PDOException $e) {
         error_log($e->getMessage());
-        return 0.0; // Error en la BDD, no aplicar descuento
+        return null; // Error en la BDD, no aplicar descuento
     }
 }
 
 /**
- * ¡NUEVO!
  * Carga todas las promociones activas desde la BDD.
  */
 function getActivePromotions(): array
@@ -54,7 +56,7 @@ function getActivePromotions(): array
     try {
         $pdo = getPDO();
         $stmt = $pdo->query("
-            SELECT valor_descuento, id_producto_asociado, id_categoria_asociada
+            SELECT valor_descuento, tipo_descuento, id_producto_asociado, id_categoria_asociada
             FROM promociones
             WHERE activa = TRUE
               AND NOW() BETWEEN fecha_inicio AND fecha_final
@@ -66,12 +68,11 @@ function getActivePromotions(): array
         $promoPorCategoria = [];
 
         foreach ($promos as $promo) {
-            $valor = (float)$promo['valor_descuento'];
             if ($promo['id_producto_asociado']) {
-                $promoPorProducto[$promo['id_producto_asociado']] = $valor;
+                $promoPorProducto[$promo['id_producto_asociado']] = $promo;
             }
             if ($promo['id_categoria_asociada']) {
-                $promoPorCategoria[$promo['id_categoria_asociada']] = $valor;
+                $promoPorCategoria[$promo['id_categoria_asociada']] = $promo;
             }
         }
         
@@ -86,7 +87,6 @@ function getActivePromotions(): array
 
 /**
  * Calcula el monto total del pedido.
- * ¡CORREGIDO! (Ahora incluye promociones Y cupones)
  */
 function calculateOrderAmount(array $items, ?int $couponId): array
 {
@@ -94,40 +94,72 @@ function calculateOrderAmount(array $items, ?int $couponId): array
     [$promoPorProducto, $promoPorCategoria] = getActivePromotions();
 
     $subtotal = 0.0;
-    $discountAmount = 0.0;
+    $totalDescuentoPromociones = 0.0;
 
     foreach ($items as $item) {
-        $productId = (int)$item['id'];
-        $quantity = (int)$item['quantity'];
+        $productId = (int)$item['id'] ?? null;
+        $quantity = (int)$item['quantity'] ?? 0;
         
+        if(!$productId || $quantity <= 0){
+            continue;
+        }
         // Usamos findProduct (de storage.php) para obtener el precio Y la categoría
         $product = findProduct((string)$productId); 
 
         if ($product) {
             $precioOriginal = (float)$product['price'];
-            $categoriaId = $product['id_categoria'] ?? null; // Asegúrate de que findProduct devuelva esto
+            $categoriaId = $product['id_categoria'] ?? null; 
 
             // Acumular el subtotal
             $subtotal += $precioOriginal * $quantity;
 
             // 2. Aplicar descuentos de PROMOCIONES (por producto o categoría)
-            $descuentoPromocion = 0.0;
+            $descuentoPromocion = null;
             if (isset($promoPorProducto[$productId])) {
                 $descuentoPromocion = $promoPorProducto[$productId];
             } elseif ($categoriaId !== null && isset($promoPorCategoria[$categoriaId])) {
                 $descuentoPromocion = $promoPorCategoria[$categoriaId];
             }
 
-            // Acumular el descuento de la promoción
-            $discountAmount += $descuentoPromocion * $quantity;
+            if($descuentoPromocion){
+                $valor = (float)($descuentoPromocion['valor_descuento'] ?? 0);
+                $tipo = $descuentoPromocion['tipo_descuento'] ?? 'fijo';
+                $descuentoItem = 0.0;
+
+                if($tipo === 'porcentaje'){
+                    $descuentoItem = $precioOriginal * ($valor/100);
+                }else{
+                    $descuentoItem = $valor;
+                }
+                //Acumular el descuento total de las promociones
+                $totalDescuentoPromociones += ($descuentoItem * $quantity);
+            }
         }
     }
 
+    $totalDescuentoCupon = 0.0;
     // 3. Aplicar descuento del CUPÓN (al final)
-    $discountCoupon = getCouponDiscount($couponId);
-    $discountAmount += $discountCoupon;
+    $couponDetails = getCouponDiscount($couponId);
+    if($couponDetails !== null){
+        $valor = $couponDetails['valor_descuento'];
+        $tipo = $couponDetails['tipo_descuento'];
+        //subtotal despues de las promos
+        $subtotalRestante = $subtotal - $totalDescuentoPromociones;
 
+        if($tipo === 'porcentaje'){
+            $totalDescuentoCupon = $subtotalRestante * ($valor/100);
+        }else{//fijo
+            $totalDescuentoCupon = $valor;
+        }
+        //checar que no sobrepase el limite del precio restante
+        if($totalDescuentoCupon > $subtotalRestante){
+            $totalDescuentoCupon = $subtotalRestante;
+        }
+
+        //$discountAmount += $discountCoupon; //suma del total de los descuentos
+    }
     // 4. Calcular Total
+    $discountAmount = $totalDescuentoPromociones + $totalDescuentoCupon;
     $total = $subtotal - $discountAmount;
     
     // Asegurarse de que el total no sea negativo
@@ -138,16 +170,15 @@ function calculateOrderAmount(array $items, ?int $couponId): array
     }
 
     return [
-        'subtotal' => $subtotal,
-        'discountAmount' => $discountAmount,
-        'total' => $total,
+        'subtotal' => round($subtotal, 2),
+        'discountAmount' => round($discountAmount, 2),
+        'total' => round($total, 2),
         'totalInCents' => (int)round($total * 100) // Usar round() para evitar errores de precisión
     ];
 }
 
 /**
  * Crea el registro del pedido en la BDD.
- * ¡CORREGIDO!
  */
 function createOrder(
     string $name,

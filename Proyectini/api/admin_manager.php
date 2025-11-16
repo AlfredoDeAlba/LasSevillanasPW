@@ -40,13 +40,14 @@ try{
             break;
         case 'create_cupon':
             $stmt = $pdo->prepare("
-                INSERT INTO cupones(codigo, descripcion, valor_descuento, fecha_inicio, fecha_final, activo)
-                VALUES (?, ?, ?, ?, ?, ?)
+                INSERT INTO cupones(codigo, descripcion, valor_descuento, tipo_descuento, fecha_inicio, fecha_final, activo)
+                VALUES (?, ?, ?, ?, ?, ?, ?)
             ");
             $stmt->execute([
                 $data['codigo'],
                 $data['descripcion'],
                 $data['valor_descuento'],
+                $data['tipo_descuento'] ?? 'fijo',
                 $data['fecha_inicio'],
                 $data['fecha_final'],
                 $data['activo'] ?? true
@@ -96,14 +97,15 @@ try{
             break;
         case 'create_promocion':
             $stmt = $pdo->prepare("
-                INSERT INTO promociones(nombre_promo, descripcion, valor_descuento, 
+                INSERT INTO promociones(nombre_promo, descripcion, valor_descuento, tipo_descuento,
                     id_producto_asociado, id_categoria_asociada, fecha_inicio, fecha_final, activa, imagen_url)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             ");
             $stmt->execute([
                 $data['nombre_promo'],
                 $data['descripcion'],
                 $data['valor_descuento'],
+                $data['tipo_descuento'] ?? 'fijo',
                 $data['id_producto_asociado'],
                 $data['id_categoria_asociada'],
                 $data['fecha_inicio'],
@@ -117,7 +119,7 @@ try{
         case 'update_promocion':
             $stmt = $pdo->prepare("
                 UPDATE promociones SET
-                    nombre_promo = ?, descripcion = ?, imagen_url = ?, valor_descuento = ?,
+                    nombre_promo = ?, descripcion = ?, imagen_url = ?, valor_descuento = ?, tipo_descuento = ?,
                     id_producto_asociado = ?, id_categoria_asociada = ?, 
                     fecha_inicio = ?, fecha_final = ?, activa = ? 
                 WHERE id_promocion = ?
@@ -127,6 +129,7 @@ try{
                 $data['descripcion'],
                 $data['imagen_url'],
                 $data['valor_descuento'],
+                $data['tipo_descuento'],
                 $data['id_producto_asociado'],
                 $data['id_categoria_asociada'],
                 $data['fecha_inicio'],

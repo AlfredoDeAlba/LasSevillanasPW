@@ -113,7 +113,7 @@ function applyPromotions(array $products) : array {
         $pdo = getPDO();
         //obtener todas las promociones activas
         $stmt = $pdo->query("
-            SELECT id_promocion, valor_descuento,
+            SELECT id_promocion, valor_descuento, tipo_descuento,
             id_producto_asociado, id_categoria_asociada
             FROM promociones
             WHERE activa = TRUE
@@ -127,19 +127,23 @@ function applyPromotions(array $products) : array {
         $promoPorProducto = [];
         $promoPorCategoria = [];
         foreach($promos as $promo){
+            //normalizar los datos
+            $promo['valor_descuento'] = (float)($promo['valor_descuento'] ?? 0);
+            $promo['tipo_descuento'] = $promo['tipo_descuento'] ?? 'fijo';
             if($promo['id_producto_asociado']){
-                $promoPorProducto[$promo['id_producto_asociado']] = (float)$promo['valor_descuento'];
+                $promoPorProducto[$promo['id_producto_asociado']] = $promo;
             }elseif($promo['id_categoria_asociada']){
-                $promoPorCategoria[$promo['id_categoria_asociada']] = (float)$promo['valor_descuento'];
+                $promoPorCategoria[$promo['id_categoria_asociada']] = $promo;
             }
         }
         //iterar sobre los productos y se aplican descuentos
         foreach($products as &$product){//uso de & para modificar el arreglo original
             $precioOriginal = (float)($product['precio'] ?? 0.0);
             $descuento = 0.0;
+            $promoAplicada = null;
             // Obtenemos los IDs de forma segura
             $productId = $product['id_producto'] ?? null;
-            $categoryId = $product['id_categoria'] ?? null; // Tu SQL confirma que esta columna existe
+            $categoryId = $product['id_categoria'] ?? null;
 
             //prioridad a promocion por producto
             if($productId !== null && isset($promoPorProducto[$productId])){
@@ -149,10 +153,22 @@ function applyPromotions(array $products) : array {
             }elseif($categoryId !== null && isset($promoPorCategoria[$categoryId])){
                 $descuento = $promoPorCategoria[$categoryId];
             }
-            //aplicar el descuento en caso de existir
-            if($descuento > 0){
+            // Aplicar el descuento si encontramos una promoción
+            if ($promoAplicada !== null) {
+                $valor = $promoAplicada['valor_descuento'];
+                $tipo = $promoAplicada['tipo_descuento'];
+
+                if ($tipo === 'porcentaje') {
+                    // Cálculo de porcentaje
+                    $descuento = $precioOriginal * ($valor / 100);
+                } else {
+                    // Cálculo fijo (default)
+                    $descuento = $valor;
+                }
+                
+                // Aplicar el descuento calculado, asegurando que no sea negativo
                 $product['precio_original'] = $precioOriginal;
-                $product['precio_descuento'] = max(0.01, $precioOriginal - $descuento);//con 0.01 se evitan precios negativos
+                $product['precio_descuento'] = max(0.01, $precioOriginal - $descuento);
             }
         }
         return $products;

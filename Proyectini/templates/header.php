@@ -71,6 +71,7 @@ $categories = readCategories();
                 <li><a href="/LasSevillanas/Proyectini/index.php" class="<?php echo $currentPage == 'index.php' ? 'active' : ''; ?>">Inicio</a></li>
                 <li><a href="/LasSevillanas/Proyectini/catalogo.php" class="<?php echo $currentPage == 'catalogo.php' ? 'active' : ''; ?>">Catálogo</a></li>
                 <li><a href="/LasSevillanas/Proyectini/historia.php" class="<?php echo $currentPage == 'historia.php' ? 'active' : ''; ?>">Historia</a></li>
+                <li><a href="/LasSevillanas/Proyectini/sucursales.php" class="<?php echo $currentPage == 'sucursales.php' ? 'active' : ''; ?>">Sucursales</a></li>
                 <li><a href="/LasSevillanas/Proyectini/index.php#valores">Valores</a></li>
                 <li><a href="/LasSevillanas/Proyectini/index.php#contacto">Contacto</a></li>
                 <li><a href="/LasSevillanas/Proyectini/terminos.php" class="<?php echo $currentPage == 'terminos.php' ? 'active' : ''; ?>">Términos y Condiciones</a></li>

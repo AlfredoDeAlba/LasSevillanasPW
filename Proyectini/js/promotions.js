@@ -1,30 +1,63 @@
 // promotions.js - Promotions Banner Carousel
 document.addEventListener('DOMContentLoaded', () => {
-    const carousel = document.getElementById('promotions-carousel');
+    console.log('Promotions.js loaded');
+    
+    // FIXED: Use the correct selector that matches your HTML
+    const carousel = document.querySelector('[data-promo-slider]');
     
     if (!carousel) {
-        return; // No promotions carousel on this page
-    }
-    
-    const track = document.getElementById('promotions-track');
-    const prevBtn = document.getElementById('promo-prev');
-    const nextBtn = document.getElementById('promo-next');
-    const indicators = document.querySelectorAll('.promo-indicator');
-    
-    if (!track) {
+        console.log('No promotions carousel found on this page');
         return;
     }
     
-    const slides = track.querySelectorAll('.promotion-slide');
+    console.log('Carousel found:', carousel);
+    
+    const track = document.getElementById('promotions-track');
+    // FIXED: Use data attributes that match your HTML
+    const prevBtn = document.querySelector('[data-promo-prev]');
+    const nextBtn = document.querySelector('[data-promo-next]');
+    const indicatorsContainer = document.getElementById('promo-indicators');
+    
+    if (!track) {
+        console.error('Track not found');
+        return;
+    }
+    
+    // FIXED: Get the actual slides from your HTML structure
+    const slides = track.querySelectorAll('.promo-banner');
     const totalSlides = slides.length;
     
+    console.log('Carousel Stats:');
+    console.log('- Total slides:', totalSlides);
+    console.log('- Track element:', track);
+    console.log('- Slides:', slides);
+    console.log('- Prev button:', prevBtn);
+    console.log('- Next button:', nextBtn);
+    
     if (totalSlides === 0) {
+        console.error('No slides found in track');
         return;
     }
     
     let currentIndex = 0;
     let autoPlayTimer = null;
     let isTransitioning = false;
+    let isAutoPlaying = true;
+    
+    // Create indicators dynamically
+    if (indicatorsContainer && totalSlides > 1) {
+        indicatorsContainer.innerHTML = '';
+        for (let i = 0; i < totalSlides; i++) {
+            const indicator = document.createElement('button');
+            indicator.className = 'promo-indicator';
+            indicator.setAttribute('aria-label', `Ir a promoción ${i + 1}`);
+            if (i === 0) indicator.classList.add('active');
+            indicator.addEventListener('click', () => goToSlide(i));
+            indicatorsContainer.appendChild(indicator);
+        }
+    }
+    
+    const indicators = indicatorsContainer ? indicatorsContainer.querySelectorAll('.promo-indicator') : [];
     
     // Update carousel position
     function updateCarousel(instant = false) {
@@ -50,17 +83,22 @@ document.addEventListener('DOMContentLoaded', () => {
             indicator.classList.toggle('active', index === currentIndex);
         });
         
-        // Update button states (if only one slide, hide controls)
+        // Update button states
         if (prevBtn && nextBtn) {
             if (totalSlides <= 1) {
                 prevBtn.style.display = 'none';
                 nextBtn.style.display = 'none';
+            } else {
+                prevBtn.style.display = '';
+                nextBtn.style.display = '';
             }
         }
         
         setTimeout(() => {
             isTransitioning = false;
         }, 800);
+        
+        console.log(`Now showing slide ${currentIndex + 1}/${totalSlides}`);
     }
     
     // Navigate to specific slide
@@ -90,7 +128,7 @@ document.addEventListener('DOMContentLoaded', () => {
     
     // Auto-play functionality
     function startAutoPlay() {
-        if (totalSlides <= 1) {
+        if (totalSlides <= 1 || !isAutoPlaying) {
             return;
         }
         
@@ -98,12 +136,15 @@ document.addEventListener('DOMContentLoaded', () => {
         autoPlayTimer = setInterval(() => {
             nextSlide();
         }, 5000); // Change slide every 5 seconds
+        
+        console.log('Auto-play started');
     }
     
     function stopAutoPlay() {
         if (autoPlayTimer) {
             clearInterval(autoPlayTimer);
             autoPlayTimer = null;
+            console.log('Auto-play stopped');
         }
     }
     
@@ -112,22 +153,51 @@ document.addEventListener('DOMContentLoaded', () => {
         startAutoPlay();
     }
     
+    // Toggle auto-play
+    const autoPlayToggle = document.getElementById('promo-autoplay');
+    if (autoPlayToggle) {
+        const playIcon = autoPlayToggle.querySelector('.play-icon');
+        const pauseIcon = autoPlayToggle.querySelector('.pause-icon');
+        
+        autoPlayToggle.addEventListener('click', () => {
+            isAutoPlaying = !isAutoPlaying;
+            
+            if (isAutoPlaying) {
+                startAutoPlay();
+                if (playIcon) playIcon.style.display = '';
+                if (pauseIcon) pauseIcon.style.display = 'none';
+            } else {
+                stopAutoPlay();
+                if (playIcon) playIcon.style.display = 'none';
+                if (pauseIcon) pauseIcon.style.display = '';
+            }
+        });
+        
+        // Set initial state
+        if (playIcon) playIcon.style.display = 'none';
+        if (pauseIcon) pauseIcon.style.display = '';
+    }
+    
     // Event listeners
     if (prevBtn) {
-        prevBtn.addEventListener('click', prevSlide);
+        prevBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            prevSlide();
+        });
     }
     
     if (nextBtn) {
-        nextBtn.addEventListener('click', nextSlide);
+        nextBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            nextSlide();
+        });
     }
-    
-    indicators.forEach((indicator, index) => {
-        indicator.addEventListener('click', () => goToSlide(index));
-    });
     
     // Pause auto-play on hover
     carousel.addEventListener('mouseenter', stopAutoPlay);
-    carousel.addEventListener('mouseleave', startAutoPlay);
+    carousel.addEventListener('mouseleave', () => {
+        if (isAutoPlaying) startAutoPlay();
+    });
     
     // Touch/swipe support
     let touchStartX = 0;
@@ -158,7 +228,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 prevSlide();
             }
         } else {
-            resetAutoPlay();
+            if (isAutoPlaying) startAutoPlay();
         }
     });
     
@@ -173,8 +243,10 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         
         if (e.key === 'ArrowLeft') {
+            e.preventDefault();
             prevSlide();
         } else if (e.key === 'ArrowRight') {
+            e.preventDefault();
             nextSlide();
         }
     });
@@ -184,7 +256,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (document.hidden) {
             stopAutoPlay();
         } else {
-            startAutoPlay();
+            if (isAutoPlaying) startAutoPlay();
         }
     });
     
@@ -195,12 +267,11 @@ document.addEventListener('DOMContentLoaded', () => {
     // Track impressions (optional - for analytics)
     const trackPromoImpression = (slideIndex) => {
         const slide = slides[slideIndex];
-        const promoId = slide.dataset.index;
+        const promoId = slide.dataset.promoId;
         
-        // You can send this to your analytics service
         console.log('Promotion viewed:', promoId);
         
-        // Example: Send to backend
+        // Optional: Send to backend for analytics
         // fetch('/api/track_promo_view.php', {
         //     method: 'POST',
         //     headers: { 'Content-Type': 'application/json' },
@@ -226,9 +297,41 @@ document.addEventListener('DOMContentLoaded', () => {
         attributeFilter: ['style']
     });
     
+    // Countdown timers for promotions
+    const updateCountdowns = () => {
+        document.querySelectorAll('.promo-timer[data-end-date]').forEach(timer => {
+            const endDate = new Date(timer.dataset.endDate);
+            const now = new Date();
+            const diff = endDate - now;
+            
+            if (diff <= 0) {
+                timer.textContent = '¡Oferta terminada!';
+                timer.style.color = 'var(--color-error)';
+            } else {
+                const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+                const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                
+                if (days > 0) {
+                    timer.textContent = `Termina en ${days} día${days !== 1 ? 's' : ''}`;
+                } else if (hours > 0) {
+                    timer.textContent = `Termina en ${hours} hora${hours !== 1 ? 's' : ''}`;
+                } else {
+                    const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+                    timer.textContent = `Termina en ${minutes} minuto${minutes !== 1 ? 's' : ''}`;
+                }
+            }
+        });
+    };
+    
+    // Update countdowns every minute
+    updateCountdowns();
+    setInterval(updateCountdowns, 60000);
+    
     // Cleanup on page unload
     window.addEventListener('beforeunload', () => {
         stopAutoPlay();
         observer.disconnect();
     });
+    
+    console.log('Promotions carousel initialized successfully');
 });

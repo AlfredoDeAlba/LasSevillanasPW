@@ -205,143 +205,191 @@ try {
 
     <!-- Promotional Banners Section - Only show if there are active promotions -->
     <?php if (!empty($activePromotions)): ?>
-    <section id="promociones" class="section promotions-section">
-        <header class="section-header">
-            <h2>
-                <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align: middle; margin-right: 8px;">
-                    <path d="M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"/>
-                    <path d="M9 12h6"/>
-                    <path d="M12 9v6"/>
-                    <path d="m16 16 2 2"/>
-                    <path d="m16 8 2-2"/>
-                    <path d="M8 8 6 6"/>
-                    <path d="m8 16-2 2"/>
-                </svg>
-                ¡Ofertas Especiales!
-            </h2>
-            <p>Aprovecha nuestras promociones por tiempo limitado</p>
-        </header>
+<section id="promociones" class="section promotions-section">
+    <header class="section-header">
+        <h2>
+            <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align: middle; margin-right: 8px;">
+                <path d="M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"/>
+                <path d="M9 12h6"/>
+                <path d="M12 9v6"/>
+                <path d="m16 16 2 2"/>
+                <path d="m16 8 2-2"/>
+                <path d="M8 8 6 6"/>
+                <path d="m8 16-2 2"/>
+            </svg>
+            ¡Ofertas Especiales!
+        </h2>
+        <p>Aprovecha nuestras promociones por tiempo limitado</p>
+    </header>
 
-        <div class="promotions-slider" data-promo-slider>
-            <button class="promo-control prev" data-promo-prev aria-label="Promoción anterior">
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <path d="M15 18l-6-6 6-6"/>
-                </svg>
-            </button>
+    <div class="promotions-slider" data-promo-slider>
+        <button class="promo-control prev" data-promo-prev aria-label="Promoción anterior">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M15 18l-6-6 6-6"/>
+            </svg>
+        </button>
 
-            <div class="promotions-viewport">
-                <div class="promotions-track" id="promotions-track">
-                    <?php foreach ($activePromotions as $promo): ?>
-                        <div class="promo-banner" data-promo-id="<?php echo htmlspecialchars($promo['id_promocion']); ?>">
-                            <div class="promo-image-container">
+        <div class="promotions-viewport">
+            <div class="promotions-track" id="promotions-track">
+                <?php foreach ($activePromotions as $promo): ?>
+                    <div class="promo-banner" data-promo-id="<?php echo htmlspecialchars($promo['id_promocion']); ?>">
+                        <div class="promo-image-container">
+                            <?php 
+                            // Determine image source (promotion image or product image)
+                            $promoImage = $promo['imagen_url'] ?? $promo['producto_imagen'] ?? null;
+                            if ($promoImage && !filter_var($promoImage, FILTER_VALIDATE_URL)) {
+                                if (!str_starts_with($promoImage, 'uploads/')) {
+                                    $promoImage = 'uploads/' . $promoImage;
+                                }
+                            }
+                            // Fallback image
+                            if (empty($promoImage)) {
+                                $promoImage = 'https://images.unsplash.com/photo-1607478900766-efe13248b125?auto=format&fit=crop&w=800&q=80';
+                            }
+                            ?>
+                            <img 
+                                src="<?php echo htmlspecialchars($promoImage); ?>" 
+                                alt="<?php echo htmlspecialchars($promo['nombre_promo']); ?>"
+                                loading="lazy"
+                                onerror="this.src='https://images.unsplash.com/photo-1607478900766-efe13248b125?auto=format&fit=crop&w=800&q=80'"
+                            >
+                            
+                            <!-- Discount Badge - UPDATED to handle both types -->
+                            <div class="promo-badge">
                                 <?php 
-                                // Determine image source (promotion image or product image)
-                                $promoImage = $promo['imagen_url'] ?? $promo['producto_imagen'] ?? null;
-                                if ($promoImage && !filter_var($promoImage, FILTER_VALIDATE_URL)) {
-                                    if (!str_starts_with($promoImage, 'uploads/')) {
-                                        $promoImage = 'uploads/' . $promoImage;
-                                    }
-                                }
-                                // Fallback image
-                                if (empty($promoImage)) {
-                                    $promoImage = 'https://images.unsplash.com/photo-1607478900766-efe13248b125?auto=format&fit=crop&w=800&q=80';
-                                }
-                                ?>
-                                <img 
-                                    src="<?php echo htmlspecialchars($promoImage); ?>" 
-                                    alt="<?php echo htmlspecialchars($promo['nombre_promo']); ?>"
-                                    loading="lazy"
-                                    onerror="this.src='https://images.unsplash.com/photo-1607478900766-efe13248b125?auto=format&fit=crop&w=800&q=80'"
-                                >
+                                $discountValue = $promo['valor_descuento'];
+                                $discountType = $promo['tipo_descuento'];
+                                $productPrice = $promo['producto_precio'] ?? 0;
                                 
-                                <!-- Discount Badge -->
-                                <div class="promo-badge">
-                                    <?php 
-                                    $discount = $promo['valor_descuento'];
-                                    $productPrice = $promo['producto_precio'] ?? 0;
-                                    
-                                    if ($productPrice > 0 && $discount < $productPrice) {
-                                        // Calculate percentage
-                                        $percentage = round(($discount / $productPrice) * 100);
+                                if ($discountType === 'porcentaje') {
+                                    // Percentage discount
+                                    echo "-" . number_format($discountValue, 0) . "%";
+                                } else {
+                                    // Fixed amount discount
+                                    // If we have a product price, show as percentage
+                                    if ($productPrice > 0 && $discountValue < $productPrice) {
+                                        $percentage = round(($discountValue / $productPrice) * 100);
                                         echo "-{$percentage}%";
                                     } else {
-                                        echo "-$" . number_format($discount, 0);
+                                        // Just show the fixed discount
+                                        echo "-$" . number_format($discountValue, 0);
                                     }
-                                    ?>
-                                </div>
-                            </div>
-
-                            <div class="promo-content">
-                                <div class="promo-header">
-                                    <span class="promo-category">
-                                        <?php 
-                                        if ($promo['producto_nombre']) {
-                                            echo htmlspecialchars($promo['producto_nombre']);
-                                        } elseif ($promo['categoria_nombre']) {
-                                            echo 'Categoría: ' . htmlspecialchars($promo['categoria_nombre']);
-                                        } else {
-                                            echo 'Promoción General';
-                                        }
-                                        ?>
-                                    </span>
-                                    
-                                    <h3><?php echo htmlspecialchars($promo['nombre_promo']); ?></h3>
-                                </div>
-
-                                <p class="promo-description">
-                                    <?php 
-                                    $desc = $promo['descripcion'] ?? 'Oferta especial por tiempo limitado';
-                                    echo htmlspecialchars($desc);
-                                    ?>
-                                </p>
-
-                                <div class="promo-pricing">
-                                    <?php if ($promo['producto_precio'] && $promo['id_producto_asociado']): ?>
-                                        <div class="price-container">
-                                            <span class="original-price">$<?php echo number_format($promo['producto_precio'], 2); ?></span>
-                                            <span class="discounted-price">$<?php echo number_format($promo['producto_precio'] - $promo['valor_descuento'], 2); ?></span>
-                                        </div>
-                                    <?php else: ?>
-                                        <div class="discount-tag">
-                                            Descuento de $<?php echo number_format($promo['valor_descuento'], 2); ?>
-                                        </div>
-                                    <?php endif; ?>
-                                </div>
-
-                                <div class="promo-actions">
-                                    <?php if ($promo['id_producto_asociado']): ?>
-                                        <a href="vista_producto.php?id_producto=<?php echo htmlspecialchars($promo['id_producto_asociado']); ?>" 
-                                           class="promo-btn primary">
-                                            Ver Producto
-                                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                                <path d="M5 12h14M12 5l7 7-7 7"/>
-                                            </svg>
-                                        </a>
-                                    <?php elseif ($promo['id_categoria_asociada']): ?>
-                                        <a href="catalogo.php?categoria=<?php echo htmlspecialchars($promo['id_categoria_asociada']); ?>" 
-                                           class="promo-btn primary">
-                                            Ver Categoría
-                                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                                <path d="M5 12h14M12 5l7 7-7 7"/>
-                                            </svg>
-                                        </a>
-                                    <?php else: ?>
-                                        <a href="catalogo.php" class="promo-btn primary">
-                                            Ver Catálogo
-                                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                                <path d="M5 12h14M12 5l7 7-7 7"/>
-                                            </svg>
-                                        </a>
-                                    <?php endif; ?>
-
-                                    <!-- Countdown Timer (if needed) -->
-                                    <span class="promo-timer" data-end-date="<?php echo htmlspecialchars($promo['fecha_final']); ?>">
-                                        Termina pronto
-                                    </span>
-                                </div>
+                                }
+                                ?>
                             </div>
                         </div>
-                    <?php endforeach; ?>
+
+                        <div class="promo-content">
+                            <div class="promo-header">
+                                <span class="promo-category">
+                                    <?php 
+                                    if ($promo['producto_nombre']) {
+                                        echo htmlspecialchars($promo['producto_nombre']);
+                                    } elseif ($promo['categoria_nombre']) {
+                                        echo 'Categoría: ' . htmlspecialchars($promo['categoria_nombre']);
+                                    } else {
+                                        echo 'Promoción General';
+                                    }
+                                    ?>
+                                </span>
+                                
+                                <h3><?php echo htmlspecialchars($promo['nombre_promo']); ?></h3>
+                            </div>
+
+                            <p class="promo-description">
+                                <?php 
+                                $desc = $promo['descripcion'] ?? 'Oferta especial por tiempo limitado';
+                                echo htmlspecialchars($desc);
+                                ?>
+                            </p>
+
+                            <!-- Pricing Section - UPDATED to handle both types -->
+                            <div class="promo-pricing">
+                                <?php if ($promo['producto_precio'] && $promo['id_producto_asociado']): ?>
+                                    <div class="price-container">
+                                        <span class="original-price">$<?php echo number_format($promo['producto_precio'], 2); ?></span>
+                                        <span class="discounted-price">
+                                            <?php 
+                                            if ($discountType === 'porcentaje') {
+                                                // Calculate price after percentage discount
+                                                $finalPrice = $promo['producto_precio'] * (1 - ($discountValue / 100));
+                                                echo '$' . number_format($finalPrice, 2);
+                                            } else {
+                                                // Subtract fixed discount
+                                                $finalPrice = $promo['producto_precio'] - $discountValue;
+                                                echo '$' . number_format($finalPrice, 2);
+                                            }
+                                            ?>
+                                        </span>
+                                        <span class="savings-tag">
+                                            <?php 
+                                            if ($discountType === 'porcentaje') {
+                                                echo "Ahorra " . number_format($discountValue, 0) . "%";
+                                            } else {
+                                                echo "Ahorra $" . number_format($discountValue, 2);
+                                            }
+                                            ?>
+                                        </span>
+                                    </div>
+                                <?php elseif ($promo['id_categoria_asociada']): ?>
+                                    <!-- Category-wide discount -->
+                                    <div class="discount-tag category-discount">
+                                        <?php 
+                                        if ($discountType === 'porcentaje') {
+                                            echo "🏷️ " . number_format($discountValue, 0) . "% de descuento en toda la categoría";
+                                        } else {
+                                            echo "🏷️ $" . number_format($discountValue, 2) . " de descuento en productos seleccionados";
+                                        }
+                                        ?>
+                                    </div>
+                                <?php else: ?>
+                                    <!-- General promotion -->
+                                    <div class="discount-tag general-discount">
+                                        <?php 
+                                        if ($discountType === 'porcentaje') {
+                                            echo "🎉 " . number_format($discountValue, 0) . "% de descuento";
+                                        } else {
+                                            echo "🎉 Descuento de $" . number_format($discountValue, 2);
+                                        }
+                                        ?>
+                                    </div>
+                                <?php endif; ?>
+                            </div>
+
+                            <div class="promo-actions">
+                                <?php if ($promo['id_producto_asociado']): ?>
+                                    <a href="vista_producto.php?id_producto=<?php echo htmlspecialchars($promo['id_producto_asociado']); ?>" 
+                                       class="promo-btn primary">
+                                        Ver Producto
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                            <path d="M5 12h14M12 5l7 7-7 7"/>
+                                        </svg>
+                                    </a>
+                                <?php elseif ($promo['id_categoria_asociada']): ?>
+                                    <a href="catalogo.php?categoria=<?php echo htmlspecialchars($promo['id_categoria_asociada']); ?>" 
+                                       class="promo-btn primary">
+                                        Ver Categoría
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                            <path d="M5 12h14M12 5l7 7-7 7"/>
+                                        </svg>
+                                    </a>
+                                <?php else: ?>
+                                    <a href="catalogo.php" class="promo-btn primary">
+                                        Ver Catálogo
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                            <path d="M5 12h14M12 5l7 7-7 7"/>
+                                        </svg>
+                                    </a>
+                                <?php endif; ?>
+
+                                <!-- Countdown Timer -->
+                                <span class="promo-timer" data-end-date="<?php echo htmlspecialchars($promo['fecha_final']); ?>">
+                                    Termina pronto
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                <?php endforeach; ?>
                 </div>
             </div>
 

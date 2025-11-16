@@ -541,6 +541,7 @@ function cargarEstadisticas() {
     const cuponCodigoField = document.getElementById('cupon-codigo');
     const cuponDescripcionField = document.getElementById('cupon-descripcion');
     const cuponValorField = document.getElementById('cupon-valor');
+    const cuponTipoField = document.getElementById('cupon-tipo');
     const cuponInicioField = document.getElementById('cupon-inicio');
     const cuponFinField = document.getElementById('cupon-fin');
     const cuponActivoField = document.getElementById('cupon-activo');
@@ -562,12 +563,14 @@ function cargarEstadisticas() {
                                 data-codigo="${cupon.codigo}" 
                                 data-descripcion="${cupon.descripcion}" 
                                 data-valor="${cupon.valor_descuento}" 
+                                data-valor="${cupon.tipo_descuento || 'fijo'}"
                                 data-inicio="${cupon.fecha_inicio}" 
                                 data-fin="${cupon.fecha_final}" 
                                 data-activo="${cupon.activo}">
                                 
                                 <td>${cupon.codigo}</td>
                                 <td>${cupon.descripcion}</td>
+                                <td>${cupon.tipo_descuento === 'porcentaje' ? '%' : '$'}</td>
                                 <td>$${cupon.valor_descuento}</td>
                                 <td>${cupon.fecha_inicio}</td>
                                 <td>${cupon.fecha_final}</td>
@@ -601,6 +604,7 @@ function cargarEstadisticas() {
                 codigo: cuponCodigoField.value,
                 descripcion: cuponDescripcionField.value,
                 valor_descuento: cuponValorField.value,
+                tipo_descuento: cuponTipoField.value,
                 fecha_inicio: cuponInicioField.value.replace('T', ' '),
                 fecha_final: cuponFinField.value.replace('T', ' '),
                 activo: cuponActivoField.checked
@@ -654,6 +658,8 @@ function cargarEstadisticas() {
                 cuponCodigoField.value = tr.dataset.codigo;
                 cuponDescripcionField.value = tr.dataset.descripcion;
                 cuponValorField.value = tr.dataset.valor;
+                const tipoSelect = cuponTipoField;
+                if(tipoSelect){ tipoSelect.value = tr.dataset.tipo; }
                 // El valor de la BDD es "YYYY-MM-DD HH:mm:ss"
                 const dbInicio = tr.dataset.inicio;
                 const dbFin = tr.dataset.fin;
@@ -801,6 +807,7 @@ function cargarEstadisticas() {
     const promocionNombreField = document.getElementById('promocion-nombre');
     const promocionDescripcionField = document.getElementById('promocion-descripcion');
     const promocionValorField = document.getElementById('promocion-valor');
+    const promocionTipoField = document.getElementById('promocion-tipo');
     const promocionProductoField = document.getElementById('promocion-producto');
     const promocionCategoriaField = document.getElementById('promocion-categoria');
     const promocionInicioField = document.getElementById('promocion-inicio');
@@ -857,6 +864,7 @@ function cargarEstadisticas() {
                                 data-nombre_promo="${promo.nombre_promo}"
                                 data-descripcion="${promo.descripcion || ''}"
                                 data-valor_descuento="${promo.valor_descuento}"
+                                data-tipo_descuento="${promo.tipo_descuento}"
                                 data-id_producto_asociado="${promo.id_producto_asociado || ''}"
                                 data-id_categoria_asociada="${promo.id_categoria_asociada || ''}"
                                 data-fecha_inicio="${promo.fecha_inicio}"
@@ -949,6 +957,7 @@ function cargarEstadisticas() {
                     nombre_promo: promocionNombreField.value,
                     descripcion: promocionDescripcionField.value,
                     valor_descuento: promocionValorField.value,
+                    tipo_descuento: promocionTipoField.value,
                     id_producto_asociado: promocionProductoField.value || null,
                     id_categoria_asociada: promocionCategoriaField.value || null,
                     fecha_inicio: promocionInicioField.value.replace('T', ' '),
@@ -1013,6 +1022,7 @@ function cargarEstadisticas() {
             promocionNombreField.value = tr.dataset.nombre_promo;
             promocionDescripcionField.value = tr.dataset.descripcion;
             promocionValorField.value = tr.dataset.valor_descuento;
+            promocionTipoField.value = tr.dataset.tipo_descuento;
             promocionProductoField.value = tr.dataset.id_producto_asociado;
             promocionCategoriaField.value = tr.dataset.id_categoria_asociada;
             // El valor de la BDD es "YYYY-MM-DD HH:mm:ss"

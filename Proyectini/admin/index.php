@@ -231,6 +231,13 @@ $products = readProducts();
                     <input type="number" step="0.01" id="cupon-valor" required>
                 </div>
                 <div>
+                    <label for="cupon-tipo">Tipo de Descuento:</label>
+                    <select id="cupon-tipo" style="padding: var(--space-sm); width: 100%; max-width: 400px;">
+                        <option value="fijo">Monto Fijo $</option>
+                        <option value="porcentaje">Porcentaje %</option>
+                    </select>
+                </div>
+                <div>
                     <label for="cupon-inicio">Fecha Inicio:</label>
                     <input type="datetime-local" id="cupon-inicio" required>
                 </div>
@@ -253,7 +260,7 @@ $products = readProducts();
                     <tr>
                         <th>Código</th>
                         <th>Descripción</th>
-                        <th>Valor</th>
+                        <th>Tipo</th> <th>Valor</th>
                         <th>Válido Desde</th>
                         <th>Válido Hasta</th>
                         <th>Activo</th>
@@ -322,9 +329,15 @@ $products = readProducts();
                     <p class="hint">Si editas y no seleccionas un archivo, se conservará la imagen actual.</p>
                 </div>
                 <div>
-                    <label for="promocion-valor">Valor del Descuento (puede ser $ o %):</label>
+                    <label for="promocion-valor">Valor del Descuento:</label>
                     <input type="number" step="0.01" id="promocion-valor" required>
-                    <p class="hint">Ej: 15 para 15% o 50 para 50$mxn</p>
+                </div>
+                <div>
+                    <label for="promocion-tipo">Tipo de Descuento:</label>
+                    <select id="promocion-tipo" style="padding: var(--space-sm);">
+                        <option value="fijo">Monto Fijo (ej. $50)</option>
+                        <option value="porcentaje">Porcentaje (ej. 15%)</option>
+                    </select>
                 </div>
                 <div>
                     <label for="promocion-producto">Asociar a Producto (Opcional):</label>
