@@ -1093,6 +1093,72 @@ button.primary:focus-visible {
         gap: var(--space-sm);
         margin-bottom: var(--space-md);
     }
+
+    .recommendations-track {
+        grid-auto-columns: calc(50% - var(--space-sm)); /* 2 cards */
+        gap: var(--space-md);
+    }
+    
+    .recommendations-carousel .carousel-control {
+        width: 40px;
+        height: 40px;
+    }
+    
+    .recommendations-carousel .carousel-control.prev {
+        left: -20px;
+    }
+    
+    .recommendations-carousel .carousel-control.next {
+        right: -20px;
+    }
+
+    /* Adjust section header on mobile */
+    .recommendations-section .section-header h2 {
+        font-size: 1.5rem;
+    }
+    
+    .recommendations-section .section-header h2 svg {
+        width: 24px;
+        height: 24px;
+    }
+    
+    .recommendations-section .section-header p {
+        font-size: 0.9rem;
+    }
+
+    .promotions-carousel {
+        height: 400px;
+    }
+    
+    .promotion-title {
+        font-size: clamp(1.5rem, 4vw, 2.5rem);
+    }
+    
+    .promotion-description {
+        font-size: 1rem;
+    }
+    
+    .discount-amount {
+        font-size: 2rem;
+    }
+    
+    .promotion-cta {
+        font-size: 1rem;
+        padding: var(--space-sm) var(--space-lg);
+    }
+    
+    .promo-control {
+        width: 44px;
+        height: 44px;
+    }
+    
+    .promo-control.prev {
+        left: var(--space-md);
+    }
+    
+    .promo-control.next {
+        right: var(--space-md);
+    }
 }
 
 /* 3. Estilos para cuando el menú está ABIERTO (controlado por JS) */
@@ -2373,6 +2439,189 @@ button.full-width {
         width: 36px;
         height: 36px;
     }
+
+    /* Show 1 full card with small peek of next */
+    .recommendations-track {
+        grid-auto-columns: calc(90% - var(--space-xs)); /* 1 card + small peek */
+        gap: var(--space-md);
+        scroll-snap-type: x mandatory; /* Snap to cards when swiping */
+    }
+    
+    .recommendation-card {
+        scroll-snap-align: start; /* Cards snap into place */
+    }
+    
+    /* Add subtle gradient hint on the right side */
+    .recommendations-viewport::after {
+        content: '';
+        position: absolute;
+        top: 0;
+        right: 0;
+        width: 40px;
+        height: 100%;
+        background: linear-gradient(to left, var(--color-surface), transparent);
+        pointer-events: none;
+        z-index: 1;
+    }
+    
+    .recommendations-viewport {
+        padding: 0 var(--space-xs);
+        position: relative;
+    }
+    
+    /* Smaller controls on mobile */
+    .recommendations-carousel .carousel-control {
+        width: 32px;
+        height: 32px;
+        font-size: 0.85rem;
+    }
+    
+    .recommendations-carousel .carousel-control.prev {
+        left: 2px;
+    }
+    
+    .recommendations-carousel .carousel-control.next {
+        right: 2px;
+    }
+    
+    /* Adjust card sizing */
+    .recommendation-card {
+        min-width: 0; /* Allow card to shrink */
+    }
+    
+    .recommendation-content {
+        padding: var(--space-md);
+    }
+    
+    .recommendation-content h3 {
+        font-size: 1rem;
+        -webkit-line-clamp: 2;
+    }
+    
+    .recommendation-description {
+        font-size: 0.8rem;
+        -webkit-line-clamp: 2;
+    }
+    
+    .recommendation-price {
+        font-size: 1.15rem;
+    }
+    
+    .recommendation-link {
+        font-size: 0.8rem;
+    }
+    
+    /* Make quick add button always visible on mobile */
+    .quick-add-btn {
+        transform: translateX(-50%) translateY(0);
+        opacity: 1;
+        position: static;
+        bottom: auto;
+        left: auto;
+        transform: none;
+        width: 100%;
+        margin-top: var(--space-sm);
+        justify-content: center;
+        font-size: 0.85rem;
+        padding: var(--space-xs) var(--space-sm);
+    }
+    
+    .recommendation-card:hover .quick-add-btn {
+        transform: none;
+    }
+    
+    /* Smaller indicators on mobile */
+    .recommendations-indicators .indicator {
+        width: 24px;
+        height: 3px;
+    }
+    
+    .recommendations-indicators .indicator.active {
+        width: 36px;
+    }
+
+    .promotions-banner-section {
+        margin: 0 calc(var(--space-md) * -1);
+    }
+    
+    .promotions-carousel {
+        height: 380px;
+        border-radius: 0;
+    }
+    
+    .promotion-content {
+        padding: var(--space-md);
+    }
+    
+    .promotion-badge {
+        font-size: 0.75rem;
+        padding: 0.4rem 0.8rem;
+    }
+    
+    .promotion-title {
+        font-size: clamp(1.25rem, 3vw, 1.75rem);
+    }
+    
+    .promotion-description {
+        font-size: 0.9rem;
+        margin-bottom: var(--space-md);
+    }
+    
+    .promotion-discount-badge {
+        padding: var(--space-sm) var(--space-md);
+    }
+    
+    .discount-amount {
+        font-size: 1.75rem;
+    }
+    
+    .discount-label {
+        font-size: 0.8rem;
+    }
+    
+    .promotion-price {
+        flex-direction: column;
+        gap: var(--space-xs);
+    }
+    
+    .original-price {
+        font-size: 1rem;
+    }
+    
+    .discounted-price {
+        font-size: 1.5rem;
+    }
+    
+    .promotion-cta {
+        font-size: 0.9rem;
+        padding: var(--space-sm) var(--space-md);
+    }
+    
+    .promo-control {
+        width: 40px;
+        height: 40px;
+    }
+    
+    .promo-control.prev {
+        left: var(--space-sm);
+    }
+    
+    .promo-control.next {
+        right: var(--space-sm);
+    }
+    
+    .promo-indicators {
+        bottom: var(--space-md);
+    }
+    
+    .promo-indicator {
+        width: 30px;
+        height: 3px;
+    }
+    
+    .promo-indicator.active {
+        width: 45px;
+    }
 }
 
 /* Estilos para el selector de cantidad */
@@ -2566,5 +2815,627 @@ button.full-width {
         align-items: center;
         gap: var(--space-sm);
         margin-bottom: var(--space-md);
+    }
+}
+
+
+/* ============================================ */
+/* RECOMMENDATIONS CAROUSEL STYLES */
+/* ============================================ */
+
+.recommendations-section {
+    background: linear-gradient(135deg, rgba(198, 9, 105, 0.03), rgba(244, 207, 73, 0.05));
+}
+
+.recommendations-section .section-header h2 {
+    display: flex;
+    align-items: center;
+    color: var(--color-primary);
+}
+
+.recommendations-section .section-header h2 svg {
+    fill: var(--color-primary);
+}
+
+/* Carousel container */
+.recommendations-carousel {
+    position: relative;
+    width: 100%;
+    overflow: hidden;
+    padding: var(--space-md) 0;
+}
+
+/* Viewport - visible area */
+.recommendations-viewport {
+    overflow: hidden;
+    width: 100%;
+    padding: 0 var(--space-md);
+}
+
+/* Track - contains all cards */
+.recommendations-track {
+    display: grid;
+    grid-auto-flow: column;
+    grid-auto-columns: calc(25% - var(--space-md)); /* 4 cards on desktop */
+    gap: var(--space-lg);
+    transition: transform 600ms cubic-bezier(0.4, 0, 0.2, 1);
+    will-change: transform;
+}
+
+/* Individual recommendation card */
+.recommendation-card {
+    display: flex;
+    flex-direction: column;
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-base);
+    overflow: hidden;
+    box-shadow: var(--shadow-soft);
+    transition: transform var(--transition-base), box-shadow var(--transition-base);
+    height: 100%;
+}
+
+.recommendation-card:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 20px 40px rgba(17, 25, 40, 0.15);
+}
+
+/* Image wrapper with overlay button */
+.recommendation-image-wrapper {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 1 / 1;
+    overflow: hidden;
+    background: var(--color-elevated);
+}
+
+.recommendation-image-wrapper img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform var(--transition-base);
+}
+
+.recommendation-card:hover .recommendation-image-wrapper img {
+    transform: scale(1.05);
+}
+
+/* Quick add button overlay */
+.quick-add-btn {
+    position: absolute;
+    bottom: var(--space-sm);
+    left: 50%;
+    transform: translateX(-50%) translateY(100%);
+    display: flex;
+    align-items: center;
+    gap: var(--space-xs);
+    padding: var(--space-sm) var(--space-md);
+    background: var(--color-primary);
+    color: #fff;
+    border: none;
+    border-radius: var(--radius-base);
+    font-weight: 600;
+    font-size: 0.9rem;
+    box-shadow: 0 8px 20px rgba(198, 9, 105, 0.3);
+    opacity: 0;
+    transition: all 300ms cubic-bezier(0.4, 0, 0.2, 1);
+    cursor: pointer;
+    white-space: nowrap;
+}
+
+.recommendation-card:hover .quick-add-btn {
+    transform: translateX(-50%) translateY(0);
+    opacity: 1;
+}
+
+.quick-add-btn:hover {
+    background: #a90756;
+    transform: translateX(-50%) translateY(0) scale(1.05);
+}
+
+.quick-add-btn svg {
+    flex-shrink: 0;
+}
+
+/* Card content */
+.recommendation-content {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-xs);
+    padding: var(--space-md);
+    flex-grow: 1;
+}
+
+.recommendation-content h3 {
+    margin: 0;
+    font-size: 1.05rem;
+    font-weight: 600;
+    line-height: 1.3;
+    color: var(--color-text);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+}
+
+.recommendation-description {
+    margin: 0;
+    font-size: 0.85rem;
+    color: var(--color-text-muted);
+    line-height: 1.5;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    flex-grow: 1;
+}
+
+/* Card footer */
+.recommendation-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: auto;
+    padding-top: var(--space-sm);
+    border-top: 1px solid var(--color-border);
+}
+
+.recommendation-price {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: var(--color-primary);
+}
+
+.recommendation-link {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 0.85rem;
+    font-weight: 500;
+    color: var(--color-text);
+    transition: var(--transition-base);
+}
+
+.recommendation-link:hover {
+    color: var(--color-primary);
+    gap: 6px;
+}
+
+.recommendation-link svg {
+    transition: transform var(--transition-base);
+}
+
+.recommendation-link:hover svg {
+    transform: translateX(2px);
+}
+
+/* Carousel controls */
+.recommendations-carousel .carousel-control {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    z-index: 2;
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    display: grid;
+    place-items: center;
+    background: rgba(255, 255, 255, 0.95);
+    border: 1px solid var(--color-border);
+    color: var(--color-text);
+    box-shadow: 0 8px 20px rgba(17, 25, 40, 0.1);
+    cursor: pointer;
+    transition: all var(--transition-base);
+}
+
+.recommendations-carousel .carousel-control:hover {
+    background: var(--color-primary);
+    color: #fff;
+    transform: translateY(-50%) scale(1.1);
+    box-shadow: 0 12px 30px rgba(198, 9, 105, 0.3);
+}
+
+.recommendations-carousel .carousel-control.prev {
+    left: -22px;
+}
+
+.recommendations-carousel .carousel-control.next {
+    right: -22px;
+}
+
+.recommendations-carousel .carousel-control:disabled {
+    opacity: 0.3;
+    cursor: not-allowed;
+    pointer-events: none;
+}
+
+/* Carousel indicators */
+.recommendations-indicators {
+    display: flex;
+    justify-content: center;
+    gap: var(--space-xs);
+    margin-top: var(--space-lg);
+}
+
+.recommendations-indicators .indicator {
+    width: 32px;
+    height: 4px;
+    background: rgba(198, 9, 105, 0.2);
+    border-radius: 999px;
+    cursor: pointer;
+    transition: var(--transition-base);
+}
+
+.recommendations-indicators .indicator.active {
+    background: var(--color-primary);
+    width: 48px;
+}
+
+.recommendations-indicators .indicator:hover {
+    background: rgba(198, 9, 105, 0.5);
+}
+
+/* ============================================ */
+/* PROMOTIONAL BANNERS SLIDER */
+/* ============================================ */
+
+.promotions-section {
+    background: linear-gradient(135deg, rgba(244, 207, 73, 0.08), rgba(198, 9, 105, 0.05));
+    position: relative;
+}
+
+.promotions-section .section-header h2 {
+    display: flex;
+    align-items: center;
+    color: var(--color-primary);
+}
+
+.promotions-section .section-header h2 svg {
+    stroke: var(--color-primary);
+}
+
+/* Slider Container */
+.promotions-slider {
+    position: relative;
+    width: 100%;
+    overflow: hidden;
+    padding: var(--space-lg) 0;
+}
+
+/* Viewport */
+.promotions-viewport {
+    overflow: hidden;
+    width: 100%;
+}
+
+/* Track - Horizontal Scroll */
+.promotions-track {
+    display: flex;
+    gap: var(--space-lg);
+    transition: transform 800ms cubic-bezier(0.4, 0, 0.2, 1);
+    will-change: transform;
+}
+
+/* Individual Promo Banner */
+.promo-banner {
+    flex: 0 0 100%; /* Full width by default */
+    display: grid;
+    grid-template-columns: 1.2fr 1fr;
+    gap: var(--space-lg);
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-base);
+    overflow: hidden;
+    box-shadow: var(--shadow-soft);
+    transition: transform var(--transition-base), box-shadow var(--transition-base);
+    min-height: 320px;
+}
+
+.promo-banner:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 20px 50px rgba(198, 9, 105, 0.15);
+}
+
+/* Image Container */
+.promo-image-container {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    background: linear-gradient(135deg, rgba(198, 9, 105, 0.1), rgba(244, 207, 73, 0.1));
+}
+
+.promo-image-container img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 600ms ease;
+}
+
+.promo-banner:hover .promo-image-container img {
+    transform: scale(1.05);
+}
+
+/* Discount Badge */
+.promo-badge {
+    position: absolute;
+    top: var(--space-md);
+    right: var(--space-md);
+    background: var(--color-primary);
+    color: #fff;
+    font-size: 1.5rem;
+    font-weight: 700;
+    padding: var(--space-sm) var(--space-md);
+    border-radius: var(--radius-base);
+    box-shadow: 0 8px 20px rgba(198, 9, 105, 0.4);
+    transform: rotate(3deg);
+    z-index: 2;
+}
+
+/* Promo Content */
+.promo-content {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: var(--space-lg);
+    gap: var(--space-md);
+}
+
+.promo-header {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-xs);
+}
+
+.promo-category {
+    font-size: 0.85rem;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--color-primary);
+}
+
+.promo-content h3 {
+    margin: 0;
+    font-size: 1.8rem;
+    font-weight: 700;
+    line-height: 1.2;
+    color: var(--color-text);
+}
+
+.promo-description {
+    margin: 0;
+    font-size: 1rem;
+    line-height: 1.6;
+    color: var(--color-text-muted);
+}
+
+/* Pricing */
+.promo-pricing {
+    display: flex;
+    align-items: center;
+    gap: var(--space-md);
+    margin: var(--space-sm) 0;
+}
+
+.price-container {
+    display: flex;
+    align-items: center;
+    gap: var(--space-sm);
+}
+
+.original-price {
+    font-size: 1.1rem;
+    color: var(--color-text-muted);
+    text-decoration: line-through;
+}
+
+.discounted-price {
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--color-primary);
+}
+
+.discount-tag {
+    display: inline-block;
+    padding: var(--space-xs) var(--space-md);
+    background: rgba(198, 9, 105, 0.1);
+    color: var(--color-primary);
+    font-weight: 600;
+    border-radius: var(--radius-base);
+    font-size: 1.1rem;
+}
+
+/* Actions */
+.promo-actions {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-sm);
+    margin-top: var(--space-sm);
+}
+
+.promo-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--space-xs);
+    padding: 0.75rem 1.5rem;
+    border-radius: var(--radius-base);
+    font-weight: 600;
+    font-size: 1rem;
+    text-decoration: none;
+    transition: var(--transition-base);
+    box-shadow: var(--shadow-soft);
+}
+
+.promo-btn.primary {
+    background: var(--color-primary);
+    color: #fff;
+    border: 2px solid var(--color-primary);
+}
+
+.promo-btn.primary:hover {
+    background: #a90756;
+    border-color: #a90756;
+    transform: translateY(-2px);
+    box-shadow: 0 12px 30px rgba(198, 9, 105, 0.3);
+}
+
+.promo-btn svg {
+    transition: transform var(--transition-base);
+}
+
+.promo-btn:hover svg {
+    transform: translateX(4px);
+}
+
+/* Timer */
+.promo-timer {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-xs);
+    font-size: 0.85rem;
+    color: var(--color-text-muted);
+    padding: var(--space-xs) 0;
+}
+
+.promo-timer::before {
+    content: '⏱️';
+}
+
+/* Slider Controls */
+.promo-control {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.95);
+    border: 2px solid var(--color-border);
+    color: var(--color-text);
+    display: grid;
+    place-items: center;
+    cursor: pointer;
+    z-index: 10;
+    transition: all var(--transition-base);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+}
+
+.promo-control:hover {
+    background: var(--color-primary);
+    border-color: var(--color-primary);
+    color: #fff;
+    transform: translateY(-50%) scale(1.1);
+    box-shadow: 0 12px 30px rgba(198, 9, 105, 0.3);
+}
+
+.promo-control.prev {
+    left: -25px;
+}
+
+.promo-control.next {
+    right: -25px;
+}
+
+.promo-control:disabled {
+    opacity: 0.3;
+    cursor: not-allowed;
+    pointer-events: none;
+}
+
+/* Indicators */
+.promo-indicators {
+    display: flex;
+    justify-content: center;
+    gap: var(--space-sm);
+    margin-top: var(--space-lg);
+}
+
+.promo-indicator {
+    width: 40px;
+    height: 5px;
+    background: rgba(198, 9, 105, 0.2);
+    border-radius: 999px;
+    cursor: pointer;
+    transition: var(--transition-base);
+}
+
+.promo-indicator.active {
+    background: var(--color-primary);
+    width: 60px;
+}
+
+.promo-indicator:hover {
+    background: rgba(198, 9, 105, 0.5);
+}
+
+/* Autoplay Controls */
+.promo-controls-extra {
+    display: flex;
+    justify-content: center;
+    margin-top: var(--space-md);
+}
+
+.promo-autoplay-toggle {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    cursor: pointer;
+    transition: var(--transition-base);
+}
+
+.promo-autoplay-toggle:hover {
+    background: var(--color-primary);
+    border-color: var(--color-primary);
+    color: #fff;
+}
+
+.promo-autoplay-toggle.playing .play-icon {
+    display: none;
+}
+
+.promo-autoplay-toggle.playing .pause-icon {
+    display: block;
+}
+
+.promo-autoplay-toggle:not(.playing) .pause-icon {
+    display: none;
+}
+
+@media (max-width: 1200px) {
+    .recommendations-track {
+        grid-auto-columns: calc(33.333% - var(--space-md)); /* 3 cards */
+    }
+}
+
+@media (max-width: 400px) {
+    .recommendations-track {
+        grid-auto-columns: 92%; /* Almost full width */
+        gap: var(--space-sm);
+    }
+    
+    .recommendation-content h3 {
+        font-size: 0.9rem;
+    }
+    
+    .recommendation-price {
+        font-size: 1.05rem;
+    }
+    
+    .quick-add-btn {
+        font-size: 0.8rem;
+        padding: 0.4rem 0.6rem;
+    }
+    
+    .recommendation-link {
+        font-size: 0.75rem;
     }
 }

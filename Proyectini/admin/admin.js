@@ -654,8 +654,11 @@ function cargarEstadisticas() {
                 cuponCodigoField.value = tr.dataset.codigo;
                 cuponDescripcionField.value = tr.dataset.descripcion;
                 cuponValorField.value = tr.dataset.valor;
-                cuponInicioField.value = tr.dataset.inicio.replace(' ', 'T');
-                cuponFinField.value = tr.dataset.fin.replace(' ', 'T');
+                // El valor de la BDD es "YYYY-MM-DD HH:mm:ss"
+                const dbInicio = tr.dataset.inicio;
+                const dbFin = tr.dataset.fin;
+                cuponInicioField.value = dbInicio ? dbInicio.slice(0, 16).replace(' ', 'T') : '';
+                cuponFinField.value = dbFin ? dbInicio.slice(0, 16).replace(' ', 'T') : '';
                 cuponActivoField.checked = (tr.dataset.activo == "1");
                 
                 btnCancelarCupon.style.display = 'inline-block';
@@ -840,8 +843,14 @@ function cargarEstadisticas() {
                 tablaPromocionesBody.innerHTML = '';
                 if(response.data){
                     response.data.forEach(promo=>{
-                        const productoNombre = promo.producto_nombre || 'NA';
-                        const categoriaNombre = promo.categoria_nombre || 'NA';
+                        const productoNombre = promo.producto_nombre || 'N/A';
+                        const categoriaNombre = promo.categoria_nombre || 'N/A';
+                        
+                        // Nueva lógica de imagen
+                        const imagenUrl = promo.imagen_url || '';
+                        const imagenHtml = imagenUrl 
+                            ? `<img src="../${imagenUrl}" alt="${promo.nombre_promo}" width="100" style="border-radius: 4px;">`
+                            : 'N/A';
 
                         tablaPromocionesBody.innerHTML += `
                             <tr data-id="${promo.id_promocion}"
@@ -852,10 +861,9 @@ function cargarEstadisticas() {
                                 data-id_categoria_asociada="${promo.id_categoria_asociada || ''}"
                                 data-fecha_inicio="${promo.fecha_inicio}"
                                 data-fecha_final="${promo.fecha_final}"
-                                data-activa="${promo.activa}">
-
-                                <td>${promo.nombre_promo}</td>
-                                <td>${promo.valor_descuento}</td>
+                                data-activa="${promo.activa}"
+                                data-imagen_url="${imagenUrl}" > <td>${promo.nombre_promo}</td>
+                                <td>${imagenHtml}</td> <td>${promo.valor_descuento}</td>
                                 <td>${productoNombre}</td>
                                 <td>${categoriaNombre}</td>
                                 <td>${promo.fecha_inicio}</td>
@@ -879,39 +887,99 @@ function cargarEstadisticas() {
         if(promocionProductoField) promocionProductoField.value = '';
         if(promocionCategoriaField) promocionCategoriaField.value = '';
         if(btnCancelarPromocion) btnCancelarPromocion.style.display = 'none';
+
+        const fileInput = document.getElementById('promocion-imagen-file');
+        if(fileInput){fileInput.value = '';}
+        if(btnCancelarPromocion){btnCancelarPromocion.style.display = 'none';}
     }
 
     if(formPromocion){
         formPromocion.addEventListener('submit', function(e){
             e.preventDefault();
+            const submitButton = formPromocion.querySelector('button[type="submit"]');
+            submitButton.disabled = true;
+            submitButton.textContent = 'Guardando...';
+
+            const fileInput = document.getElementById('promocion-imagen-file');
+            const file = fileInput.files[0];
             const id = promocionIdField.value;
-            const action = id ? 'update_promocion' : 'create_promocion';
 
-            const data={
-                id_promocion: id || null,
-                nombre_promo: promocionNombreField.value,
-                descripcion: promocionDescripcionField.value,
-                valor_descuento: promocionValorField.value,
-                id_producto_asociado: promocionProductoField.value || null, // Enviar null si está vacío
-                id_categoria_asociada: promocionCategoriaField.value || null, // Enviar null si está vacío
-                fecha_inicio: promocionInicioField.value.replace('T', ' '),
-                fecha_final: promocionFinField.value.replace('T', ' '),
-                activo: promocionActivoField.checked
-            };
+            // Decidimos la URL de la imagen:
+            // 1. Si hay un archivo nuevo, lo subimos.
+            // 2. Si no hay archivo y estamos editando, conservamos la URL anterior.
+            // 3. Si no hay archivo y estamos creando, será null.
 
-            const formData = new FormData();
-            formData.append('action', action);
-            formData.append('data', JSON.stringify(data));
+            let uploadPromise;
+            if (file) {
+                // 1. Hay archivo nuevo, subirlo
+                const fileData = new FormData();
+                fileData.append('fileToUpload', file);
+                uploadPromise = fetch('../api/admin_upload.php', { method: 'POST', body: fileData })
+                    .then(res => res.json())
+                    .then(uploadResponse => {
+                        if (!uploadResponse.success) {
+                            throw new Error(uploadResponse.error || 'Error al subir la imagen');
+                        }
+                        return uploadResponse.url; // Retorna la nueva URL
+                    });
+            } else if (id) {
+                // 2. sin archivo nuevo. Conservar la URL vieja.
+                const tr = tablaPromocionesBody.querySelector(`tr[data-id="${id}"]`);
+                const oldImageUrl = tr ? tr.dataset.imagen_url : null;
+                uploadPromise = Promise.resolve(oldImageUrl); // Resuelve con la URL antigua
+            } else {
+                // 3. Creando, sin archivo.
+                uploadPromise = Promise.resolve(null); // Resuelve con null
+            }
 
-            fetch('../api/admin_manager.php', {method: 'POST', body: formData})
-                .then(res=>res.json())
-                .then(response=>{
-                    alert(response.message);
-                    if(response.success){
-                        cargarPromociones();
-                        resetFormPromocion();
-                    }
-                });
+            // Este 'catch' es solo para el 'uploadPromise'
+            uploadPromise.catch(err => {
+                alert('Error al subir imagen: ' + err.message);
+                submitButton.disabled = false;
+                submitButton.textContent = 'Guardar Promocion';
+            });
+            
+            // Cuando la 'uploadPromise' se resuelva (con URL nueva, URL vieja o null)...
+            uploadPromise.then(imageUrl => {
+                // ...procedemos a guardar los datos de la promoción
+                const action = id ? 'update_promocion' : 'create_promocion';
+
+                const data = {
+                    id_promocion: id || null,
+                    nombre_promo: promocionNombreField.value,
+                    descripcion: promocionDescripcionField.value,
+                    valor_descuento: promocionValorField.value,
+                    id_producto_asociado: promocionProductoField.value || null,
+                    id_categoria_asociada: promocionCategoriaField.value || null,
+                    fecha_inicio: promocionInicioField.value.replace('T', ' '),
+                    fecha_final: promocionFinField.value.replace('T', ' '),
+                    activo: promocionActivoField.checked,
+                    imagen_url: imageUrl
+                };
+
+                const formData = new FormData();
+                formData.append('action', action);
+                formData.append('data', JSON.stringify(data));
+
+                // Enviamos los datos (incluyendo la URL de la imagen) al manager
+                return fetch('../api/admin_manager.php', { method: 'POST', body: formData });
+            })
+            .then(res => res.json())
+            .then(response => {
+                alert(response.message);
+                if(response.success){
+                    cargarPromociones();
+                    resetFormPromocion();
+                }
+            })
+            .catch(err => {
+                alert('Error en el proceso: ' + err.message);
+            })
+            .finally(() => {
+                submitButton.disabled = false;
+                submitButton.textContent = 'Guardar Promocion';
+                fileInput.value = ''; // Limpiar el input de archivo
+            });
         });
     }
     if(btnCancelarPromocion){
@@ -947,8 +1015,12 @@ function cargarEstadisticas() {
             promocionValorField.value = tr.dataset.valor_descuento;
             promocionProductoField.value = tr.dataset.id_producto_asociado;
             promocionCategoriaField.value = tr.dataset.id_categoria_asociada;
-            promocionInicioField.value = tr.dataset.fecha_inicio.replace(' ', 'T');
-            promocionFinField.value = tr.dataset.fecha_final.replace(' ', 'T');
+            // El valor de la BDD es "YYYY-MM-DD HH:mm:ss"
+            const dbInicio = tr.dataset.fecha_inicio;
+            const dbFin = tr.dataset.fecha_final;
+            // Lo convertimos a "YYYY-MM-DDTHH:mm" (cortando los segundos)
+            promocionInicioField.value = dbInicio ? dbInicio.slice(0, 16).replace(' ', 'T') : '';
+            promocionFinField.value = dbFin ? dbFin.slice(0, 16).replace(' ', 'T') : '';
             promocionActivoField.checked = (tr.dataset.activa == "1");
 
             btnCancelarPromocion.style.display = 'inline-block';

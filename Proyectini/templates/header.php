@@ -43,11 +43,13 @@ $categories = readCategories();
 
     <script src="app.js" defer></script>
     <script src="users/user.js" defer></script>
+
     <?php
         // Inyectamos los productos que ya cargamos en PHP al 'window' de JavaScript
         echo "<script>";
         echo "window.__INITIAL_PRODUCTS__ = " . json_encode($products) . ";";
         echo "window.__INITIAL_CATEGORIES__ = " . json_encode($categories) . ";";
+        echo "window.__USER_ID__ = " . (isLoggedIn() ? json_encode($_SESSION['user_id']) : 'null') . ";";
         echo "</script>";
     ?>
     

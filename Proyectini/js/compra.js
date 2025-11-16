@@ -218,7 +218,7 @@ document.addEventListener('DOMContentLoaded', function() {
             paymentStatusEl.textContent = ''; // Limpiar estado
 
         } catch (error) {
-            showError('No se pudo conectar con el servidor de pagos. ' + error.message);
+            //showError('No se pudo conectar con el servidor de pagos. ' + error.message);
         }
     }
     
@@ -390,7 +390,8 @@ document.addEventListener('DOMContentLoaded', function() {
                         cod_post: billingDetails.address.postal_code
                     },
                     paymentIntentId: paymentIntentId,
-                    cuponId: currentCouponId
+                    cuponId: currentCouponId,
+                    user_id: window.__USER_ID__
                 })
             });
 

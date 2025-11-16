@@ -161,3 +161,82 @@ function applyPromotions(array $products) : array {
         return $products;
     }
 }
+
+ /**
+ * Obtiene productos recomendados para un usuario basado en las categorías
+ * de sus compras recientes.
+ *
+ * @param int $userId ID del usuario logueado
+ * @param int $limit Número de productos a recomendar
+ * @return array Lista de productos
+ */
+function getRecommendedProductsForUser(int $userId, int $limit = 5): array {
+    $pdo = getPDO();
+
+    try {
+        // Query completa que busca productos en categorías que el usuario compró
+        // PERO que el usuario no ha comprado todavía
+        $sql = "
+            SELECT DISTINCT
+                p.id_producto,
+                p.nombre,
+                p.descripcion,
+                p.stock,
+                p.precio,
+                p.foto,
+                p.id_categoria
+            FROM producto p
+            WHERE 
+                -- 1. El producto debe pertenecer a una categoría que el usuario haya comprado
+                p.id_categoria IN (
+                    SELECT DISTINCT p_cat.id_categoria
+                    FROM pedido pe_cat
+                    JOIN pedido_item pi_cat ON pe_cat.id_pedido = pi_cat.id_pedido
+                    JOIN producto p_cat ON pi_cat.id_producto = p_cat.id_producto
+                    WHERE pe_cat.id_usuario = ?
+                      AND pe_cat.pago_completado = TRUE
+                      AND p_cat.id_categoria IS NOT NULL
+                )
+            AND 
+                -- 2. El producto no debe ser uno que el usuario ya haya comprado
+                p.id_producto NOT IN (
+                    SELECT DISTINCT pi_ex.id_producto
+                    FROM pedido_item pi_ex
+                    JOIN pedido pe_ex ON pi_ex.id_pedido = pe_ex.id_pedido
+                    WHERE pe_ex.id_usuario = ?
+                )
+            AND
+                -- 3. Solo productos con stock disponible
+                p.stock > 0
+            -- 4. Ordenar aleatoriamente y limitar
+            ORDER BY RAND()
+            LIMIT ?
+        ";
+
+        $stmt = $pdo->prepare($sql);
+        
+        // IMPORTANTE: Bind parameters en el orden correcto
+        // Primer ? = userId (para la subconsulta IN)
+        // Segundo ? = userId (para la subconsulta NOT IN)
+        // Tercer ? = limit
+        $stmt->bindValue(1, $userId, \PDO::PARAM_INT);
+        $stmt->bindValue(2, $userId, \PDO::PARAM_INT);
+        $stmt->bindValue(3, $limit, \PDO::PARAM_INT);
+        
+        $stmt->execute();
+
+        $rows = $stmt->fetchAll(\PDO::FETCH_ASSOC) ?: [];
+        
+        // Mapear los resultados al formato de producto estándar
+        return array_map(static fn($r) => mapProductRow($r), $rows);
+        
+    } catch (\PDOException $e) {
+        // Log the error for debugging
+        error_log("Error in getRecommendedProductsForUser: " . $e->getMessage());
+        error_log("Stack trace: " . $e->getTraceAsString());
+        
+        // Return empty array instead of throwing
+        return [];
+    }
+}
+

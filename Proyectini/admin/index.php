@@ -317,6 +317,11 @@ $products = readProducts();
                     <textarea id="promocion-descripcion" rows="3"></textarea>
                 </div>
                 <div>
+                    <label for="promocion-imagen-file">Imagen de la Promoción (Opcional):</label>
+                    <input type="file" id="promocion-imagen-file" accept="image/*">
+                    <p class="hint">Si editas y no seleccionas un archivo, se conservará la imagen actual.</p>
+                </div>
+                <div>
                     <label for="promocion-valor">Valor del Descuento (puede ser $ o %):</label>
                     <input type="number" step="0.01" id="promocion-valor" required>
                     <p class="hint">Ej: 15 para 15% o 50 para 50$mxn</p>
@@ -358,6 +363,7 @@ $products = readProducts();
                 <thead>
                     <tr>
                         <th>Nombre</th>
+                        <th>Imagen</th>
                         <th>Valor</th>
                         <th>Aplica a Producto</th>
                         <th>Aplica a Categoria</th>

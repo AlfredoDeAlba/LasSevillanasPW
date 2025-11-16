@@ -39,7 +39,8 @@ try {
     $address = $formData['direccion'] ?? null;
     $zip = $formData['cod_post'] ?? null;
     $items = $data['cartItems'] ?? [];
-    $userId = $data['user_id'] ?? null;
+    //$userId = $data['user_id'] ?? null;
+    $userId = $_SESSION['user_id'] ?? null;
     $couponId = $data['cuponId'] ?? null;
 
 
