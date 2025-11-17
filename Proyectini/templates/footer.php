@@ -26,10 +26,15 @@
         // La variable $products es accesible aquí porque fue definida en header.php
         window.__INITIAL_PRODUCTS__ = <?php echo json_encode($products, JSON_UNESCAPED_UNICODE); ?>;
     </script>
+        <script src="js/search.js" defer></script>
         <script src="js/cart.js" defer></script>
 
         <?php if (strpos($_SERVER['PHP_SELF'], 'compra.php') !== false): ?>
             <script src="js/compra.js" defer></script>
         <?php endif; ?>
+    <div id="live-search-overlay" hidden>
+            <div id="live-search-results" class="product-list" data-view="grid">
+                </div>
+        </div>
     </body>
 </html>

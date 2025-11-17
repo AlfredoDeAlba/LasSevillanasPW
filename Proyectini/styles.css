@@ -55,7 +55,7 @@ main {
     
     /* Esto centra el contenido (main) en la pantalla */
     width: 100%;
-    max-width: 1440px; /* Ajusta este valor al ancho máximo que desees */
+    max-width: 1440px; /* Ajusta este valor al ancho máximo que se desee */
     margin-left: auto;
     margin-right: auto;
     
@@ -76,6 +76,16 @@ main {
     /*padding-left: var(--space-lg);
     padding-right: var(--space-lg);*/
     padding: var(--space-lg);
+
+    /*margin-top: var(--space-lg);*/
+    /*padding: var(--space-lg);*/
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-base);
+    background: var(--color-surface);
+    display: grid;
+    gap: var(--space-sm);
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    align-items: center;
 }
 
 /* Specific fix for pages with .container class */
@@ -144,14 +154,14 @@ button.primary:focus-visible {
     
     /* --- Estilos Visuales --- */
     background: var(--color-surface);
-    box-shadow: var(--shadow-soft);
+    /*box-shadow: var(--shadow-soft);*/
     border-bottom: 1px solid var(--color-border); /* Borde inferior para contraste */
 
     /* --- Layout Interno (Grid de Escritorio) --- */
     display: grid;
     grid-template-columns: auto auto 1fr auto; /* El grid original */
     align-items: center;
-    gap: var(--space-md);
+    /*gap: var(--space-md);*/
     
     /* Padding interno para que el contenido no se pegue a los bordes */
     padding: var(--space-md) var(--space-lg);
@@ -909,7 +919,7 @@ button.primary:focus-visible {
     .theme-toggle,
     .social-links,
     .cart-dropdown {
-        display: none !important; /* !important para sobreescribir otros */
+        display: none !important;
     }
     
     /* Oculta texto "Carrito" en el icono de escritorio */
@@ -923,7 +933,7 @@ button.primary:focus-visible {
     /* Estilo principal del header en MÓVIL (Fijo) */
     .top-bar {
         display: flex;
-        flex-direction: column; /* Apilado vertical */
+        flex-direction: column;
         height: auto;
         padding: 0;
         position: sticky;
@@ -931,11 +941,9 @@ button.primary:focus-visible {
         z-index: 1000;
         border: none;
         border-radius: 0;
-        margin: 0; /* Sin márgenes */
+        margin: 0;
         width: 100%;        
         max-width: 100%;    
-        
-        /* Quitar el grid de escritorio */
         grid-template-columns: none; 
     }
 
@@ -952,7 +960,6 @@ button.primary:focus-visible {
         border-bottom: 1px solid var(--color-border);
         padding: 0;
         margin: 0;
-        /* Quitar efecto de scroll (si lo había) */
         opacity: 1 !important;
         visibility: visible !important;
     }
@@ -973,7 +980,7 @@ button.primary:focus-visible {
         flex-shrink: 0; 
     }
     .mobile-search-row .search-icon-input svg {
-        width: 1.5rem; /* 24px */
+        width: 1.5rem;
         height: 1.5rem;
         color: var(--color-text-muted);
     }
@@ -1017,28 +1024,35 @@ button.primary:focus-visible {
     /* Quitamos TODOS los márgenes del body en móvil */
     body {
         margin: 0; 
+        padding: 0;
     }
     
-    /* Ajustamos el padding del main */
+    /* Ajuste unificado del padding del main */
     main {
-        /*padding-top: 120px; *//* Para el header fijo de 120px (60+60) */
-        
-        /* Añadimos padding lateral para que el contenido no se pegue */
-        padding-left: var(--space-md);
-        padding-right: var(--space-md);
+        /* NO padding-top porque el header es sticky */
+        padding-top: 0 !important;  
+        /* Padding lateral */
+        padding-left: var(--space-md) !important;
+        padding-right: var(--space-md) !important;
+        /* Padding inferior para el bottom-nav */
+        padding-bottom: var(--space-md) !important;
+    }
 
-        /* Esta regla es correcta para el bottom-nav */
-        padding-bottom: calc(var(--bottom-nav-height) + var(--space-md)) !important; 
+    main.container {
+        padding-top: 0 !important;
+        padding-left: var(--space-md) !important;
+        padding-right: var(--space-md) !important;
+        padding-bottom: var(--space-md) !important;
     }
 
     /* Show bottom nav bar */
     .bottom-nav-bar {
-        display: flex; /* Show on mobile */
+        display: flex;
     }
         
-    /* --- 6. OTROS AJUSTES MÓVILES (QUE YA TENÍAS) --- */
+    /* --- 6. OTROS AJUSTES MÓVILES --- */
     
-    /* Hero Section (si se usa) */
+    /* Hero Section */
     .hero {
         grid-template-columns: 1fr;
     }
@@ -1065,19 +1079,18 @@ button.primary:focus-visible {
         gap: var(--space-md);
     }
     
-    /* Show summary first on mobile */
     .product-summary {
         order: -1;
     }
     
     .product-summary-card {
-        position: static; /* Remove sticky on mobile */
+        position: static;
         top: auto;
     }
     .form-row {
         grid-template-columns: 1fr;
     }
-    /* Adjust checkout items */
+    
     .checkout-item {
         grid-template-columns: 60px 1fr;
         gap: var(--space-sm);
@@ -1117,7 +1130,7 @@ button.primary:focus-visible {
     
     /* Filtros de Categoría */
     .category-filters-desktop {
-        display: none; /* Oculta los botones en móvil */
+        display: none;
     }
 
     /* Adjust product grid for mobile */
@@ -1125,13 +1138,12 @@ button.primary:focus-visible {
         grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
     }
     
-    /* Stack view toggle */
     .product-controls {
         flex-wrap: wrap;
     }
     
     .category-filters-mobile {
-        display: grid; /* Muestra el dropdown en móvil */
+        display: grid;
         grid-template-columns: auto 1fr;
         align-items: center;
         gap: var(--space-sm);
@@ -1139,7 +1151,7 @@ button.primary:focus-visible {
     }
 
     .recommendations-track {
-        grid-auto-columns: calc(50% - var(--space-sm)); /* 2 cards */
+        grid-auto-columns: calc(50% - var(--space-sm));
         gap: var(--space-md);
     }
     
@@ -1156,7 +1168,6 @@ button.primary:focus-visible {
         right: -20px;
     }
 
-    /* Adjust section header on mobile */
     .recommendations-section .section-header h2 {
         font-size: 1.5rem;
     }
@@ -1224,6 +1235,32 @@ button.primary:focus-visible {
     
     .price-section {
         padding: 16px;
+    }
+
+    /* Padding específico SOLO para el overlay de búsqueda en móvil */
+    #live-search-overlay {
+        padding-top: 120px;
+        padding-bottom: 70px;
+    }
+    
+    #live-search-results {
+        min-height: calc(100vh - 190px);
+        padding: var(--space-md);
+    }
+    
+    body.live-search-active .mobile-search-row {
+        background: var(--color-surface);
+        box-shadow: 0 2px 8px rgba(198, 9, 105, 0.2);
+        position: relative;
+        z-index: 1501;
+    }
+    
+    body.live-search-active #mobile-cart {
+        display: none;
+    }
+    
+    body.live-search-active #mobile-search-close {
+        display: block;
     }
 }
 
@@ -1383,34 +1420,6 @@ button.primary:focus-visible {
     justify-content: center;
 }
 
-/* Media Query para mostrar la barra inferior en móvil */
-@media (max-width: 900px) {
-    main {
-        padding: var(--space-md); /* Smaller padding on mobile */
-        padding-bottom: calc(70px + var(--space-md)) !important; /* Space for bottom nav */
-    }
-
-    main.container {
-        padding: var(--space-md);
-        padding-bottom: calc(70px + var(--space-md)) !important;
-    }
-
-    /* Ensure no extra margin/padding on body */
-    body {
-        margin: 0;
-        padding: 0;
-    }
-
-    .bottom-nav-bar {
-        display: flex; /* Muestra la barra inferior en móvil */
-    }
-
-    /* Definir la altura de la barra inferior para usar en el padding del main */
-    :root {
-        --bottom-nav-height: 70px; /* Ajusta esto si los iconos son más grandes/pequeños */
-    }
-}
-
 /* Estilos para los elementos de la página "Más" */
 .more-options-list {
     display: flex;
@@ -1448,20 +1457,21 @@ button.primary:focus-visible {
 /* --- FIN ESTILOS BOTTOM NAVIGATION BAR --- */
 
 /* Estilo general del botón de búsqueda (para icono) */
-.search-toggle {
-    display: none; /* <-- OCULTO EN ESCRITORIO POR DEFECTO */
-    background: none;
+/*.search-toggle {
+    display: none;*/ /* <-- OCULTO EN ESCRITORIO POR DEFECTO */
+    /*background: none;
     border: none;
     color: var(--color-text);
     cursor: pointer;
-    padding: 0; /* Ajustado en @media */
-    border-radius: var(--radius-full);
-    width: 44px; /* Tamaño táctil estándar */
-    height: 44px;
-    display: flex; /* Para centrar el SVG */
-    align-items: center;
-    justify-content: center;
-}
+    padding: 0;*/ /* Ajustado en @media */
+    /*border-radius: var(--radius-full);
+    width: 44px;*/ /* Tamaño táctil estándar */
+    /*height: 44px;
+    display: flex;*/ /* Para centrar el SVG */
+    /*align-items: center;
+    justify-content: center;*/
+/*}*/
+
 .search-toggle:hover {
     background-color: var(--color-hover);
 }
@@ -1491,7 +1501,7 @@ button.primary:focus-visible {
     z-index: 999; 
 }
 
-.search-bar-container .search-icon-input svg {
+.search-bar-container ch-icon-input svg {
     width: 1.5rem; /* 24px */
     height: 1.5rem;
     color: var(--color-text-light);
@@ -1861,7 +1871,7 @@ button.primary:focus-visible {
     color: var(--color-text-muted);
     max-width: 720px;
 }
-
+/*
 .footer {
     margin-top: var(--space-lg);
     padding: var(--space-lg);
@@ -1872,7 +1882,7 @@ button.primary:focus-visible {
     gap: var(--space-sm);
     grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
     align-items: center;
-}
+}*/
 
 .footer-brand {
     display: flex;
@@ -1891,34 +1901,6 @@ button.primary:focus-visible {
 .footer-info p {
     margin: 0;
     color: var(--color-text-muted);
-}
-/**
-@media (max-width: 900px) {
-    .top-bar {
-        grid-template-columns: 1fr;
-        justify-items: stretch;
-    }
-
-    .top-bar nav ul {
-        flex-wrap: wrap;
-    }
-
-    .hero {
-        grid-template-columns: 1fr;
-    }
-}
-**/
-/*
-@media (max-width: 600px) {
-    body {
-        margin: var(--space-sm);
-    }
-
-    .section,
-    .top-bar,
-    .footer {
-        padding: var(--space-sm);
-    }
 }
 
 */
@@ -2425,16 +2407,6 @@ button.full-width {
 
 /* Ajustes para móviles */
 @media (max-width: 600px) {
-    main {
-        padding: var(--space-sm);
-        padding-bottom: calc(70px + var(--space-sm)) !important;
-    }
-
-    main.container {
-        padding: var(--space-sm);
-        padding-bottom: calc(70px + var(--space-sm)) !important;
-    }
-
     .product-list[data-view="grid"] {
         grid-template-columns: 1fr;
     }
@@ -2803,6 +2775,39 @@ button.full-width {
     }
     .product-summary {
         grid-row: 1; /* Mueve el resumen al principio en móviles */
+    }
+    /* Ensure no extra margin/padding on body */
+    body {
+        margin: 0;
+        padding: 0;
+    }
+
+    .bottom-nav-bar {
+        display: flex;
+    }
+
+    .footer {
+        /* Add extra margin at the bottom to ensure visibility above bottom nav */
+        margin-bottom: calc(70px + var(--space-lg)) !important;
+        /* Adjust padding for mobile */
+        padding: var(--space-md);
+        /* Make footer stack on mobile for better readability */
+        grid-template-columns: 1fr;
+        gap: var(--space-md);
+        text-align: center;
+    }
+    
+    .footer-brand {
+        justify-content: center;
+    }
+    
+    .footer-links,
+    .footer-legal {
+        justify-content: center;
+    }
+
+    :root {
+        --bottom-nav-height: 70px;
     }
 }
 
@@ -3731,4 +3736,149 @@ button.full-width {
     .recommendation-link {
         font-size: 0.75rem;
     }
+}
+
+
+/* ============================================ */
+/* ESTILOS PARA EL OVERLAY DE BÚSQUEDA */
+/* ============================================ */
+
+/* --- 1. Estado Global --- */
+/* Bloquear scroll del body cuando la búsqueda está activa */
+body.live-search-active {
+    overflow: hidden;
+}
+
+/* --- 2. Overlay de Fondo Atenuado --- */
+/* Capa semitransparente detrás de los resultados */
+#live-search-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5); /* Fondo oscuro semitransparente */
+    z-index: 1400;
+    overflow-y: auto;
+    padding-top: 80px; /* Espacio para el header desktop */
+    padding-bottom: 80px; /* Espacio para que no se pegue al fondo */
+}
+
+#live-search-overlay[hidden] {
+    display: none;
+}
+
+/* --- 3. Contenedor de Resultados --- */
+#live-search-results {
+    background: var(--color-background);
+    padding: var(--space-lg);
+    max-width: 1440px;
+    margin: 0 auto;
+    min-height: calc(100vh - 160px); /* Restar padding top y bottom */
+    border-radius: var(--radius-base) var(--radius-base) 0 0;
+}
+
+.search-empty-message {
+    text-align: center;
+    color: var(--color-text-muted);
+    padding: var(--space-lg) 0;
+    font-size: 1.1rem;
+    width: 100%;
+    grid-column: 1 / -1;
+}
+
+/* --- 4. Header permanece visible y funcional --- */
+.top-bar {
+    position: sticky;
+    top: 0;
+    z-index: 1500;
+    /* NO modificar su estructura visual */
+}
+
+.bottom-nav-bar {
+    z-index: 1500;
+}
+
+/* --- 5. UI de Búsqueda Desktop --- */
+
+/* Contenedor del wrapper de búsqueda */
+.desktop-search-wrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: var(--space-xs);
+}
+
+/* Barra de búsqueda activa (Desktop) */
+.search-bar-active {
+    display: flex;
+    align-items: center;
+    gap: var(--space-xs);
+    border: 2px solid var(--color-primary);
+    background: var(--color-surface);
+    border-radius: var(--radius-base);
+    padding: 0.5rem var(--space-sm);
+    min-width: 350px;
+    box-shadow: 0 0 0 3px rgba(198, 9, 105, 0.1);
+}
+
+.search-bar-active svg {
+    color: var(--color-primary);
+    width: 20px;
+    height: 20px;
+    flex-shrink: 0;
+}
+
+#desktop-search-input {
+    flex: 1;
+    border: none;
+    outline: none;
+    background: transparent;
+    color: var(--color-text);
+    font-size: 1rem;
+}
+
+/* Botón de cerrar búsqueda (Desktop) */
+.search-close-btn {
+    display: none;
+    background: var(--color-elevated);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-base);
+    color: var(--color-text);
+    font-size: 1.5rem;
+    line-height: 1;
+    width: 40px;
+    height: 40px;
+    padding: 0;
+    cursor: pointer;
+    transition: var(--transition-base);
+}
+
+.search-close-btn:hover {
+    background: var(--color-primary);
+    color: #fff;
+}
+
+/* --- 6. Estados de búsqueda activa (Desktop) --- */
+
+/* Mostrar barra de búsqueda y botón de cerrar cuando está activa */
+body.live-search-active #desktop-search-trigger {
+    display: none;
+}
+
+body.live-search-active #search-bar-active {
+    display: flex;
+}
+
+body.live-search-active #desktop-search-close {
+    display: flex;
+}
+
+/* Mantener visibles todos los elementos del header */
+body.live-search-active .main-nav,
+body.live-search-active .user-session,
+body.live-search-active .cart-wrapper,
+body.live-search-active .theme-toggle {
+    display: flex; /* Mantener visible */
+    opacity: 1;
 }

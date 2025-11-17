@@ -80,14 +80,20 @@ $categories = readCategories();
         </nav>
         
         <div class="header-actions">
-            <button type="button" class="search-toggle" aria-label="Buscar">
-                <span class="icon" aria-hidden="true">
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" width="28" height="28">
-                      <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" />
+            <div class="desktop-search-wrapper" id="desktop-search-wrapper">
+
+                <div class="search-bar-active" id="search-bar-active" hidden>
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" width="24" height="24">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" />
                     </svg>
-                </span>
-            </button>
+                    <input type="search" id="desktop-search-input" placeholder="¿Qué dulce buscas hoy?">
+                </div>
             
+            </div>
+            <button type="button" class="search-close-btn" id="desktop-search-close" aria-label="Cerrar búsqueda" hidden>
+                &times;
+            </button>
+
             <div class="user-session">
                 <?php if ($isLoggedIn): ?>
                     <a href="/LasSevillanas/Proyectini/users/account.php" class="user-account-link" aria-label="Mi cuenta">
@@ -146,11 +152,12 @@ $categories = readCategories();
     <!-- MOBILE SEARCH ROW - Only shown on mobile -->
     <div class="mobile-search-row">
         <span class="search-icon-input" aria-hidden="true">
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" width="24" height="24">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" />
-            </svg>
-        </span>
+            </span>
         <input type="search" id="search-input" placeholder="Buscar productos...">
+        
+        <button type="button" class="search-close-btn" id="mobile-search-close" aria-label="Cerrar búsqueda" hidden>
+            &times;
+        </button>
         
         <!-- MOBILE CART - Only shown on mobile in search row -->
         <div class="cart-wrapper" id="mobile-cart">

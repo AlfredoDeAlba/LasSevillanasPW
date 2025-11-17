@@ -1,23 +1,16 @@
 <?php
 declare(strict_types=1);
-
 namespace App\Lib;
-
 use PHPMailer\PHPMailer\PHPMailer;
 use PHPMailer\PHPMailer\Exception;
 use PHPMailer\PHPMailer\SMTP;
 require_once __DIR__ . '/db.php';
 require_once __DIR__ . '/../../vendor/autoload.php';
 
-//use PDO;
-//require_once __DIR__ . './db.php';
-
-
 //Funcion para el envio de correo
 function sendEmail(string $to, string $subject, string $body, ?string $attachmentData = null, ?string $attachmentName = null) : bool {
     $mail = new PHPMailer(true);
     try {
-        // $mail->SMTPDebug = SMTP::DEBUG_SERVER; // Apagado
         $mail->SMTPDebug = SMTP::DEBUG_OFF; // <-- APAGADO
         $mail->isSMTP();
         $mail->Host = $_ENV['MAIL_HOST'] ?? 'smtp.gmail.com';

@@ -88,7 +88,6 @@ $products = readProducts();
         </div>
         <nav class="admin-nav">
             <a href="#products-view" style="padding: var(--space-sm);">Productos</a>
-            <a href="#categorias-view" style="padding: var(--space-sm);">Categorias</a>
             <a href="#stats-view" style="padding: var(--space-sm);">Estadísticas</a>
             <a href="#cupones-view" style="padding: var(--space-sm);">Cupones</a>
             <a href="#banners-view" style="padding: var(--space-sm);">Banners</a>

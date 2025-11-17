@@ -507,6 +507,17 @@ try {
         </div>
     </section>
 
+    <section id="search-results-section" class="section" style="display: none; min-height: 80vh;">
+        <header class="section-header" style="flex-direction: row; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
+            <h2 id="search-results-title" style="margin: 0;">Resultados de búsqueda</h2>
+            <button type="button" id="close-search-btn" class="secondary" style="max-width: 200px; margin: 0;">
+                &larr; Volver a la portada
+            </button>
+        </header>
+        <div class="product-list" data-view="grid" id="search-results-list">
+            </div>
+    </section>
+
     <script>
         window.RECAPTCHA_SITE_KEY = "<?php echo htmlspecialchars($_ENV['RECAPTCHA_SITE_KEY']); ?>";
     </script>
