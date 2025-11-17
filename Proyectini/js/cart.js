@@ -50,6 +50,16 @@ document.addEventListener('DOMContentLoaded', () => {
         return items.reduce((acc, item) => acc + item.price * item.quantity, 0);
     }
 
+    function getTotalSavings(){
+        return items.reduce((acc, item) => {
+            if(item.has_promotion && item.original_price){
+                const savings = (item.original_price - item.price) * item.quantity;
+                return acc + savings;
+            }
+            return acc;
+        }, 0);
+    }
+
     function render() {
         const totalQty = getTotalQuantity();
         
@@ -92,6 +102,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 row.className = 'cart-item';
                 row.dataset.id = item.id;
 
+                if(item.has_promotion){
+                    row.classList.add('has_promotion');
+                }
+
                 const image = document.createElement('img');
                 image.src = item.image || 'placeholder.jpg';
                 image.alt = item.name;
@@ -104,10 +118,24 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 const meta = document.createElement('div');
                 meta.className = 'cart-item-meta';
-                meta.innerHTML = `
-                    <span>${item.quantity} x ${formatCurrency(item.price)}</span>
-                `;
 
+                if(item.has_promotion && item.original_price){
+                    meta.innerHTML = `
+                        <div class="cart-item-promo">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"/>
+                                <path d="M9 12h6"/>
+                            </svg>
+                            <span class="original-price-small">${formatCurrency(item.original_price)}</span>
+                        </div>
+                        <span class="promo-price">${item.quantity} x ${formatCurrency(item.price)}</span>
+                        <span class="savings-small">Ahorras ${formatCurrency((item.original_price - item.price)*item.quantity)}</span>
+                    `;
+                }else{
+                    meta.innerHTML = `
+                        <span>${item.quantity} x ${formatCurrency(item.price)}</span>
+                    `;
+                }
                 info.append(title, meta);
 
                 const removeButton = document.createElement('button');
@@ -123,8 +151,29 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         // Update total
-        if (cartTotal) {
-            cartTotal.textContent = formatCurrency(getSubtotal());
+        if(cartTotal){
+            const totalSavings = getTotalSavings();
+            const subtotal = getSubtotal();
+            if(totalSavings > 0){
+                cartTotal.innerHTML = `
+                    <div class="cart-total-breakdown">
+                        <div class="cart-total-line">
+                            <span>Subtotal:</span>
+                            <span>${formatCurrency(subtotal)}</span>
+                        </div>
+                        <div class="cart-total-line savings-line">
+                            <span>Ahorros totales:</span>
+                            <span>-${formatCurrency(totalSavings)}</span>
+                        </div>
+                        <div class="cart-total-line final">
+                            <strong>Total:</strong>
+                            <strong>${formatCurrency(subtotal)}</strong>
+                        </div>
+                    </div>
+                `;
+            }else{
+                cartTotal.textContent = formatCurrency(subtotal);
+            }
         }
     }
 
@@ -133,6 +182,7 @@ document.addEventListener('DOMContentLoaded', () => {
             items: items.map((item) => ({ ...item })),
             quantity: getTotalQuantity(),
             total: getSubtotal(),
+            savings: getTotalSavings()
         };
         document.dispatchEvent(new CustomEvent('cart:updated', { detail }));
     }
@@ -155,17 +205,37 @@ document.addEventListener('DOMContentLoaded', () => {
         // Si existe, SUMA la cantidad
             items[index].quantity = Math.min(items[index].quantity + parsedQuantity, 99);
         } else {
-            items.push({
+            //crear nuevo item del carrito con la info del descuento en ello
+            const cartItem = {
                 id,
                 name: product.name || 'Producto',
                 price,
                 quantity: parsedQuantity,
                 image: product.image || 'placeholder.jpg',
-            });
+            };
+            
+            // Anadir la info de la promocion relacionada si es que tiene
+            if (product.has_promotion) {
+                cartItem.has_promotion = true;
+                cartItem.original_price = product.original_price;
+                cartItem.discount_percentage = product.discount_percentage;
+                
+                // almacenar informacion de la promocion para referencia
+                if (product.promotion) {
+                    cartItem.promotion = {
+                        id: product.promotion.id_promocion,
+                        name: product.promotion.nombre_promo,
+                        type: product.promotion.tipo_descuento,
+                        value: product.promotion.valor_descuento
+                    };
+                }
+            }
+            
+            items.push(cartItem);
         }
 
         persist();
-        // Show feedback
+        // Muestra feedback
         showCartFeedback('Producto agregado al carrito', 'success');
     }
 
@@ -177,23 +247,6 @@ document.addEventListener('DOMContentLoaded', () => {
             showCartFeedback('Producto eliminado', 'success');
         }
     }
-
-/*
-    function updateCartCountDisplay() {
-        const count = getCartTotalQuantity();
-        const badge = document.querySelector('.cart-count'); // Badge de escritorio
-        const badgeMobile = document.querySelector('.cart-count-mobile'); // NUEVO: Badge móvil
-
-        if (badge) {
-            badge.textContent = count > 0 ? String(count) : '';
-            badge.hidden = count === 0;
-        }
-        if (badgeMobile) { // NUEVO: Actualizar el badge móvil
-            badgeMobile.textContent = count > 0 ? String(count) : '';
-            badgeMobile.hidden = count === 0;
-        }
-    }
-*/
     
     function updateItemQuantity(id, quantity) {
         const parsedQuantity = Math.max(1, Number(quantity) || 1);
@@ -278,6 +331,7 @@ document.addEventListener('DOMContentLoaded', () => {
         getItems: () => items.map((item) => ({ ...item })),
         getSubtotal,
         getTotalQuantity,
+        getTotalSavings,
         addItem,
         removeItem,
         updateItemQuantity,

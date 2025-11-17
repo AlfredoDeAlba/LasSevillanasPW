@@ -4,7 +4,7 @@ use PDO;
 require_once __DIR__ . '/db.php';
 
 // Mapea una fila de la tabla `producto` al formato usado en el frontend/API
-function mapProductRow(array $row) : array {
+function mapProductRow(array $row): array {
     return [
         'id' => isset($row['id_producto']) ? (string) $row['id_producto'] : null,
         'name' => (string) ($row['nombre'] ?? ''),
@@ -12,14 +12,15 @@ function mapProductRow(array $row) : array {
         'description' => (string) ($row['descripcion'] ?? ''),
         'image' => $row['foto'] ?? null,
         'stock' => isset($row['stock']) ? (int) $row['stock'] : 0,
-        'id_categoria' => isset($row['id_categoria']) ? (int) $row['id_categoria'] : null // <-- AÑADIDO
+        'id_categoria' => isset($row['id_categoria']) ? (int) $row['id_categoria'] : null,
+        'category_name' => (string) ($row['nombre_categoria'] ?? ''), // ADDED for promotions
     ];
 }
 
 /**
  * Lee todas las categorías de productos desde la BDD.
  */
-function readCategories() : array {
+function readCategories(): array {
     $sql = 'SELECT id_categoria, nombre_categoria 
             FROM producto_categoria 
             ORDER BY nombre_categoria ASC';
@@ -27,22 +28,47 @@ function readCategories() : array {
     return $stmt->fetchAll(PDO::FETCH_ASSOC) ?: [];
 }
 
-function readProducts() : array {
-    $sql = 'SELECT id_producto, nombre, descripcion, stock, precio, foto, id_categoria FROM producto ORDER BY id_producto DESC';
+function readProducts(): array {
+    // UPDATED: Join with category table to get category_name
+    $sql = 'SELECT 
+                p.id_producto, 
+                p.nombre, 
+                p.descripcion, 
+                p.stock, 
+                p.precio, 
+                p.foto, 
+                p.id_categoria,
+                c.nombre_categoria
+            FROM producto p
+            LEFT JOIN producto_categoria c ON p.id_categoria = c.id_categoria
+            ORDER BY p.id_producto DESC';
     $stmt = getPDO()->query($sql);
     $rows = $stmt->fetchAll(PDO::FETCH_ASSOC) ?: [];
     return array_map(static fn($r) => mapProductRow($r), $rows);
 }
 
-function findProduct(string $id) : ?array {
-    $sql = 'SELECT id_producto, nombre, descripcion, stock, precio, foto, id_categoria FROM producto WHERE id_producto = :id LIMIT 1';
+function findProduct(string $id): ?array {
+    // UPDATED: Join with category table to get category_name
+    $sql = 'SELECT 
+                p.id_producto, 
+                p.nombre, 
+                p.descripcion, 
+                p.stock, 
+                p.precio, 
+                p.foto, 
+                p.id_categoria,
+                c.nombre_categoria
+            FROM producto p
+            LEFT JOIN producto_categoria c ON p.id_categoria = c.id_categoria
+            WHERE p.id_producto = :id 
+            LIMIT 1';
     $stmt = getPDO()->prepare($sql);
     $stmt->execute([':id' => $id]);
     $row = $stmt->fetch(PDO::FETCH_ASSOC);
     return $row ? mapProductRow($row) : null;
 }
 
-function upsertProduct(array $payload) : array {
+function upsertProduct(array $payload): array {
     $id = $payload['id'] ?? null;
     $name = (string) ($payload['name'] ?? '');
     $price = (float) ($payload['price'] ?? 0);
@@ -50,7 +76,7 @@ function upsertProduct(array $payload) : array {
     $stock = (int) ($payload['stock'] ?? 0);
     $image = $payload['image'] ?? null;
 
-    if ($id === null || $id === '' ) {
+    if ($id === null || $id === '') {
         $sql = 'INSERT INTO producto (nombre, descripcion, stock, precio, foto) VALUES (:n, :d, :s, :p, :f)';
         $stmt = getPDO()->prepare($sql);
         $stmt->execute([
@@ -100,18 +126,19 @@ function deleteProduct(string $id): void
 }
 
 /**
- * funcion para aplicar descuentos: aplica promociones activas a una lista de productos
+ * Función para aplicar descuentos: aplica promociones activas a una lista de productos
  * @param array $products - lista de productos de la bd
  * @return array - lista de productos con precios de descuento aplicados
+ * 
+ * NOTE: This function is deprecated. Use App\Lib\Products\getAllProductsWithPromotions() instead.
  */
-
-function applyPromotions(array $products) : array {
+function applyPromotions(array $products): array {
     if (empty($products)) {
         return $products;
     }
-    try{
+    try {
         $pdo = getPDO();
-        //obtener todas las promociones activas
+        // Obtener todas las promociones activas
         $stmt = $pdo->query("
             SELECT id_promocion, valor_descuento, tipo_descuento,
             id_producto_asociado, id_categoria_asociada
@@ -120,44 +147,46 @@ function applyPromotions(array $products) : array {
                 AND NOW() BETWEEN fecha_inicio AND fecha_final
         ");
         $promos = $stmt->fetchAll(\PDO::FETCH_ASSOC);
-        if(empty($promos)){
-            return $products; //si no hay promociones, mandar los productos tal cual
+        if (empty($promos)) {
+            return $products; // Si no hay promociones, mandar los productos tal cual
         }
-        //crear mapas de busqueda para mejorar eficiencia
+        // Crear mapas de búsqueda para mejorar eficiencia
         $promoPorProducto = [];
         $promoPorCategoria = [];
-        foreach($promos as $promo){
-            //normalizar los datos
+        foreach ($promos as $promo) {
+            // Normalizar los datos
             $promo['valor_descuento'] = (float)($promo['valor_descuento'] ?? 0);
             $promo['tipo_descuento'] = $promo['tipo_descuento'] ?? 'fijo';
-            if($promo['id_producto_asociado']){
+            if ($promo['id_producto_asociado']) {
                 $promoPorProducto[$promo['id_producto_asociado']] = $promo;
-            }elseif($promo['id_categoria_asociada']){
+            } elseif ($promo['id_categoria_asociada']) {
                 $promoPorCategoria[$promo['id_categoria_asociada']] = $promo;
             }
         }
-        //iterar sobre los productos y se aplican descuentos
-        foreach($products as &$product){//uso de & para modificar el arreglo original
-            $precioOriginal = (float)($product['precio'] ?? 0.0);
-            $descuento = 0.0;
+        // Iterar sobre los productos y aplicar descuentos
+        foreach ($products as &$product) { // uso de & para modificar el arreglo original
+            $precioOriginal = (float)($product['price'] ?? 0.0);
             $promoAplicada = null;
+            
             // Obtenemos los IDs de forma segura
-            $productId = $product['id_producto'] ?? null;
+            $productId = $product['id'] ?? null;
             $categoryId = $product['id_categoria'] ?? null;
 
-            //prioridad a promocion por producto
-            if($productId !== null && isset($promoPorProducto[$productId])){
-                $descuento = $promoPorProducto[$productId];
+            // Prioridad a promoción por producto
+            if ($productId !== null && isset($promoPorProducto[$productId])) {
+                $promoAplicada = $promoPorProducto[$productId];
             
-            //busqueda de promocion por categorias
-            }elseif($categoryId !== null && isset($promoPorCategoria[$categoryId])){
-                $descuento = $promoPorCategoria[$categoryId];
+            // Búsqueda de promoción por categorías
+            } elseif ($categoryId !== null && isset($promoPorCategoria[$categoryId])) {
+                $promoAplicada = $promoPorCategoria[$categoryId];
             }
+            
             // Aplicar el descuento si encontramos una promoción
             if ($promoAplicada !== null) {
                 $valor = $promoAplicada['valor_descuento'];
                 $tipo = $promoAplicada['tipo_descuento'];
 
+                $descuento = 0.0;
                 if ($tipo === 'porcentaje') {
                     // Cálculo de porcentaje
                     $descuento = $precioOriginal * ($valor / 100);
@@ -167,18 +196,31 @@ function applyPromotions(array $products) : array {
                 }
                 
                 // Aplicar el descuento calculado, asegurando que no sea negativo
-                $product['precio_original'] = $precioOriginal;
-                $product['precio_descuento'] = max(0.01, $precioOriginal - $descuento);
+                $product['original_price'] = $precioOriginal;
+                $product['price'] = max(0.01, $precioOriginal - $descuento);
+                $product['has_promotion'] = true;
+                $product['discount_amount'] = $descuento;
+                $product['discount_percentage'] = round(($descuento / $precioOriginal) * 100);
+                
+                // Store full promotion data for frontend
+                $product['promotion'] = [
+                    'id_promocion' => $promoAplicada['id_promocion'],
+                    'nombre_promo' => 'Oferta Especial',
+                    'valor_descuento' => $valor,
+                    'tipo_descuento' => $tipo
+                ];
+            } else {
+                $product['has_promotion'] = false;
             }
         }
         return $products;
-    }catch(\Throwable $e){
-        error_log("error al aplicar las promociones: " . $e->getMessage());
+    } catch (\Throwable $e) {
+        error_log("Error al aplicar las promociones: " . $e->getMessage());
         return $products;
     }
 }
 
- /**
+/**
  * Obtiene productos recomendados para un usuario basado en las categorías
  * de sus compras recientes.
  *
@@ -190,8 +232,7 @@ function getRecommendedProductsForUser(int $userId, int $limit = 5): array {
     $pdo = getPDO();
 
     try {
-        // Query completa que busca productos en categorías que el usuario compró
-        // PERO que el usuario no ha comprado todavía
+        // UPDATED: Added category name to the query
         $sql = "
             SELECT DISTINCT
                 p.id_producto,
@@ -200,8 +241,10 @@ function getRecommendedProductsForUser(int $userId, int $limit = 5): array {
                 p.stock,
                 p.precio,
                 p.foto,
-                p.id_categoria
+                p.id_categoria,
+                c.nombre_categoria
             FROM producto p
+            LEFT JOIN producto_categoria c ON p.id_categoria = c.id_categoria
             WHERE 
                 -- 1. El producto debe pertenecer a una categoría que el usuario haya comprado
                 p.id_categoria IN (
@@ -232,9 +275,6 @@ function getRecommendedProductsForUser(int $userId, int $limit = 5): array {
         $stmt = $pdo->prepare($sql);
         
         // IMPORTANTE: Bind parameters en el orden correcto
-        // Primer ? = userId (para la subconsulta IN)
-        // Segundo ? = userId (para la subconsulta NOT IN)
-        // Tercer ? = limit
         $stmt->bindValue(1, $userId, \PDO::PARAM_INT);
         $stmt->bindValue(2, $userId, \PDO::PARAM_INT);
         $stmt->bindValue(3, $limit, \PDO::PARAM_INT);
@@ -255,4 +295,3 @@ function getRecommendedProductsForUser(int $userId, int $limit = 5): array {
         return [];
     }
 }
-

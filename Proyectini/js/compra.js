@@ -40,14 +40,6 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     /**
-     * Esta función ya no es necesaria, la dejamos vacía.
-     * initializePayment() obtendrá los totales correctos del servidor.
-     */
-    function updateCheckoutTotals() {
-        // (vacía)
-    }
-
-    /**
      * Dibuja los items del carrito en la lista del checkout.
      */
     async function renderCheckoutCart() {
@@ -58,11 +50,6 @@ document.addEventListener('DOMContentLoaded', function() {
     if (cart.length === 0) {
         cartListEl.innerHTML = '';
         cartEmptyEl.style.display = 'block';
-        /*
-        subtotalAmountEl.textContent = formatCurrency(0);
-        totalAmountEl.textContent = formatCurrency(0);
-        discountAmountEl.textContent = formatCurrency(0);
-        */
         submitBtn.disabled = true;
         addCardBtn.disabled = true;
         couponBtn.disabled = true;
@@ -75,23 +62,43 @@ document.addEventListener('DOMContentLoaded', function() {
     submitBtn.disabled = false;
     addCardBtn.disabled = false;
     couponBtn.disabled = false;
-    
-    // --- PASO 1: CALCULAR SUBTOTAL AQUÍ ---
-    const subtotal = cart.reduce((acc, item) => {
-        // Asegurarse de que son números
-        const price = parseFloat(item.price) || 0;
-        const quantity = parseInt(item.quantity) || 0;
-        return acc + (price * quantity);
-    }, 0);
-
 
     // Recreando la lógica de 'cart.js' para el checkout
     const itemsHtml = cart.map(item => {
         // Asegurarse de que son números para el total del item
         const price = parseFloat(item.price) || 0;
         const quantity = parseInt(item.quantity) || 0;
-        const itemTotal = (price * quantity).toFixed(2);
+        const itemTotal = (price * quantity);
         
+        let priceHtml = '';
+        let detailsHtml = '';
+        let itemClass = 'checkout-item';
+
+        if(item.has_promotion && item.original_price){
+            itemClass += 'has-promotion';
+            const originalTotal = (parseFloat(item.original_price)*quantity);
+            const savings = originalTotal - itemTotal;
+
+            detailsHtml = `
+                <span class="checkout-item-name">${item.name}</span>
+                <span class="checkout-item-promo-details" style="font-size: 0.8rem; color: #c0392b; font-weight: 500; display: flex; align-items: center; gap: 4px;">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"/>
+                        <path d="M9 12h6"/>
+                    </svg>
+                    ¡En oferta!
+                </span>
+            `;
+            priceHtml = `
+                <span class="price original-price" style="font-size: 0.9rem; margin-bottom: 4px;">${formatCurrency(originalTotal)}</span>
+                <span class="price discounted-price">${formatCurrency(itemTotal)}</span>
+                <span class="savings-small" style="margin-top: 4px;">Ahorras ${formatCurrency(savings)}</span>
+            `;
+        }else{
+            //en caso de que no haya descuento, que se comporte originalmente
+            detailsHtml = `<span class="checkout-item-name">${item.name}</span>`;
+            priceHtml = `<span>${formatCurrency(itemTotal)}</span>`;
+        }
         return `
             <div class="checkout-item">
                 <div class="checkout-item-image">
@@ -99,7 +106,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     <span class="checkout-item-quantity">${quantity}</span>
                 </div>
                 <div class="checkout-item-details">
-                    <span class="checkout-item-name">${item.name}</span>
+                    ${detailsHtml}
                     <div class="checkout-item-controls">
                         <button type="button" class="qty-btn" data-id="${item.id}" data-action="decrease-qty" aria-label="Disminuir cantidad">-</button>
                         <span>${quantity}</span>
@@ -107,7 +114,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     </div>
                 </div>
                 <div class="checkout-item-price">
-                    <span>$${itemTotal}</span>
+                    ${priceHtml}
                     <button type="button" class="remove-btn" data-id="${item.id}" data-action="remove-item" aria-label="Eliminar">&times;</button>
                 </div>
             </div>
@@ -115,13 +122,6 @@ document.addEventListener('DOMContentLoaded', function() {
     });
     
     cartListEl.innerHTML = itemsHtml.join('');
-
-    // --- PASO 2: MOSTRAR TOTALES TEMPORALES ---
-    // (Estos se actualizarán por 'initializePayment' si hay descuentos)
-    //subtotalAmountEl.textContent = formatCurrency(subtotal);
-    //discountAmountEl.textContent = formatCurrency(0);
-    // El total es (subtotal - descuento). Como aún no hay descuento, es igual al subtotal.
-    //totalAmountEl.textContent = formatCurrency(subtotal);
 }
 
     

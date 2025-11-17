@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Lib\Products;
 
+use PDO;
 use PDOException;
 
 // Importamos todas las funciones que usará el script
@@ -58,69 +59,6 @@ try {
     errorResponse('Ocurrió un error inesperado en el servidor.', 500);
 }
 
-/**
- * funcion para aplicar descuentos: aplica promociones activas a una lista de productos
- * @param array $products - lista de productos de la bd
- * @return array - lista de productos con precios de descuento aplicados
- */
-/*
-function applyPromotions(array $products) : array {
-    if (empty($products)) {
-        return $products;
-    }
-    try{
-        $pdo = getPDO();
-        //obtener todas las promociones activas
-        $stmt = $pdo->query("
-            SELECT id_promocion, valor_descuento,
-            id_producto_asociado, id_categoria_asociada
-            FROM promociones
-            WHERE activa = TRUE
-                AND NOW() BETWEEN fecha_inicio AND fecha_final
-        ");
-        $promos = $stmt->fetchAll(\PDO::FETCH_ASSOC);
-        if(empty($promos)){
-            return $products; //si no hay promociones, mandar los productos tal cual
-        }
-        //crear mapas de busqueda para mejorar eficiencia
-        $promoPorProducto = [];
-        $promoPorCategoria = [];
-        foreach($promos as $promo){
-            if($promo['id_producto_asociado']){
-                $promoPorProducto[$promo['id_producto_asociado']] = (float)$promo['valor_descuento'];
-            }elseif($promo['id_categoria_asociada']){
-                $promoPorCategoria[$promo['id_categoria_asociada']] = (float)$promo['valor_descuento'];
-            }
-        }
-        //iterar sobre los productos y se aplican descuentos
-        foreach($products as &$product){//uso de & para modificar el arreglo original
-            $precioOriginal = (float)($product['precio'] ?? 0.0);
-            $descuento = 0.0;
-            // Obtenemos los IDs de forma segura
-            $productId = $product['id_producto'] ?? null;
-            $categoryId = $product['id_categoria'] ?? null; // Tu SQL confirma que esta columna existe
-
-            //prioridad a promocion por producto
-            if($productId !== null && isset($promoPorProducto[$productId])){
-                $descuento = $promoPorProducto[$productId];
-            
-            //busqueda de promocion por categorias
-            }elseif($categoryId !== null && isset($promoPorCategoria[$categoryId])){
-                $descuento = $promoPorCategoria[$categoryId];
-            }
-            //aplicar el descuento en caso de existir
-            if($descuento > 0){
-                $product['precio_original'] = $precioOriginal;
-                $product['precio_descuento'] = max(0.01, $precioOriginal - $descuento);//con 0.01 se evitan precios negativos
-            }
-        }
-        return $products;
-    }catch(\Throwable $e){
-        error_log("error al aplicar las promociones: " . $e->getMessage());
-        return $products;
-    }
-}
-*/
 
 function handleGet() : void {
     $id = $_GET['id'] ?? null;
@@ -228,4 +166,126 @@ function handleDelete() : void {
     }
 
     jsonResponse(['message' => 'Producto eliminado']);
+}
+
+/**
+ * Get active promotion for a product
+ * Returns promotion data if product has an active promotion
+ */
+function getProductPromotion($productId, $categoryId = null){
+    $pdo = getPDO();
+    //primero se busca si hay alguna promocion relacionada al producto en si
+    $stmt = $pdo->prepare("
+    SELECT
+        promo.id_promocion,
+        promo.nombre_promo,
+        promo.descripcion,
+        promo.valor_descuento,
+        promo.tipo_descuento,
+        promo.fecha_final,
+        'product' as promo_type
+    FROM promociones promo
+    WHERE promo.id_producto_asociado = :product_id
+        AND promo.activa = TRUE
+        AND NOW() BETWEEN promo.fecha_inicio AND promo.fecha_final
+    LIMIT 1
+    ");
+    $stmt->execute(['product_id'=>$productId]);
+    $promo = $stmt->fetch(PDO::FETCH_ASSOC);
+    if($promo){return $promo;}
+
+    if($categoryId){
+        //sino la busca por categoria a la que este asociada
+        $stmt = $pdo->prepare("
+            SELECT
+                promo.id_promocion,
+                promo.nombre_promo,
+                promo.descripcion,
+                promo.valor_descuento,
+                promo.tipo_descuento,
+                promo.fecha_final,
+                'category' as promo_type
+            FROM promociones promo
+            WHERE promo.id_categoria_asociada = :category_id
+                AND promo.activa = TRUE
+                AND NOW() BETWEEN promo.fecha_inicio AND promo.fecha_final
+            LIMIT 1
+        ");
+        $stmt->execute(['category_id'=>$categoryId]);
+        $promo = $stmt->fetch(PDO::FETCH_ASSOC);
+        if($promo){return $promo;}
+    }
+    return null;
+}
+
+/**
+ * Calcula el precio descontado en base a la promocion y a su tipo
+ */
+function calculateDiscountedPrice($originalPrice, $promotion){
+    if(!$promotion){return $originalPrice;}
+
+    if($promotion['tipo_descuento'] === 'porcentaje'){
+        $discount = ($originalPrice * $promotion['valor_descuento'])/100;
+        return max(0, $originalPrice - $discount);
+    }else{
+        return max(0, $originalPrice - $promotion['valor_descuento']);
+    }
+}
+
+/**
+ * Se le agrega al product la data de la promocion
+ */
+function addPromotionToAllowedProduct($product){
+    $promotion = getProductPromotion(
+        $product['id'],
+        $product['id_categoria'] ?? null
+    );
+    if($promotion){
+        $product['promotion'] = $promotion;
+        $product['original_price'] = $product['price'];
+        $product['price'] = calculateDiscountedPrice($product['price'], $promotion);
+        $product['has_promotion'] = true;
+        $product['discount_amount'] = $product['original_price'] - $product['price'];
+        $product['discount_percentage'] = round(($product['discount_amount'] / $product['original_price']) * 100);
+    }else{
+        $product['has_promotion'] = false;
+    }
+    return $product;
+}
+
+/**
+ * Obtiene todos los productos con la data de promocion necesaria
+ */
+function getAllProductsWithPromotions(){
+    $pdo = getPDO();
+    $stmt = $pdo->query("
+        SELECT 
+            p.id_producto as id,
+            p.nombre as name,
+            p.descripcion as description,
+            p.precio as price,
+            p.stock,
+            p.foto as image,
+            p.id_categoria,
+            c.nombre_categoria as category_name
+        FROM producto p
+        LEFT JOIN producto_categoria c ON p.id_categoria = c.id_categoria
+        WHERE p.disponible = TRUE
+        ORDER BY p.nombre
+    ");
+    $products = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    return array_map('App\Lib\Products\addPromotionToAllowedProduct', $products);
+
+}
+/**
+ * Obtener un solo producto con la data de promocion
+ */
+function getProductWithPromotion($productId) {
+    $product = findProduct($productId);
+    
+    if (!$product) {
+        return null;
+    }
+    
+    return addPromotionToAllowedProduct($product);
 }

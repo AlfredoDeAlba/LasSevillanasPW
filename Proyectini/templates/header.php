@@ -5,10 +5,10 @@ require_once __DIR__ . '/../lib/config.php';
 require_once __DIR__ . '/../lib/storage.php';
 require_once __DIR__ . '/../lib/auth_usr.php';
 
-use function App\Lib\readProducts;
 use function App\Lib\readCategories;
 use function App\Lib\startSecureSession;
 use function App\Lib\isLoggedIn;
+use function App\Lib\applyPromotions;
 
 startSecureSession();
 
@@ -23,7 +23,8 @@ $perfilActiveClass = in_array($currentPage, $perfilPages) ? 'active' : '';
 // --- FIN DE LÓGICA ---
 
 // Leemos los productos para que estén disponibles en cualquier página que incluya este header
-$products = readProducts();
+$rawProducts = readProducts(); // <-- 2. Obtén los productos crudos
+$products = applyPromotions($rawProducts); // <-- 3. Aplica las promociones
 $categories = readCategories();
 ?>
 <!DOCTYPE html>
