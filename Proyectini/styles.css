@@ -852,417 +852,6 @@ button.primary:focus-visible {
     display: none;
 }
 
-/* 2. Media Query para pantallas pequeñas (la misma que ya usas) */
-@media (max-width: 900px) {
-
-    /* --- 1. OCULTAR ITEMS DE ESCRITORIO --- */
-    .desktop-header-items {
-        display: none;
-    }
-
-    /* Oculta el botón de búsqueda de JS */
-    .header-actions .search-toggle {
-        display: none;
-    }
-    
-    #category-select-mobile {
-        width: 100%;
-        font: inherit;
-        font-size: 1rem;
-        padding: 0.75rem;
-        border: 1px solid var(--color-border);
-        border-radius: var(--radius-base);
-        background-color: var(--color-elevated);
-        color: var(--color-text);
-        cursor: pointer;
-    }
-
-    /* Hide desktop cart dropdown on mobile */
-    #desktop-cart .cart-dropdown {
-        display: none !important;
-    }
-
-    .mobile-search-row #mobile-cart {
-        display: block;
-    }
-
-    #desktop-cart {
-        display: none !important;
-    }
-
-    #mobile-cart {
-        position: relative;
-    }
-    
-    #mobile-cart .cart-toggle {
-        position: relative;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-    }
-
-    /* Make mobile cart more visible */
-    #mobile-cart .cart-count {
-        min-width: 18px;
-        height: 18px;
-        font-size: 0.7rem;
-        padding: 0 4px;
-    }
-    
-    .desktop-only {
-        display: none;
-    }
-
-    /* Oculta elementos específicos de escritorio */
-    .main-nav,
-    .user-session,
-    .theme-toggle,
-    .social-links,
-    .cart-dropdown {
-        display: none !important;
-    }
-    
-    /* Oculta texto "Carrito" en el icono de escritorio */
-    .cart-toggle .desktop-only {
-        display: none;
-    }
-
-
-    /* --- 2. MOSTRAR Y ESTILIZAR HEADER MÓVIL --- */
-
-    /* Estilo principal del header en MÓVIL (Fijo) */
-    .top-bar {
-        display: flex;
-        flex-direction: column;
-        height: auto;
-        padding: 0;
-        position: sticky;
-        top: 0;
-        z-index: 1000;
-        border: none;
-        border-radius: 0;
-        margin: 0;
-        width: 100%;        
-        max-width: 100%;    
-        grid-template-columns: none; 
-    }
-
-    /* Estilo de la marca en MÓVIL (Fila 1 - Centrada) */
-    .top-bar .brand {
-        position: static;
-        transform: none;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        width: 100%;
-        height: 60px;
-        background: var(--color-surface);
-        border-bottom: 1px solid var(--color-border);
-        padding: 0;
-        margin: 0;
-        opacity: 1 !important;
-        visibility: visible !important;
-    }
-
-    /* Muestra la fila de búsqueda en MÓVIL (Fila 2) */
-    .mobile-search-row {
-        display: flex;
-        align-items: center;
-        gap: var(--space-sm);
-        width: 100%;
-        height: 60px; 
-        padding: 0 var(--space-md); 
-        background: var(--color-surface);
-        border-bottom: 1px solid var(--color-border);
-    }
-    
-    .mobile-search-row .search-icon-input {
-        flex-shrink: 0; 
-    }
-    .mobile-search-row .search-icon-input svg {
-        width: 1.5rem;
-        height: 1.5rem;
-        color: var(--color-text-muted);
-    }
-
-    .mobile-search-row input[type="search"] {
-        flex: 1; 
-        font-size: 1rem;
-        border: none;
-        outline: none;
-        background: transparent;
-        color: var(--color-text);
-        padding: 0;
-        -webkit-appearance: none;
-    }
-    
-    /* Estilos para el carrito en la Fila 2 */
-    .mobile-search-row .cart-wrapper {
-        flex-shrink: 0;
-    }
-    .mobile-search-row .cart-toggle {
-        border: none;
-        background: transparent;
-        box-shadow: none;
-        padding: 0.25rem;
-    }
-
-
-    /* --- 3. OCULTAR BARRA DE BÚSQUEDA ANTIGUA --- */
-    .search-bar-container {
-        display: none !important;
-    }
-
-    /* Definir la altura de la barra inferior */
-    :root {
-        --bottom-nav-height: 70px;
-    }
-
-
-    /* --- 5. AJUSTE DE LAYOUT PRINCIPAL (BODY y MAIN) --- */
-    
-    /* Quitamos TODOS los márgenes del body en móvil */
-    body {
-        margin: 0; 
-        padding: 0;
-    }
-    
-    /* Ajuste unificado del padding del main */
-    main {
-        /* NO padding-top porque el header es sticky */
-        padding-top: 0 !important;  
-        /* Padding lateral */
-        padding-left: var(--space-md) !important;
-        padding-right: var(--space-md) !important;
-        /* Padding inferior para el bottom-nav */
-        padding-bottom: var(--space-md) !important;
-    }
-
-    main.container {
-        padding-top: 0 !important;
-        padding-left: var(--space-md) !important;
-        padding-right: var(--space-md) !important;
-        padding-bottom: var(--space-md) !important;
-    }
-
-    /* Show bottom nav bar */
-    .bottom-nav-bar {
-        display: flex;
-    }
-        
-    /* --- 6. OTROS AJUSTES MÓVILES --- */
-    
-    /* Hero Section */
-    .hero {
-        grid-template-columns: 1fr;
-    }
-
-    .carousel-slide {
-        height: 380px;
-    }
-
-    .carousel-slide img {
-        max-width: 280px;
-        height: 240px;
-    }
-
-    .carousel-caption h3 {
-        font-size: 1.2rem;
-    }
-
-    /* Pago */
-    .purchase-page {
-        padding: var(--space-md);
-    }
-    .purchase-container {
-        grid-template-columns: 1fr;
-        gap: var(--space-md);
-    }
-    
-    .product-summary {
-        order: -1;
-    }
-    
-    .product-summary-card {
-        position: static;
-        top: auto;
-    }
-    .form-row {
-        grid-template-columns: 1fr;
-    }
-    
-    .checkout-item {
-        grid-template-columns: 60px 1fr;
-        gap: var(--space-sm);
-    }
-    
-    .checkout-item img {
-        width: 60px;
-        height: 60px;
-    }
-    
-    .checkout-item-actions {
-        grid-column: 2;
-        flex-direction: row;
-        justify-content: space-between;
-        align-items: center;
-    }
-    
-    /* Modal adjustments */
-    .modal-content {
-        width: 95%;
-        padding: var(--space-md);
-    }
-    
-    .modal-header h3 {
-        font-size: 1.2rem;
-    }
-    
-    /* Detalles de Producto */
-    .product-page-container {
-        grid-template-columns: 1fr; 
-    }
-    .product-action-card {
-        grid-column: 1;
-        grid-row: auto;
-        position: static;
-    }
-    
-    /* Filtros de Categoría */
-    .category-filters-desktop {
-        display: none;
-    }
-
-    /* Adjust product grid for mobile */
-    .product-list[data-view="grid"] {
-        grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
-    }
-    
-    .product-controls {
-        flex-wrap: wrap;
-    }
-    
-    .category-filters-mobile {
-        display: grid;
-        grid-template-columns: auto 1fr;
-        align-items: center;
-        gap: var(--space-sm);
-        margin-bottom: var(--space-md);
-    }
-
-    .recommendations-track {
-        grid-auto-columns: calc(50% - var(--space-sm));
-        gap: var(--space-md);
-    }
-    
-    .recommendations-carousel .carousel-control {
-        width: 40px;
-        height: 40px;
-    }
-    
-    .recommendations-carousel .carousel-control.prev {
-        left: -20px;
-    }
-    
-    .recommendations-carousel .carousel-control.next {
-        right: -20px;
-    }
-
-    .recommendations-section .section-header h2 {
-        font-size: 1.5rem;
-    }
-    
-    .recommendations-section .section-header h2 svg {
-        width: 24px;
-        height: 24px;
-    }
-    
-    .recommendations-section .section-header p {
-        font-size: 0.9rem;
-    }
-
-    .promotions-carousel {
-        height: 400px;
-    }
-    
-    .promotion-title {
-        font-size: clamp(1.5rem, 4vw, 2.5rem);
-    }
-    
-    .promotion-description {
-        font-size: 1rem;
-    }
-    
-    .discount-amount {
-        font-size: 2rem;
-    }
-    
-    .promotion-cta {
-        font-size: 1rem;
-        padding: var(--space-sm) var(--space-lg);
-    }
-    
-    .promo-control {
-        width: 44px;
-        height: 44px;
-    }
-    
-    .promo-control.prev {
-        left: var(--space-md);
-    }
-    
-    .promo-control.next {
-        right: var(--space-md);
-    }
-
-    .product-promo-badge {
-        padding: 4px 10px;
-        font-size: 0.75rem;
-        top: 8px;
-        right: 8px;
-    }
-    
-    .product-page-promo-badge {
-        padding: 8px 14px;
-        font-size: 0.95rem;
-        top: 12px;
-        left: 12px;
-    }
-    
-    .promotion-alert {
-        flex-direction: column;
-    }
-    
-    .price-section {
-        padding: 16px;
-    }
-
-    /* Padding específico SOLO para el overlay de búsqueda en móvil */
-    #live-search-overlay {
-        padding-top: 120px;
-        padding-bottom: 70px;
-    }
-    
-    #live-search-results {
-        min-height: calc(100vh - 190px);
-        padding: var(--space-md);
-    }
-    
-    body.live-search-active .mobile-search-row {
-        background: var(--color-surface);
-        box-shadow: 0 2px 8px rgba(198, 9, 105, 0.2);
-        position: relative;
-        z-index: 1501;
-    }
-    
-    body.live-search-active #mobile-cart {
-        display: none;
-    }
-    
-    body.live-search-active #mobile-search-close {
-        display: block;
-    }
-}
 
 /* 3. Estilos para cuando el menú está ABIERTO (controlado por JS) */
 
@@ -1903,14 +1492,26 @@ button.primary:focus-visible {
     color: var(--color-text-muted);
 }
 
-*/
 /* ============================================ */
 /* Pagina de la parte de detalles del producto ( es la llamada vista_producto.php) */
+/* Estilos de la página de producto */
 .product-page-container {
+    /* --- LAYOUT (GRID DE 3 COLUMNAS) --- */
     display: grid;
-    grid-template-columns: 1fr 1.5fr 1fr; /* Tres columnas: Galería, Info, Acción */
+    grid-template-columns: 1fr 1.5fr 1fr; /* Galería | Info | Acción */
     gap: var(--space-lg);
     align-items: flex-start;
+
+    /* --- ESTILOS VISUALES (Heredados de .section) --- */
+    width: 100%;
+    max-width: 1440px;
+    margin: 0 auto var(--space-lg) auto; /* Centrado y margen inferior */
+    padding: var(--space-lg);
+    
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-base);
+    box-shadow: var(--shadow-soft);
 }
 
 .product-gallery img {
@@ -1980,33 +1581,6 @@ button.primary:focus-visible {
     font-size: 1.1rem;
     margin-top: var(--space-md);
 }
-
-/* Ajustes para tabletas y móviles */
-@media (max-width: 1024px) {
-    .product-page-container {
-        grid-template-columns: 1fr 1fr; /* Dos columnas */
-    }
-    .product-content {
-        grid-column: 1 / -1; /* La info ocupa todo el ancho debajo de la imagen */
-        grid-row: 2;
-    }
-    .product-action-card {
-        grid-column: 2 / 3;
-        grid-row: 1;
-    }
-}
-
-@media (max-width: 768px) {
-    .product-page-container {
-        grid-template-columns: 1fr; /* Una sola columna */
-    }
-    .product-action-card {
-        grid-column: 1;
-        grid-row: auto;
-        position: static;
-    }
-}
-
 
 /************Zona de estilos para la pasarela de pago***************/
 
@@ -2405,280 +1979,6 @@ button.full-width {
     width: 100%;
 }
 
-/* Ajustes para móviles */
-@media (max-width: 600px) {
-    .product-list[data-view="grid"] {
-        grid-template-columns: 1fr;
-    }
-    
-    .product-card {
-        padding: var(--space-md);
-    }
-    .modal-body {
-        grid-template-columns: 1fr;
-    }
-    .purchase-page {
-        padding: var(--space-sm);
-    }
-    
-    .purchase-container {
-        gap: var(--space-sm);
-    }
-    
-    .product-summary-card,
-    .form-section {
-        padding: var(--space-md);
-    }
-    
-    .section-number {
-        width: 28px;
-        height: 28px;
-        font-size: 0.9rem;
-    }
-    
-    .form-section-header h3 {
-        font-size: 1.1rem;
-    }
-    
-    /* Better mobile cart display */
-    .checkout-item {
-        padding: var(--space-sm);
-    }
-    
-    .order-total .total-line,
-    .order-total .total-line strong {
-        font-size: 1.1rem;
-    }
-
-    .cart-dropdown {
-        width: 95vw;
-        max-height: 70vh;
-    }
-    
-    .cart-items {
-        max-height: 300px;
-    }
-    
-    .cart-item {
-        grid-template-columns: 50px 1fr auto;
-    }
-    
-    .cart-item img {
-        width: 50px;
-        height: 50px;
-    }
-
-    .hero-carousel {
-        height: 340px;
-    }
-
-    .carousel-slide {
-        padding: var(--space-md);
-        gap: var(--space-sm);
-    }
-
-    .carousel-slide img {
-        max-width: 220px;
-        height: 200px;
-    }
-
-    .carousel-caption h3 {
-        font-size: 1.1rem;
-    }
-    
-    .carousel-price {
-        font-size: 1.1rem;
-    }
-    
-    .carousel-control {
-        width: 36px;
-        height: 36px;
-    }
-
-    /* Show 1 full card with small peek of next */
-    .recommendations-track {
-        grid-auto-columns: calc(90% - var(--space-xs)); /* 1 card + small peek */
-        gap: var(--space-md);
-        scroll-snap-type: x mandatory; /* Snap to cards when swiping */
-    }
-    
-    .recommendation-card {
-        scroll-snap-align: start; /* Cards snap into place */
-    }
-    
-    /* Add subtle gradient hint on the right side */
-    .recommendations-viewport::after {
-        content: '';
-        position: absolute;
-        top: 0;
-        right: 0;
-        width: 40px;
-        height: 100%;
-        background: linear-gradient(to left, var(--color-surface), transparent);
-        pointer-events: none;
-        z-index: 1;
-    }
-    
-    .recommendations-viewport {
-        padding: 0 var(--space-xs);
-        position: relative;
-    }
-    
-    /* Smaller controls on mobile */
-    .recommendations-carousel .carousel-control {
-        width: 32px;
-        height: 32px;
-        font-size: 0.85rem;
-    }
-    
-    .recommendations-carousel .carousel-control.prev {
-        left: 2px;
-    }
-    
-    .recommendations-carousel .carousel-control.next {
-        right: 2px;
-    }
-    
-    /* Adjust card sizing */
-    .recommendation-card {
-        min-width: 0; /* Allow card to shrink */
-    }
-    
-    .recommendation-content {
-        padding: var(--space-md);
-    }
-    
-    .recommendation-content h3 {
-        font-size: 1rem;
-        -webkit-line-clamp: 2;
-    }
-    
-    .recommendation-description {
-        font-size: 0.8rem;
-        -webkit-line-clamp: 2;
-    }
-    
-    .recommendation-price {
-        font-size: 1.15rem;
-    }
-    
-    .recommendation-link {
-        font-size: 0.8rem;
-    }
-    
-    /* Make quick add button always visible on mobile */
-    .quick-add-btn {
-        transform: translateX(-50%) translateY(0);
-        opacity: 1;
-        position: static;
-        bottom: auto;
-        left: auto;
-        transform: none;
-        width: 100%;
-        margin-top: var(--space-sm);
-        justify-content: center;
-        font-size: 0.85rem;
-        padding: var(--space-xs) var(--space-sm);
-    }
-    
-    .recommendation-card:hover .quick-add-btn {
-        transform: none;
-    }
-    
-    /* Smaller indicators on mobile */
-    .recommendations-indicators .indicator {
-        width: 24px;
-        height: 3px;
-    }
-    
-    .recommendations-indicators .indicator.active {
-        width: 36px;
-    }
-
-    .promotions-banner-section {
-        margin: 0 calc(var(--space-md) * -1);
-    }
-    
-    .promotions-carousel {
-        height: 380px;
-        border-radius: 0;
-    }
-    
-    .promotion-content {
-        padding: var(--space-md);
-    }
-    
-    .promotion-badge {
-        font-size: 0.75rem;
-        padding: 0.4rem 0.8rem;
-    }
-    
-    .promotion-title {
-        font-size: clamp(1.25rem, 3vw, 1.75rem);
-    }
-    
-    .promotion-description {
-        font-size: 0.9rem;
-        margin-bottom: var(--space-md);
-    }
-    
-    .promotion-discount-badge {
-        padding: var(--space-sm) var(--space-md);
-    }
-    
-    .discount-amount {
-        font-size: 1.75rem;
-    }
-    
-    .discount-label {
-        font-size: 0.8rem;
-    }
-    
-    .promotion-price {
-        flex-direction: column;
-        gap: var(--space-xs);
-    }
-    
-    .original-price {
-        font-size: 1rem;
-    }
-    
-    .discounted-price {
-        font-size: 1.5rem;
-    }
-    
-    .promotion-cta {
-        font-size: 0.9rem;
-        padding: var(--space-sm) var(--space-md);
-    }
-    
-    .promo-control {
-        width: 40px;
-        height: 40px;
-    }
-    
-    .promo-control.prev {
-        left: var(--space-sm);
-    }
-    
-    .promo-control.next {
-        right: var(--space-sm);
-    }
-    
-    .promo-indicators {
-        bottom: var(--space-md);
-    }
-    
-    .promo-indicator {
-        width: 30px;
-        height: 3px;
-    }
-    
-    .promo-indicator.active {
-        width: 45px;
-    }
-}
-
 /* Estilos para el selector de cantidad */
 .quantity-selector {
     display: flex;
@@ -2768,55 +2068,6 @@ button.full-width {
     font-weight: 600;
 }
 
-/* ajustes en movil           */
-@media (max-width: 900px) {
-    .purchase-container {
-        grid-template-columns: 1fr;
-    }
-    .product-summary {
-        grid-row: 1; /* Mueve el resumen al principio en móviles */
-    }
-    /* Ensure no extra margin/padding on body */
-    body {
-        margin: 0;
-        padding: 0;
-    }
-
-    .bottom-nav-bar {
-        display: flex;
-    }
-
-    .footer {
-        /* Add extra margin at the bottom to ensure visibility above bottom nav */
-        margin-bottom: calc(70px + var(--space-lg)) !important;
-        /* Adjust padding for mobile */
-        padding: var(--space-md);
-        /* Make footer stack on mobile for better readability */
-        grid-template-columns: 1fr;
-        gap: var(--space-md);
-        text-align: center;
-    }
-    
-    .footer-brand {
-        justify-content: center;
-    }
-    
-    .footer-links,
-    .footer-legal {
-        justify-content: center;
-    }
-
-    :root {
-        --bottom-nav-height: 70px;
-    }
-}
-
-@media (max-width: 600px) {
-    .form-row {
-        grid-template-columns: 1fr; /* Apila los campos */
-    }
-}
-
     /* --- INICIO ESTILOS RESPONSIVE CATEGORÍAS --- */
 
 /* Por defecto (escritorio), mostramos los botones y ocultamos el dropdown */
@@ -2890,23 +2141,6 @@ button.full-width {
     padding-right: 2.5rem;
 }
 
-
-/* Media Query para móviles (usamos 768px como en tus otros estilos) */
-@media (max-width: 768px) {
-    .category-filters-desktop {
-        display: none; /* Oculta los botones en móvil */
-    }
-    
-    .category-filters-mobile {
-        display: grid; /* Muestra el dropdown en móvil */
-        grid-template-columns: auto 1fr;
-        align-items: center;
-        gap: var(--space-sm);
-        margin-bottom: var(--space-md);
-    }
-}
-
-
 /* ============================================ */
 /* RECOMMENDATIONS CAROUSEL STYLES */
 /* ============================================ */
@@ -2941,10 +2175,11 @@ button.full-width {
 }
 
 /* Track - contains all cards */
+/* 1. Base (Desktop: 4 tarjetas) */
 .recommendations-track {
     display: grid;
     grid-auto-flow: column;
-    grid-auto-columns: calc(25% - var(--space-md)); /* 4 cards on desktop */
+    grid-auto-columns: calc(25% - var(--space-md)); /* 4 tarjetas (100% / 4) */
     gap: var(--space-lg);
     transition: transform 600ms cubic-bezier(0.4, 0, 0.2, 1);
     will-change: transform;
@@ -3708,37 +2943,6 @@ button.full-width {
     100% { background-position: 200% 0; }
 }
 
-@media (max-width: 1200px) {
-    .recommendations-track {
-        grid-auto-columns: calc(33.333% - var(--space-md)); /* 3 cards */
-    }
-}
-
-@media (max-width: 400px) {
-    .recommendations-track {
-        grid-auto-columns: 92%; /* Almost full width */
-        gap: var(--space-sm);
-    }
-    
-    .recommendation-content h3 {
-        font-size: 0.9rem;
-    }
-    
-    .recommendation-price {
-        font-size: 1.05rem;
-    }
-    
-    .quick-add-btn {
-        font-size: 0.8rem;
-        padding: 0.4rem 0.6rem;
-    }
-    
-    .recommendation-link {
-        font-size: 0.75rem;
-    }
-}
-
-
 /* ============================================ */
 /* ESTILOS PARA EL OVERLAY DE BÚSQUEDA */
 /* ============================================ */
@@ -3859,6 +3063,25 @@ body.live-search-active {
     color: #fff;
 }
 
+/* Arreglo para la imagen de la página de historia */
+
+.section-grid figure {
+    /* Resetea los márgenes que el navegador le pone al <figure> */
+    margin: 0;
+    /* Asegura que la figura no intente ser más grande que la columna */
+    max-width: 100%; 
+    overflow: hidden; /* Opcional, pero bueno para asegurar */
+}
+
+.section-grid img {
+    max-width: 100%; /* LA CLAVE: La imagen nunca será MÁS ancha que su contenedor */
+    height: auto;    /* Mantiene la proporción de la imagen */
+    display: block;  /* Previene espacios extra debajo de la imagen */
+    
+    /* Opcional: Para que se vea consistente con tus otras tarjetas */
+    border-radius: var(--radius-base);
+}
+
 /* --- 6. Estados de búsqueda activa (Desktop) --- */
 
 /* Mostrar barra de búsqueda y botón de cerrar cuando está activa */
@@ -3881,4 +3104,849 @@ body.live-search-active .cart-wrapper,
 body.live-search-active .theme-toggle {
     display: flex; /* Mantener visible */
     opacity: 1;
+}
+
+@media (max-width: 1199px) {
+    .recommendations-track {
+        grid-auto-columns: calc(50% - var(--space-sm)); /* 2 tarjetas (100% / 2) */
+        gap: var(--space-md);
+    }
+}
+
+/* Ajustes para tabletas y móviles */
+@media (max-width: 1024px) {
+    .product-page-container {
+        grid-template-columns: 1fr 1fr; /* Dos columnas */
+    }
+    .product-content {
+        grid-column: 1 / -1; /* La info ocupa todo el ancho debajo de la imagen */
+        grid-row: 2;
+    }
+    .product-action-card {
+        grid-column: 2 / 3;
+        grid-row: 1;
+    }
+}
+
+/* 2. Media Query para pantallas pequeñas **/
+@media (max-width: 900px) {
+
+    /* --- 1. OCULTAR ITEMS DE ESCRITORIO --- */
+    .desktop-header-items {
+        display: none;
+    }
+
+    /* Oculta el botón de búsqueda de JS */
+    .header-actions .search-toggle {
+        display: none;
+    }
+    
+    #category-select-mobile {
+        width: 100%;
+        font: inherit;
+        font-size: 1rem;
+        padding: 0.75rem;
+        border: 1px solid var(--color-border);
+        border-radius: var(--radius-base);
+        background-color: var(--color-elevated);
+        color: var(--color-text);
+        cursor: pointer;
+    }
+
+    /* Hide desktop cart dropdown on mobile */
+    #desktop-cart .cart-dropdown {
+        display: none !important;
+    }
+
+    .mobile-search-row #mobile-cart {
+        display: block;
+    }
+
+    #desktop-cart {
+        display: none !important;
+    }
+
+    #mobile-cart {
+        position: relative;
+    }
+    
+    #mobile-cart .cart-toggle {
+        position: relative;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    /* Make mobile cart more visible */
+    #mobile-cart .cart-count {
+        min-width: 18px;
+        height: 18px;
+        font-size: 0.7rem;
+        padding: 0 4px;
+    }
+    
+    .desktop-only {
+        display: none;
+    }
+
+    /* Oculta elementos específicos de escritorio */
+    .main-nav,
+    .user-session,
+    .theme-toggle,
+    .social-links,
+    .cart-dropdown {
+        display: none !important;
+    }
+    
+    /* Oculta texto "Carrito" en el icono de escritorio */
+    .cart-toggle .desktop-only {
+        display: none;
+    }
+
+
+    /* --- 2. MOSTRAR Y ESTILIZAR HEADER MÓVIL --- */
+
+    /* Estilo principal del header en MÓVIL (Fijo) */
+    .top-bar {
+        display: flex;
+        flex-direction: column;
+        height: auto;
+        padding: 0;
+        position: sticky;
+        top: 0;
+        z-index: 1000;
+        border: none;
+        border-radius: 0;
+        margin: 0;
+        width: 100%;        
+        max-width: 100%;    
+        grid-template-columns: none; 
+    }
+
+    /* Estilo de la marca en MÓVIL (Fila 1 - Centrada) */
+    .top-bar .brand {
+        position: static;
+        transform: none;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        width: 100%;
+        height: 60px;
+        background: var(--color-surface);
+        border-bottom: 1px solid var(--color-border);
+        padding: 0;
+        margin: 0;
+        opacity: 1 !important;
+        visibility: visible !important;
+    }
+
+    /* Muestra la fila de búsqueda en MÓVIL (Fila 2) */
+    .mobile-search-row {
+        display: flex;
+        align-items: center;
+        gap: var(--space-sm);
+        width: 100%;
+        height: 60px; 
+        padding: 0 var(--space-md); 
+        background: var(--color-surface);
+        border-bottom: 1px solid var(--color-border);
+    }
+    
+    .mobile-search-row .search-icon-input {
+        flex-shrink: 0; 
+    }
+    .mobile-search-row .search-icon-input svg {
+        width: 1.5rem;
+        height: 1.5rem;
+        color: var(--color-text-muted);
+    }
+
+    .mobile-search-row input[type="search"] {
+        flex: 1; 
+        font-size: 1rem;
+        border: none;
+        outline: none;
+        background: transparent;
+        color: var(--color-text);
+        padding: 0;
+        -webkit-appearance: none;
+    }
+    
+    /* Estilos para el carrito en la Fila 2 */
+    .mobile-search-row .cart-wrapper {
+        flex-shrink: 0;
+    }
+    .mobile-search-row .cart-toggle {
+        border: none;
+        background: transparent;
+        box-shadow: none;
+        padding: 0.25rem;
+    }
+
+
+    /* --- 3. OCULTAR BARRA DE BÚSQUEDA ANTIGUA --- */
+    .search-bar-container {
+        display: none !important;
+    }
+
+    /* Definir la altura de la barra inferior */
+    :root {
+        --bottom-nav-height: 70px;
+    }
+
+
+    /* --- 5. AJUSTE DE LAYOUT PRINCIPAL (BODY y MAIN) --- */
+    
+    /* Quitamos TODOS los márgenes del body en móvil */
+    body {
+        margin: 0; 
+        padding: 0;
+    }
+    
+    /* Ajuste unificado del padding del main */
+    main {
+        /* NO padding-top porque el header es sticky */
+        padding-top: 0 !important;  
+        /* Padding lateral */
+        padding-left: var(--space-md) !important;
+        padding-right: var(--space-md) !important;
+        /* Padding inferior para el bottom-nav */
+        padding-bottom: var(--space-md) !important;
+    }
+
+    main.container {
+        padding-top: 0 !important;
+        padding-left: var(--space-md) !important;
+        padding-right: var(--space-md) !important;
+        padding-bottom: var(--space-md) !important;
+    }
+
+    /* Show bottom nav bar */
+    .bottom-nav-bar {
+        display: flex;
+    }
+        
+    /* --- 6. OTROS AJUSTES MÓVILES --- */
+    
+    /* Hero Section */
+    .hero {
+        grid-template-columns: 1fr;
+    }
+
+    .carousel-slide {
+        height: 380px;
+    }
+
+    .carousel-slide img {
+        max-width: 280px;
+        height: 240px;
+    }
+
+    .carousel-caption h3 {
+        font-size: 1.2rem;
+    }
+
+    /* Pago */
+    .purchase-page {
+        padding: var(--space-md);
+    }
+    .purchase-container {
+        grid-template-columns: 1fr;
+        gap: var(--space-md);
+    }
+    
+    .product-summary {
+        order: -1;
+    }
+    
+    .product-summary-card {
+        position: static;
+        top: auto;
+    }
+    .form-row {
+        grid-template-columns: 1fr;
+    }
+    
+    .checkout-item {
+        grid-template-columns: 60px 1fr;
+        gap: var(--space-sm);
+    }
+    
+    .checkout-item img {
+        width: 60px;
+        height: 60px;
+    }
+    
+    .checkout-item-actions {
+        grid-column: 2;
+        flex-direction: row;
+        justify-content: space-between;
+        align-items: center;
+    }
+    
+    /* Modal adjustments */
+    .modal-content {
+        width: 95%;
+        padding: var(--space-md);
+    }
+    
+    .modal-header h3 {
+        font-size: 1.2rem;
+    }
+    
+    /* Detalles de Producto */
+    .product-page-container {
+        grid-template-columns: 1fr; 
+    }
+    .product-action-card {
+        grid-column: 1;
+        grid-row: auto;
+        position: static;
+    }
+    
+    /* Filtros de Categoría */
+    .category-filters-desktop {
+        display: none;
+    }
+
+    /* Adjust product grid for mobile */
+    .product-list[data-view="grid"] {
+        grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+    }
+    
+    .product-controls {
+        flex-wrap: wrap;
+    }
+    
+    .category-filters-mobile {
+        display: grid;
+        grid-template-columns: auto 1fr;
+        align-items: center;
+        gap: var(--space-sm);
+        margin-bottom: var(--space-md);
+    }
+
+    .recommendations-track {
+        grid-auto-columns: 100%; /* 1 tarjeta */
+        gap: var(--space-sm);
+    }
+    
+    .recommendations-carousel .carousel-control {
+        width: 40px;
+        height: 40px;
+    }
+    
+    .recommendations-carousel .carousel-control.prev {
+        left: -20px;
+    }
+    
+    .recommendations-carousel .carousel-control.next {
+        right: -20px;
+    }
+
+    .recommendations-section .section-header h2 {
+        font-size: 1.5rem;
+    }
+    
+    .recommendations-section .section-header h2 svg {
+        width: 24px;
+        height: 24px;
+    }
+    
+    .recommendations-section .section-header p {
+        font-size: 0.9rem;
+    }
+
+    /* Make recommendation cards taller on mobile for better presentation */
+    .recommendation-card {
+        min-height: 400px;
+    }
+    
+    /* Adjust image aspect ratio on mobile */
+    .recommendation-image-wrapper {
+        aspect-ratio: 4 / 3; /* Wider on mobile */
+    }
+
+    /* Make quick add button always visible on mobile */
+    .quick-add-btn {
+        opacity: 1;
+        position: static;
+        bottom: auto;
+        left: auto;
+        transform: none;
+        width: 100%;
+        margin-top: var(--space-sm);
+        justify-content: center;
+        font-size: 0.9rem;
+        padding: var(--space-sm) var(--space-md);
+    }
+    
+    .recommendation-card:hover .quick-add-btn {
+        transform: none;
+    }
+    
+    /* Larger text on mobile */
+    .recommendation-content h3 {
+        font-size: 1.1rem;
+        -webkit-line-clamp: 2;
+    }
+    
+    .recommendation-description {
+        font-size: 0.9rem;
+        -webkit-line-clamp: 3; /* Show more lines on mobile */
+    }
+    
+    .recommendation-price {
+        font-size: 1.3rem;
+    }
+    
+    .recommendation-link {
+        font-size: 0.9rem;
+    }
+    
+    /* Larger indicators on mobile */
+    .recommendations-indicators .indicator {
+        width: 32px;
+        height: 4px;
+    }
+    
+    .recommendations-indicators .indicator.active {
+        width: 48px;
+    }
+    
+    /* Add padding to viewport for better swipe experience */
+    .recommendations-viewport {
+        padding: 0;
+    }
+
+    .promotions-carousel {
+        height: 400px;
+    }
+    
+    .promotion-title {
+        font-size: clamp(1.5rem, 4vw, 2.5rem);
+    }
+    
+    .promotion-description {
+        font-size: 1rem;
+    }
+    
+    .discount-amount {
+        font-size: 2rem;
+    }
+    
+    .promotion-cta {
+        font-size: 1rem;
+        padding: var(--space-sm) var(--space-lg);
+    }
+    
+    .promo-control {
+        width: 44px;
+        height: 44px;
+    }
+    
+    .promo-control.prev {
+        left: var(--space-md);
+    }
+    
+    .promo-control.next {
+        right: var(--space-md);
+    }
+
+    .product-promo-badge {
+        padding: 4px 10px;
+        font-size: 0.75rem;
+        top: 8px;
+        right: 8px;
+    }
+    
+    .product-page-promo-badge {
+        padding: 8px 14px;
+        font-size: 0.95rem;
+        top: 12px;
+        left: 12px;
+    }
+    
+    .promotion-alert {
+        flex-direction: column;
+    }
+    
+    .price-section {
+        padding: 16px;
+    }
+
+    /* Padding específico SOLO para el overlay de búsqueda en móvil */
+    #live-search-overlay {
+        padding-top: 120px;
+        padding-bottom: 70px;
+    }
+    
+    #live-search-results {
+        min-height: calc(100vh - 190px);
+        padding: var(--space-md);
+    }
+    
+    body.live-search-active .mobile-search-row {
+        background: var(--color-surface);
+        box-shadow: 0 2px 8px rgba(198, 9, 105, 0.2);
+        position: relative;
+        z-index: 1501;
+    }
+    
+    body.live-search-active #mobile-cart {
+        display: none;
+    }
+    
+    body.live-search-active #mobile-search-close {
+        display: block;
+    }
+
+    .purchase-container {
+        grid-template-columns: 1fr;
+    }
+    .product-summary {
+        grid-row: 1; /* Mueve el resumen al principio en móviles */
+    }
+    /* Ensure no extra margin/padding on body */
+    body {
+        margin: 0;
+        padding: 0;
+    }
+
+    .bottom-nav-bar {
+        display: flex;
+    }
+
+    .footer {
+        /* Add extra margin at the bottom to ensure visibility above bottom nav */
+        margin-bottom: calc(70px + var(--space-lg)) !important;
+        /* Adjust padding for mobile */
+        padding: var(--space-md);
+        /* Make footer stack on mobile for better readability */
+        grid-template-columns: 1fr;
+        gap: var(--space-md);
+        text-align: center;
+    }
+    
+    .footer-brand {
+        justify-content: center;
+    }
+    
+    .footer-links,
+    .footer-legal {
+        justify-content: center;
+    }
+
+    :root {
+        --bottom-nav-height: 70px;
+    }
+}
+
+@media (max-width: 768px) {
+    .product-page-container {
+        grid-template-columns: 1fr; /* Una sola columna */
+    }
+    .product-action-card {
+        grid-column: 1;
+        grid-row: auto;
+        position: static;
+    }
+    
+    .category-filters-desktop {
+        display: none; /* Oculta los botones en móvil */
+    }
+    
+    .category-filters-mobile {
+        display: grid; /* Muestra el dropdown en móvil */
+        grid-template-columns: auto 1fr;
+        align-items: center;
+        gap: var(--space-sm);
+        margin-bottom: var(--space-md);
+    }
+}
+
+@media (max-width: 600px) {
+    .form-row {
+        grid-template-columns: 1fr; /* Apila los campos */
+    }
+    .product-list[data-view="grid"] {
+        grid-template-columns: 1fr;
+    }
+    
+    .product-card {
+        padding: var(--space-md);
+    }
+    .modal-body {
+        grid-template-columns: 1fr;
+    }
+    .purchase-page {
+        padding: var(--space-sm);
+    }
+    
+    .purchase-container {
+        gap: var(--space-sm);
+    }
+    
+    .product-summary-card,
+    .form-section {
+        padding: var(--space-md);
+    }
+    
+    .section-number {
+        width: 28px;
+        height: 28px;
+        font-size: 0.9rem;
+    }
+    
+    .form-section-header h3 {
+        font-size: 1.1rem;
+    }
+    
+    /* Better mobile cart display */
+    .checkout-item {
+        padding: var(--space-sm);
+    }
+    
+    .order-total .total-line,
+    .order-total .total-line strong {
+        font-size: 1.1rem;
+    }
+
+    .cart-dropdown {
+        width: 95vw;
+        max-height: 70vh;
+    }
+    
+    .cart-items {
+        max-height: 300px;
+    }
+    
+    .cart-item {
+        grid-template-columns: 50px 1fr auto;
+    }
+    
+    .cart-item img {
+        width: 50px;
+        height: 50px;
+    }
+
+    .hero-carousel {
+        height: 340px;
+    }
+
+    .carousel-slide {
+        padding: var(--space-md);
+        gap: var(--space-sm);
+    }
+
+    .carousel-slide img {
+        max-width: 220px;
+        height: 200px;
+    }
+
+    .carousel-caption h3 {
+        font-size: 1.1rem;
+    }
+    
+    .carousel-price {
+        font-size: 1.1rem;
+    }
+    
+    .carousel-control {
+        width: 36px;
+        height: 36px;
+    }
+    
+    .recommendation-card {
+        min-height: 380px; /* Cards snap into place */
+    }
+    
+    /* Add subtle gradient hint on the right side */
+    .recommendations-viewport::after {
+        content: '';
+        position: absolute;
+        top: 0;
+        right: 0;
+        width: 40px;
+        height: 100%;
+        background: linear-gradient(to left, var(--color-surface), transparent);
+        pointer-events: none;
+        z-index: 1;
+    }
+    
+    .recommendations-viewport {
+        padding: 0 var(--space-xs);
+        position: relative;
+    }
+    
+    /* Smaller controls on mobile */
+    .recommendations-carousel .carousel-control {
+        width: 32px;
+        height: 32px;
+        font-size: 0.85rem;
+    }
+    
+    .recommendations-carousel .carousel-control.prev {
+        left: 2px;
+    }
+    
+    .recommendations-carousel .carousel-control.next {
+        right: 2px;
+    }
+    
+    /* Adjust card sizing */
+    .recommendation-card {
+        min-width: 0; /* Allow card to shrink */
+    }
+    
+    .recommendation-content {
+        padding: var(--space-md);
+    }
+    
+    .recommendation-content h3 {
+        font-size: 1rem;
+    }
+    
+    .recommendation-description {
+        font-size: 0.8rem;
+    }
+    
+    .recommendation-price {
+        font-size: 1.15rem;
+    }
+    
+    .recommendation-link {
+        font-size: 0.8rem;
+    }
+    
+    /* Make quick add button always visible on mobile */
+    .quick-add-btn {
+        opacity: 1;
+        position: static;
+        bottom: auto;
+        left: auto;
+        transform: none;
+        width: 100%;
+        margin-top: var(--space-sm);
+        justify-content: center;
+        font-size: 0.85rem;
+        padding: var(--space-xs) var(--space-sm);
+    }
+    
+    .recommendation-card:hover .quick-add-btn {
+        transform: none;
+    }
+    
+    /* Smaller indicators on mobile */
+    .recommendations-indicators .indicator {
+        width: 24px;
+        height: 3px;
+    }
+    
+    .recommendations-indicators .indicator.active {
+        width: 36px;
+    }
+
+    .promotions-banner-section {
+        margin: 0 calc(var(--space-md) * -1);
+    }
+    
+    .promotions-carousel {
+        height: 380px;
+        border-radius: 0;
+    }
+    
+    .promotion-content {
+        padding: var(--space-md);
+    }
+    
+    .promotion-badge {
+        font-size: 0.75rem;
+        padding: 0.4rem 0.8rem;
+    }
+    
+    .promotion-title {
+        font-size: clamp(1.25rem, 3vw, 1.75rem);
+    }
+    
+    .promotion-description {
+        font-size: 0.9rem;
+        margin-bottom: var(--space-md);
+    }
+    
+    .promotion-discount-badge {
+        padding: var(--space-sm) var(--space-md);
+    }
+    
+    .discount-amount {
+        font-size: 1.75rem;
+    }
+    
+    .discount-label {
+        font-size: 0.8rem;
+    }
+    
+    .promotion-price {
+        flex-direction: column;
+        gap: var(--space-xs);
+    }
+    
+    .original-price {
+        font-size: 1rem;
+    }
+    
+    .discounted-price {
+        font-size: 1.5rem;
+    }
+    
+    .promotion-cta {
+        font-size: 0.9rem;
+        padding: var(--space-sm) var(--space-md);
+    }
+    
+    .promo-control {
+        width: 40px;
+        height: 40px;
+    }
+    
+    .promo-control.prev {
+        left: var(--space-sm);
+    }
+    
+    .promo-control.next {
+        right: var(--space-sm);
+    }
+    
+    .promo-indicators {
+        bottom: var(--space-md);
+    }
+    
+    .promo-indicator {
+        width: 30px;
+        height: 3px;
+    }
+    
+    .promo-indicator.active {
+        width: 45px;
+    }
+}
+
+@media (max-width: 400px) {
+    
+    .recommendation-content h3 {
+        font-size: 0.9rem;
+    }
+    
+    .recommendation-price {
+        font-size: 1.05rem;
+    }
+    
+    .quick-add-btn {
+        font-size: 0.8rem;
+        padding: 0.4rem 0.6rem;
+    }
+    
+    .recommendation-link {
+        font-size: 0.75rem;
+    }
 }

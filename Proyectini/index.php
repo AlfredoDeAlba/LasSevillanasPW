@@ -403,17 +403,6 @@ try {
         <!-- Slider Indicators -->
         <div class="promo-indicators" id="promo-indicators"></div>
 
-        <!-- Auto-play controls (optional) -->
-        <div class="promo-controls-extra">
-            <button type="button" class="promo-autoplay-toggle" id="promo-autoplay" aria-label="Pausar/Reproducir">
-                <svg class="play-icon" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
-                    <path d="M8 5v14l11-7z"/>
-                </svg>
-                <svg class="pause-icon" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="currentColor" style="display: none;">
-                    <path d="M6 4h4v16H6zM14 4h4v16h-4z"/>
-                </svg>
-            </button>
-        </div>
     </section>
     <?php endif; ?>
 

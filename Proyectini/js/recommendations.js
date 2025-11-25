@@ -17,10 +17,9 @@ document.addEventListener('DOMContentLoaded', () => {
     // Get number of visible cards based on screen width
     function getCardsPerView() {
         const width = window.innerWidth;
-        if (width > 1200) return 4;
-        if (width > 900) return 3;
-        if (width > 600) return 2;
-        return 1; // Mobile: 1 card at a time
+        if (width >= 1200) return 4;  // 4. Desktop (>= 1200px)
+        if (width > 900) return 2;   // 2. Tablet (> 900px)
+        return 1;                      // 1. Mobile (<= 900px)
     }
 
     // Calculate card width including gap
@@ -142,7 +141,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!isDragging) return;
         
         // Lower threshold for mobile (easier to swipe)
-        const swipeThreshold = window.innerWidth <= 600 ? 30 : 50;
+        const swipeThreshold = window.innerWidth <= 900 ? 30 : 50;
         const diff = touchStartX - touchEndX;
         
         if (Math.abs(diff) > swipeThreshold) {

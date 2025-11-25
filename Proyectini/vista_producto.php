@@ -34,7 +34,7 @@ $product['stock'] = $product['stock'] ?? 0;
 $product['category_name'] = $product['category_name'] ?? 'Dulce Típico';
 ?>
 
-<main class="product-page-container section">
+<main class="product-page-container">
 
     <div class="product-gallery">
         <?php if ($hasPromotion): ?>
@@ -53,7 +53,6 @@ $product['category_name'] = $product['category_name'] ?? 'Dulce Típico';
         <h1><?= htmlspecialchars($product['name']) ?></h1>
         
         <?php if ($hasPromotion): ?>
-            <!-- Promotion Alert -->
             <div class="promotion-alert">
                 <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                     <path d="M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"/>
@@ -66,7 +65,6 @@ $product['category_name'] = $product['category_name'] ?? 'Dulce Típico';
                 </div>
             </div>
             
-            <!-- Price with discount -->
             <div class="price-section">
                 <span class="price-label">Precio original:</span>
                 <span class="price-original">$<?= number_format($originalPrice, 2) ?></span>
