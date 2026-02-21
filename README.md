@@ -1,6 +1,6 @@
 # Las Sevillanas - Plataforma Web (E-commerce)
 
-> [cite_start]Aplicación web integral para comercio electrónico construida bajo una arquitectura modular MVC (Modelo-Vista-Controlador) distribuida en tres niveles: presentación, negocio y datos[cite: 1100]. [cite_start]El sistema permite la gestión de catálogo, carrito de compras, aplicación dinámica de promociones y pagos seguros en línea[cite: 1204, 1207, 1210, 1492.
+> Aplicación web integral para comercio electrónico construida bajo una arquitectura modular MVC (Modelo-Vista-Controlador) distribuida en tres niveles: presentación, negocio y datos. El sistema permite la gestión de catálogo, carrito de compras, aplicación dinámica de promociones y pagos seguros en línea.
 
 ## 🚀 Tecnologías y Stack
 
