@@ -2,7 +2,7 @@
 
 > Aplicación web integral para comercio electrónico construida bajo una arquitectura modular MVC (Modelo-Vista-Controlador) distribuida en tres niveles: presentación, negocio y datos. El sistema permite la gestión de catálogo, carrito de compras, aplicación dinámica de promociones y pagos seguros en línea.
 
-## 🚀 Tecnologías y Stack
+## Tecnologías y Stack
 
 **Backend & Base de Datos**
 * **Lenguaje:** PHP 8.2
@@ -25,14 +25,14 @@
 * **Servidor Web:** Apache 2.4.
 * **Seguridad y Redes:** Cloudflare Tunnel para conexiones seguras a la base de datos y Certbot (Let's Encrypt) para certificados SSL/HTTPS.
 
-## 📋 Características Principales
+## Características Principales
 
 * **Gestión de Inventario y Carrito:** Control de stock en tiempo real protegido mediante Triggers en SQL para evitar ventas sin inventario.
 * **Motor de Promociones:** Sistema automatizado de descuentos y cupones validado a nivel base de datos (restricciones CHECK) e integrado en el flujo de checkout.
 * **Seguridad Robusta:** Autenticación de usuarios con cifrado `Argon2id` (estándar OWASP), protección CSRF, y blindaje contra inyecciones SQL mediante PDO.
 * **Despliegue Híbrido Seguro:** Conexión segura entre la base de datos local y el servidor web en AWS mediante túneles Cloudflare, sin exponer puertos públicos.
 
-## 🛠️ Instalación y Configuración Local
+## Instalación y Configuración Local
 
 ### Prerrequisitos
 * PHP 8.2+ y Composer instalados.
